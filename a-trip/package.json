@@ -1,0 +1,45 @@
+{
+  "name": "a-trip",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.34.5",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:reset": "docker compose down -v",
+    "docker:seed": "docker compose --profile seed run --rm seed",
+    "docker:logs": "docker compose logs -f api web",
+    "db:migrate": "pnpm --filter @a-trip/api exec prisma migrate dev",
+    "db:seed": "pnpm --filter @a-trip/api run seed",
+    "db:studio": "pnpm --filter @a-trip/api exec prisma studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.12",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "@parcel/watcher",
+      "unrs-resolver",
+      "msgpackr-extract",
+      "sharp",
+      "@tailwindcss/oxide",
+      "bcrypt"
+    ]
+  }
+}

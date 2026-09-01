@@ -1,0 +1,192 @@
+.wrap {
+}
+
+.wrapDark {
+  border-radius: var(--radius-card);
+  background-color: var(--color-primary);
+  padding: 0.75rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-radius: var(--radius-card);
+  padding: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .form {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+  }
+}
+
+.formLight {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 1024px) {
+  .formLight > * + * {
+    border-left: 1px solid var(--color-line);
+  }
+}
+
+.formDark {
+  background-color: transparent;
+}
+
+@media (min-width: 1024px) {
+  .formDark {
+    gap: 0.75rem;
+    padding: 0;
+  }
+}
+
+.formCompact {
+}
+
+@media (min-width: 1024px) {
+  .formCompact {
+    padding: 0.375rem;
+  }
+}
+
+.field {
+  flex: 1 1 0%;
+}
+
+@media (min-width: 1024px) {
+  .fieldDestination {
+    max-width: 20rem;
+  }
+  .fieldDestinationDark {
+    max-width: 14rem;
+  }
+  .fieldDatesDark {
+    max-width: 16rem;
+  }
+  .fieldGuests {
+    max-width: 14rem;
+  }
+}
+
+.destinationBox {
+  display: flex;
+  height: 3.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding-inline: 1rem;
+}
+
+.destinationBoxLight {
+  transition: background-color 0.15s ease;
+}
+
+.destinationBoxLight:focus-within {
+  background-color: var(--color-canvas);
+}
+
+@media (min-width: 1024px) {
+  .destinationBoxLight {
+    border-radius: 0;
+  }
+}
+
+.destinationBoxDark {
+  background-color: #ffffff;
+}
+
+.searchIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.destinationTextWrap {
+  min-width: 0;
+  flex: 1 1 0%;
+}
+
+.destinationLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-muted);
+}
+
+input.destinationInput {
+  height: auto;
+  border: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+input.destinationInput:focus {
+  outline: none;
+}
+
+.darkFieldFill {
+}
+
+.darkFieldFillActive {
+  height: 3.5rem;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+}
+
+.submitWrap {
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .submitWrap {
+    padding-left: 0.5rem;
+  }
+}
+
+.submitBtn {
+}
+
+@media (min-width: 1024px) {
+  .submitBtn {
+    padding-inline: 2rem;
+  }
+}
+
+.popularRow {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.popularLabel {
+  color: var(--color-primary-100);
+}
+
+.popularChip {
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+.popularChip:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

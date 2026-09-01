@@ -1,0 +1,68 @@
+.header {
+  background-color: var(--color-primary);
+  padding-block: 1.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.connector {
+  height: 1px;
+  width: 2rem;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.stepInner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: flex;
+  height: 1.5rem;
+  width: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badgeActive {
+  background-color: #ffffff;
+  color: var(--color-primary);
+}
+
+.badgeInactive {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.labelActive {
+  color: #ffffff;
+}
+
+.labelInactive {
+  color: rgba(255, 255, 255, 0.6);
+}

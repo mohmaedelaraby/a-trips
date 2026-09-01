@@ -1,0 +1,159 @@
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.link {
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.form {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.passwordRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.passwordLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.required {
+  margin-left: 0.125rem;
+  color: var(--color-danger);
+}
+
+.forgotLink {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.passwordWrap {
+  position: relative;
+  margin-top: 0.375rem;
+}
+
+input.passwordInput {
+  padding-right: 3.5rem;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.togglePassword:hover {
+  color: var(--color-ink);
+}
+
+.passwordError {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-danger);
+}
+
+.keepSignedIn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.dividerLine {
+  height: 1px;
+  flex: 1 1 0%;
+  background-color: var(--color-line);
+}
+
+.footnote {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.footnoteLine {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.confirmBox {
+  margin-top: 1.25rem;
+}
+
+.confirmCard {
+  border-radius: 0.5rem;
+  background-color: var(--color-primary-50);
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-primary-800);
+}
+
+.confirmCardTitle {
+  font-weight: 600;
+}
+
+.backLink {
+  margin-top: 1rem;
+  display: block;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}

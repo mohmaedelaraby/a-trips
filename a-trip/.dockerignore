@@ -1,0 +1,29 @@
+# Build contexts should carry source only — everything below is either
+# regenerated inside the image or would leak host state into it.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/*.log
+
+# Secrets: compose injects real values as environment variables.
+**/.env
+**/.env.local
+**/.env.*.local
+
+.git
+.gitignore
+**/.DS_Store
+**/Thumbs.db
+
+# Docker's own files never need to be inside the context.
+Dockerfile
+**/Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Editor / tooling noise
+.vscode
+.idea
+**/.eslintcache

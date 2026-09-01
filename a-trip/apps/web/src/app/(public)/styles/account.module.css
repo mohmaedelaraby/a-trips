@@ -1,0 +1,151 @@
+.loadingWrap {
+  padding-block: 2rem;
+}
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 1.5rem;
+  }
+}
+
+.subtitle {
+  margin-top: 0.125rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 0.25rem;
+}
+
+.tab {
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--color-ink);
+}
+
+.tabActive {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  outline: 1px solid var(--color-line);
+  outline-offset: -1px;
+}
+
+.layout {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detailSticky {
+  align-self: flex-start;
+}
+
+@media (min-width: 1024px) {
+  .detailSticky {
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+/* profile page */
+.profileCard {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+}
+
+.profileTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.profileForm {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profileGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .profileGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.passwordRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.passwordInput {
+  flex: 1 1 0%;
+}
+
+.changeLink {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.changeLink:hover {
+  text-decoration: underline;
+}
+
+.saveBtn {
+  margin-top: 0.25rem;
+  align-self: flex-start;
+}

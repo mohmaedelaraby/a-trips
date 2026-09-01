@@ -1,0 +1,209 @@
+.header {
+  background-color: var(--color-primary);
+  padding-block: 1.25rem;
+}
+
+.narrow {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.stateWrap {
+  padding-block: 4rem;
+}
+
+.loadingWrap {
+  padding-block: 2rem;
+}
+
+.summaryWrap {
+  padding-block: 2.5rem;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.iconCircle {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
+.heroTitle {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.heroBody {
+  margin-top: 0.5rem;
+  max-width: 24rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.metaGrid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.metaCard {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1rem;
+}
+
+.metaLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-muted);
+}
+
+.metaValue {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-ink);
+}
+
+.statusChip {
+  margin-top: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusPending {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-fg);
+}
+
+.statusConfirmed {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-fg);
+}
+
+.statusDot {
+  height: 0.375rem;
+  width: 0.375rem;
+  border-radius: 9999px;
+  background-color: currentColor;
+}
+
+.detailCard {
+  margin-top: 1rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+}
+
+.detailHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hotelName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.hotelMeta {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.hotelImage {
+  height: 4rem;
+  width: 5rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.hotelImagePlaceholder {
+  height: 4rem;
+  width: 5rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background-color: var(--color-canvas);
+}
+
+.detailRow {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-line);
+  padding-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.detailRowPlain {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.detailRowLabel {
+  color: var(--color-ink-muted);
+}
+
+.detailRowValue {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.totalRow {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-line);
+  padding-top: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    flex-direction: row;
+  }
+}
+
+.footnote {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}

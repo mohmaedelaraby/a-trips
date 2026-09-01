@@ -1,0 +1,162 @@
+.empty {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.table {
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+}
+
+.head {
+  display: none;
+  gap: 1rem;
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-muted);
+}
+
+@media (min-width: 640px) {
+  .head {
+    display: grid;
+    grid-template-columns: 2fr 0.8fr 0.6fr 0.9fr 0.9fr;
+  }
+}
+
+.headRight {
+  text-align: right;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.body > * + * {
+  border-top: 1px solid var(--color-line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 2fr 0.8fr 0.6fr 0.9fr 0.9fr;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.rowUnavailable {
+  opacity: 0.6;
+}
+
+.rowSelected {
+  background-color: color-mix(in srgb, var(--color-primary-50) 60%, transparent);
+}
+
+.roomInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.roomThumb {
+  display: none;
+  height: 3.5rem;
+  width: 4rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background-color: var(--color-canvas);
+}
+
+@media (min-width: 640px) {
+  .roomThumb {
+    display: block;
+  }
+}
+
+.roomName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.roomMeta {
+  margin-top: 0.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.sleeps {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}
+
+.sleepsIcon {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .sleepsIcon {
+    display: none;
+  }
+}
+
+.size {
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}
+
+.priceDash {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.priceTotal {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-ink-muted);
+}
+
+.availabilityCol {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .availabilityCol {
+    justify-content: flex-end;
+  }
+}

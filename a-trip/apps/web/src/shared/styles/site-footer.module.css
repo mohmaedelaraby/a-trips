@@ -1,0 +1,131 @@
+.footer {
+  margin-top: 4rem;
+  background-color: var(--color-shell);
+  color: #ffffff;
+}
+
+.grid {
+  display: grid;
+  gap: 2.5rem;
+  padding-block: 3rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.dot {
+  color: var(--color-accent);
+}
+
+.tagline {
+  margin-top: 0.75rem;
+  max-width: 22ch;
+  font-size: 0.875rem;
+  color: var(--color-shell-fg-muted);
+}
+
+.socials {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.socialBadge {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-shell-line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-shell-fg-muted);
+}
+
+.columnHeading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: var(--color-shell-fg-muted);
+}
+
+.linkList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  list-style: none;
+  padding: 0;
+}
+
+.link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #ffffff;
+}
+
+.linkDisabled {
+  cursor: default;
+  user-select: none;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.contactList {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  list-style: none;
+  padding: 0;
+}
+
+.contactPhone {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.bottomBar {
+  border-top: 1px solid var(--color-shell-line);
+}
+
+.bottomBarInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-block: 1rem;
+  font-size: 0.75rem;
+  color: var(--color-shell-fg-muted);
+}
+
+@media (min-width: 640px) {
+  .bottomBarInner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

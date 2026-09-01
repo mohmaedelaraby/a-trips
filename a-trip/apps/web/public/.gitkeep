@@ -1,0 +1,2 @@
+# Keeps apps/web/public present so the Docker build can copy it into the
+# standalone image. Drop favicons, robots.txt and other static assets here.

@@ -1,0 +1,5 @@
+.fallback {
+  padding-block: 2rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}

@@ -1,0 +1,168 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  runtime      = "nodejs"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  phone        String?
+  dateOfBirth  DateTime?
+  role         Role       @default(USER)
+  adminRole    AdminRole?
+  status       UserStatus @default(ACTIVE)
+  invitedAt    DateTime?
+  lastActiveAt DateTime?
+  bookings     Booking[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+/// Granular staff permissions; only meaningful when role is ADMIN.
+enum AdminRole {
+  SUPER_ADMIN
+  RESERVATIONS
+  CONTENT_EDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+  INVITED
+  DISABLED
+}
+
+/// Catalogue of amenities offered in the hotel editor's picker.
+model Amenity {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hotel {
+  id          String       @id @default(uuid())
+  slug        String       @unique
+  name        String
+  city        String
+  address     String
+  country     String
+  description String?
+  stars       Int
+  latitude    Float?
+  longitude   Float?
+  amenities   String[]
+  status      HotelStatus  @default(DRAFT)
+  images      HotelImage[]
+  roomTypes   RoomType[]
+  bookings    Booking[]
+  createdBy   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([city])
+  @@index([status])
+}
+
+enum HotelStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model HotelImage {
+  id        String  @id @default(uuid())
+  hotelId   String
+  hotel     Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  @@index([hotelId])
+}
+
+model RoomType {
+  id               String             @id @default(uuid())
+  hotelId          String
+  hotel            Hotel              @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  capacityAdults   Int
+  capacityChildren Int                @default(0)
+  numOfBeds        Int
+  /// Physical rooms of this type; the ceiling for per-date availability.
+  totalUnits       Int                @default(1)
+  sizeSqm          Float?
+  basePrice        Decimal            @db.Decimal(10, 2)
+  status           RoomTypeStatus     @default(ACTIVE)
+  availability     RoomAvailability[]
+  bookings         Booking[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([hotelId])
+}
+
+enum RoomTypeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model RoomAvailability {
+  id            String   @id @default(uuid())
+  roomTypeId    String
+  roomType      RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  totalUnits    Int
+  priceOverride Decimal? @db.Decimal(10, 2)
+  stopSell      Boolean  @default(false)
+
+  @@unique([roomTypeId, date])
+  @@index([roomTypeId, date])
+}
+
+model Booking {
+  id               String        @id @default(uuid())
+  bookingReference String        @unique
+  userId           String
+  user             User          @relation(fields: [userId], references: [id])
+  hotelId          String
+  hotel            Hotel         @relation(fields: [hotelId], references: [id])
+  roomTypeId       String
+  roomType         RoomType      @relation(fields: [roomTypeId], references: [id])
+  checkInDate      DateTime      @db.Date
+  checkOutDate     DateTime      @db.Date
+  numAdults        Int
+  numChildren      Int           @default(0)
+  totalPrice       Decimal       @db.Decimal(10, 2)
+  status           BookingStatus @default(PENDING_CONFIRMATION)
+  adminNote        String?
+  specialRequests  String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([hotelId])
+  @@index([status])
+  @@index([roomTypeId, checkInDate, checkOutDate])
+}
+
+enum BookingStatus {
+  PENDING_CONFIRMATION
+  CONFIRMED
+  REJECTED
+  CANCELLED
+}

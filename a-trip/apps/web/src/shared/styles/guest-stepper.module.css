@@ -1,0 +1,131 @@
+.trigger {
+  display: flex;
+  height: 3.5rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.triggerBare:hover,
+.triggerBare:focus {
+  background-color: var(--color-canvas);
+  outline: none;
+}
+
+.triggerDefault {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding-inline: 1rem;
+}
+
+.triggerDefault:hover,
+.triggerDefault:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.triggerBare {
+  padding-inline: 1rem;
+}
+
+.icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.textWrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-muted);
+}
+
+.value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.popover {
+  z-index: 50;
+  width: 18rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 0.5rem;
+}
+
+.rowLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.rowHint {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.rowControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rowButton {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.rowButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rowValue {
+  width: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--color-line);
+}

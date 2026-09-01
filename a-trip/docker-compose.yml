@@ -1,0 +1,161 @@
+# Full A Trip stack: Postgres + NestJS API + Next.js web.
+#
+#   docker compose up -d --build     start everything (migrations run first)
+#   docker compose --profile seed run --rm seed   load demo + admin data
+#   docker compose down              stop
+#   docker compose down -v           stop and delete the database volume
+#
+# Every value has a working default, so the stack starts with no .env file.
+# Override anything by copying .env.example to .env.
+
+name: a-trip
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: a-trip-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-atrip}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atrip}
+      POSTGRES_DB: ${POSTGRES_DB:-atrip}
+    ports:
+      # Published on 5439 so it cannot collide with a Postgres already running
+      # on the host's default 5432 (or the 5433 instance used for local dev).
+      - '${POSTGRES_PORT:-5439}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Dependents wait on this, so the API never starts against a socket that
+      # is listening but not yet accepting queries.
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-atrip} -d ${POSTGRES_DB:-atrip}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # S3-compatible object storage for hotel photos uploaded from the admin
+  # portal. Console (browsable UI) is on 9001.
+  minio:
+    image: minio/minio:latest
+    container_name: a-trip-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      # 9000 must be reachable from the host: <img> tags load photos directly.
+      - '${S3_PORT:-9000}:9000'
+      - '${S3_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+
+  # One-shot job: applies pending migrations, then exits. The API waits for it
+  # to complete successfully, so the schema is never behind the running code.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    image: a-trip/migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atrip}:${POSTGRES_PASSWORD:-atrip}@postgres:5432/${POSTGRES_DB:-atrip}
+    restart: 'no'
+
+  # Optional: demo hotels plus the admin-portal fixtures (staff, amenities,
+  # units, 90 days of availability). Not part of `up` — run it explicitly.
+  seed:
+    profiles: ['seed']
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    image: a-trip/migrate
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atrip}:${POSTGRES_PASSWORD:-atrip}@postgres:5432/${POSTGRES_DB:-atrip}
+    command: sh -c "pnpm exec tsx prisma/seed.ts && pnpm exec tsx prisma/seed-admin.ts"
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    image: a-trip/api
+    container_name: a-trip-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      # `postgres` is the compose service name, resolved on the internal network.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atrip}:${POSTGRES_PASSWORD:-atrip}@postgres:5432/${POSTGRES_DB:-atrip}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      PORT: 4000
+      # Browser origin, so it must be the host-visible URL of the web app.
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      # Internal address the API writes through...
+      S3_ENDPOINT: http://minio:9000
+      # ...and the host address baked into the returned image URLs, which the
+      # browser must be able to resolve. These differ inside Docker.
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9000}
+      S3_BUCKET: ${S3_BUCKET:-atrip-uploads}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      - '${API_PORT:-4000}:4000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://127.0.0.1:4000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runtime
+      args:
+        # Baked into the client bundle at build time. This runs in the user's
+        # browser, so it must be reachable from the host — not `http://api`.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+    image: a-trip/web
+    container_name: a-trip-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+      PORT: 3000
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+
+volumes:
+  pgdata:
+  miniodata:

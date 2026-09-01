@@ -1,0 +1,159 @@
+.card {
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .row {
+    flex-direction: row;
+  }
+}
+
+.imageLink {
+  position: relative;
+  height: 12rem;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .imageLink {
+    height: auto;
+    width: 14rem;
+  }
+}
+
+.image {
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.imageLink:hover .image {
+  transform: scale(1.05);
+}
+
+.imageSoldOut {
+  filter: grayscale(0.6);
+}
+
+.noPhoto {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-canvas);
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.body {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .body {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.main {
+  min-width: 0;
+  flex: 1 1 0%;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.name {
+  margin-top: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.name:hover {
+  color: var(--color-primary);
+}
+
+.description {
+  margin-top: 0.25rem;
+  max-width: 36rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.amenities {
+  margin-top: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.roomTypeCount {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.priceBlock {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid var(--color-line);
+  padding-top: 0.75rem;
+  text-align: right;
+}
+
+@media (min-width: 640px) {
+  .priceBlock {
+    border-top: none;
+    padding-top: 0;
+    padding-left: 1rem;
+  }
+}
+
+.priceLabel {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}

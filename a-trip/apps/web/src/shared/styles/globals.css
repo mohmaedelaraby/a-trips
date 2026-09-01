@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+/*
+ * A Trip design tokens.
+ * Brand palette: primary green #07925B, accent gold #FAAC04, dark shell #0F2A20 (admin sidebar).
+ * Source: Claude Design "A Trips - Admin Portal" spec.
+ */
+@theme {
+  --color-primary: #07925b;
+  --color-primary-50: #eaf7f1;
+  --color-primary-100: #cbecdd;
+  --color-primary-200: #97d9bb;
+  --color-primary-300: #5fc596;
+  --color-primary-400: #27ad72;
+  --color-primary-500: #07925b;
+  --color-primary-600: #067a4c;
+  --color-primary-700: #05613c;
+  --color-primary-800: #04492d;
+  --color-primary-900: #02311e;
+
+  --color-accent: #faac04;
+  --color-accent-50: #fff7e6;
+  --color-accent-100: #ffebbf;
+  --color-accent-200: #ffd980;
+  --color-accent-300: #fdc63f;
+  --color-accent-400: #faac04;
+  --color-accent-500: #e09800;
+  --color-accent-600: #b87c00;
+  --color-accent-700: #8f6000;
+
+  --color-ink: #1a1a1a;
+  --color-ink-muted: #6b7280;
+  --color-line: #e6e8eb;
+  --color-surface: #ffffff;
+  --color-canvas: #f7f8f9;
+
+  /* Admin-portal dark shell, from the design spec's sidebar/login treatment. */
+  --color-shell: #0f2a20;
+  --color-shell-line: rgba(255, 255, 255, 0.12);
+  --color-shell-fg-muted: rgba(255, 255, 255, 0.66);
+
+  --color-success: #07925b;
+  --color-success-bg: #e7f7ec;
+  --color-success-fg: #12803b;
+  --color-warning: #faac04;
+  --color-warning-bg: #fef3d6;
+  --color-warning-fg: #8a5d00;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fdeaea;
+  --color-danger-fg: #b91c1c;
+  --color-info: #2563eb;
+
+  --radius-card: 0.75rem;
+  --font-sans: Manrope, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: Poppins, var(--font-sans);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04';
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Full-bleed content: no max-width cap, just responsive side padding that
+     scales with viewport so layout fills the screen at every breakpoint. */
+  .container-page {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-page {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container-page {
+      padding-inline: 4rem;
+    }
+  }
+
+  /* Hides scrollbars on horizontal chip rails without losing scrollability. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

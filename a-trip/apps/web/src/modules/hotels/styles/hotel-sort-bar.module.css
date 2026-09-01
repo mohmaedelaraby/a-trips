@@ -1,0 +1,33 @@
+.bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 0.25rem;
+}
+
+.option {
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.option:hover {
+  color: var(--color-ink);
+}
+
+.optionActive {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  outline: 1px solid var(--color-line);
+  outline-offset: -1px;
+}

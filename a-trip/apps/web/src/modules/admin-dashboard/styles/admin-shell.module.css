@@ -1,0 +1,250 @@
+.root {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-canvas);
+}
+
+/* ---- sidebar ---- */
+
+.sidebar {
+  display: none;
+  width: 220px;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-self: stretch;
+  background-color: var(--color-shell);
+  padding: 1.75rem 0.875rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex;
+  }
+}
+
+.brandWrap {
+  padding-inline: 0.75rem;
+}
+
+.brand {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.brandDot {
+  color: var(--color-accent);
+}
+
+.portal {
+  margin-top: 0.3125rem;
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.nav {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.navSection {
+  padding: 0 0.75rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.navSectionSpaced {
+  padding-top: 1.25rem;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.navLink:hover {
+  color: #ffffff;
+}
+
+.navLinkActive {
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.navLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.navDot {
+  height: 5px;
+  width: 5px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background-color: transparent;
+}
+
+.navDotActive {
+  background-color: var(--color-accent);
+}
+
+.navBadge {
+  display: flex;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-accent);
+  padding-inline: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  border-top: 1px solid var(--color-shell-line);
+  padding-top: 0.875rem;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-inline: 0.25rem;
+}
+
+.avatar {
+  display: flex;
+  height: 2.125rem;
+  width: 2.125rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.14);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.userMeta {
+  min-width: 0;
+}
+
+.userName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.userRole {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.signOut {
+  margin-top: 0.625rem;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+.signOut:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* ---- content column ---- */
+
+.content {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0%;
+  flex-direction: column;
+}
+
+.mobileBar {
+  display: flex;
+  height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow-x: auto;
+  background-color: var(--color-shell);
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobileBar {
+    display: none;
+  }
+}
+
+.mobileNav {
+  display: flex;
+  gap: 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mobileNav a {
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mobileNav a:hover {
+  color: #ffffff;
+}
+
+.main {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.loading {
+  padding: 2rem;
+}

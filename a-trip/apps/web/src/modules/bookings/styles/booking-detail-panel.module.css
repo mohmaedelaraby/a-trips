@@ -1,0 +1,88 @@
+.panel {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.reference {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.statusBlurb {
+  margin-top: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-canvas);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.statusBlurbStrong {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.rows {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rowLabel {
+  color: var(--color-ink-muted);
+}
+
+.rowValue {
+  text-align: right;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.totalRow {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-line);
+  padding-top: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cancelBtn {
+  color: var(--color-danger);
+}
+
+.cancelBtn:hover {
+  background-color: #fef2f2;
+}

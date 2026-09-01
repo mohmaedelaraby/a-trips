@@ -1,0 +1,191 @@
+.layout {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 1280px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-canvas);
+  font-size: 0.625rem;
+  font-weight: 800;
+  color: var(--color-ink-muted);
+}
+
+.avatarActive {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.avatarInvited {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-fg);
+}
+
+.name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.nameMuted {
+  color: var(--color-ink-muted);
+}
+
+.nameHint {
+  margin-top: 0.0625rem;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+}
+
+.nameHintInvite {
+  color: var(--color-warning-fg);
+  font-weight: 600;
+}
+
+.emailMuted {
+  color: var(--color-ink-muted);
+}
+
+/* ---- invite panel ---- */
+
+.invitePanel {
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  overflow: hidden;
+}
+
+.inviteHead {
+  background-color: var(--color-primary-50);
+  padding: 0.875rem 1.125rem;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.inviteBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.125rem;
+}
+
+.roleOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.roleOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roleOptionActive {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-50);
+}
+
+.radio {
+  position: relative;
+  margin-top: 0.125rem;
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--color-line);
+  background-color: var(--color-surface);
+}
+
+.radioOn {
+  border-color: var(--color-primary);
+  border-width: 5px;
+}
+
+.roleName {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.roleDescription {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.inviteFootnote {
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+}
+
+/* ---- role matrix ---- */
+
+.matrixBody {
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+
+.matrixTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.matrixList {
+  margin-top: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.matrixRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink);
+}
+
+.matrixWho {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}

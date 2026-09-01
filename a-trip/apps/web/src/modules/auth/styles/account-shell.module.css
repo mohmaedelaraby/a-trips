@@ -1,0 +1,107 @@
+.layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 220px 1fr;
+  }
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 0.25rem;
+}
+
+.avatar {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-primary-100);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-700);
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.memberSince {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.nav {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.navItemDisabled {
+  cursor: default;
+  user-select: none;
+  color: color-mix(in srgb, var(--color-ink-muted) 60%, transparent);
+}
+
+.navItemActive {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
+.navItemInactive {
+  color: var(--color-ink);
+}
+
+.navItemInactive:hover {
+  background-color: var(--color-canvas);
+}
+
+.signOut {
+  margin-top: 2rem;
+  align-self: flex-start;
+  padding-inline: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.signOut:hover {
+  color: var(--color-danger);
+}
+
+.content {
+  min-width: 0;
+}

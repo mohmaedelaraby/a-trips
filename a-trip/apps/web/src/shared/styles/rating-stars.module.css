@@ -1,0 +1,20 @@
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.star {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.starFilled {
+  fill: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.starEmpty {
+  fill: var(--color-line);
+  color: var(--color-line);
+}
