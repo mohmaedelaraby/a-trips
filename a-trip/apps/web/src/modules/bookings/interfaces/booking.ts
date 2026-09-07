@@ -31,6 +31,9 @@ export interface Booking {
   numChildren: number;
   totalPrice: number;
   status: BookingStatus;
+  /** While PENDING_PAYMENT, when the room hold lapses. Null once paid. */
+  holdExpiresAt: string | null;
+  paymentStatus: 'PENDING' | 'COMPLETED' | 'FAILED' | null;
   adminNote: string | null;
   specialRequests: string | null;
   createdAt: string;

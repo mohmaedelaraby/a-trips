@@ -12,6 +12,7 @@ import {
   Pill,
   adminUi as ui,
 } from '../../modules/admin-dashboard/components/admin-ui';
+import { AvailabilityGapsPanel } from '../../modules/admin-dashboard/components/availability-gaps-panel';
 import { Skeleton } from '../../shared/components/skeleton';
 import { cn, formatPrice } from '../../shared/lib/utils';
 import styles from './styles/admin-dashboard.module.css';
@@ -205,6 +206,10 @@ export default function AdminDashboardPage() {
               </Panel>
 
               <div className={styles.rail}>
+                {/* First in the rail: an unopened calendar makes rooms
+                    unbookable outright, which outranks a low-stock warning. */}
+                <AvailabilityGapsPanel compact />
+
                 <Panel>
                   <div className={styles.railBody}>
                     <h2 className={styles.railTitle}>Low availability</h2>

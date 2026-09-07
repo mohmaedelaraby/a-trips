@@ -53,10 +53,21 @@ export type RoomTypeStatus = (typeof RoomTypeStatus)[keyof typeof RoomTypeStatus
 
 
 export const BookingStatus = {
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
   PENDING_CONFIRMATION: 'PENDING_CONFIRMATION',
   CONFIRMED: 'CONFIRMED',
   REJECTED: 'REJECTED',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
 } as const
 
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
+
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]

@@ -7,6 +7,27 @@ export interface LowAvailabilityRow {
   stopSell: boolean;
 }
 
+/** One room type with dates not yet opened for sale inside the horizon. */
+export interface AvailabilityGapRow {
+  roomTypeId: string;
+  roomTypeName: string;
+  hotelId: string;
+  hotelName: string;
+  openDays: number;
+  missingDays: number;
+  /** First unopened date, or null when the whole horizon is open. */
+  firstGap: string | null;
+  /** Nothing at all is on sale — the hotel looks empty to every guest. */
+  neverOpened: boolean;
+}
+
+export interface AvailabilityGaps {
+  horizonDays: number;
+  totalRoomTypesWithGaps: number;
+  neverOpenedCount: number;
+  items: AvailabilityGapRow[];
+}
+
 export interface AdminDashboardStats {
   totalHotels: number;
   publishedHotels: number;

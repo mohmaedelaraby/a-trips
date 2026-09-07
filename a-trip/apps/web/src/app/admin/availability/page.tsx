@@ -18,6 +18,7 @@ import {
   Toggle,
   adminUi as ui,
 } from '../../../modules/admin-dashboard/components/admin-ui';
+import { AvailabilityGapsPanel } from '../../../modules/admin-dashboard/components/availability-gaps-panel';
 import { apiGet } from '../../../shared/lib/api-client';
 import { Skeleton } from '../../../shared/components/skeleton';
 import { addDaysIso, cn, todayIso } from '../../../shared/lib/utils';
@@ -441,6 +442,10 @@ export default function AdminAvailabilityPage() {
                   </div>
                 </div>
               </Panel>
+
+              {/* Full list here rather than the dashboard's top five: this is
+                  the page staff fix the gaps on. */}
+              <AvailabilityGapsPanel />
 
               <Panel>
                 <div className={styles.railBody}>

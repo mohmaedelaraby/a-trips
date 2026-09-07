@@ -52,6 +52,24 @@ export function useHotelDetail(idOrSlug: string, params: HotelDetailParams) {
   });
 }
 
+/**
+ * Dates the hotel cannot sell, for greying out the date picker. The window is
+ * deliberately wide and date-only so it stays cached across guest/date edits —
+ * availability does not change per party size.
+ */
+export function useHotelUnavailableDates(idOrSlug: string, from: string, to: string) {
+  return useQuery({
+    queryKey: ['hotels', 'availability', idOrSlug, from, to],
+    queryFn: () =>
+      apiGet<{ from: string; to: string; unavailableDates: string[] }>(
+        `/hotels/${idOrSlug}/availability`,
+        { from, to },
+      ),
+    enabled: Boolean(idOrSlug && from && to),
+    staleTime: 60_000,
+  });
+}
+
 export function useCities() {
   return useQuery({
     queryKey: ['hotels', 'cities'],

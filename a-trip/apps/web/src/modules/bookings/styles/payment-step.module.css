@@ -1,0 +1,235 @@
+.wrap {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .wrap {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: 2rem;
+  }
+}
+
+.main {
+  min-width: 0;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 2rem;
+  }
+}
+
+.title {
+  font-size: 1.375rem;
+  color: var(--color-ink);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 1.75rem;
+  }
+}
+
+.subtitle {
+  margin-top: 0.375rem;
+  font-size: 0.9375rem;
+  color: var(--color-ink-muted);
+}
+
+/* ---- hold countdown ---- */
+
+.timer,
+.timerUrgent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  border-radius: 0.625rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.timer {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  color: var(--color-ink-muted);
+}
+
+/* Under two minutes: warm, not alarming — nothing has gone wrong yet. */
+.timerUrgent {
+  border: 1px solid var(--color-accent-200);
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-fg);
+}
+
+.timerIcon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+/* ---- paypal ---- */
+
+.buttons {
+  margin-top: 1.25rem;
+  /* PayPal renders an iframe that needs a bounded, predictable width. */
+  max-width: 24rem;
+}
+
+.muted {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.capturing {
+  margin-top: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.notice {
+  margin-top: 1.25rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 1rem;
+}
+
+.noticeTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.noticeHint {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--color-ink-muted);
+}
+
+.noticeHint code {
+  border-radius: 0.25rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  padding: 0.0625rem 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+}
+
+/* ---- expired hold ---- */
+
+.expired {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 1.125rem;
+}
+
+.expiredIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-ink-muted);
+}
+
+.expiredTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.expiredHint {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-ink-muted);
+}
+
+.expiredBtn {
+  margin-top: 0.875rem;
+}
+
+.cancelLink {
+  display: block;
+  margin-top: 1.5rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cancelLink:hover {
+  color: var(--color-danger);
+}
+
+/* ---- summary rail ---- */
+
+.summary {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+}
+
+.summaryHeading {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-muted);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-line);
+  padding-top: 0.875rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.summaryNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4375rem;
+  margin-top: 0.875rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.summaryNoteIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--color-primary);
+}

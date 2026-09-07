@@ -4,10 +4,11 @@ import styles from '../styles/checkout-stepper.module.css';
 
 const STEPS = [
   { n: 1, label: 'Your details' },
-  { n: 2, label: 'Confirmation' },
+  { n: 2, label: 'Payment' },
+  { n: 3, label: 'Confirmation' },
 ];
 
-export function CheckoutStepper({ step }: { step: 1 | 2 }) {
+export function CheckoutStepper({ step }: { step: 1 | 2 | 3 }) {
   return (
     <header className={styles.header}>
       <div className={`container-page ${styles.row}`}>

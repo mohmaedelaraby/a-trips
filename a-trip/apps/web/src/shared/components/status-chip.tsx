@@ -33,10 +33,12 @@ export function StatusChip({ tone, withDot, className, children, ...props }: Sta
 }
 
 const BOOKING_TONE: Record<BookingStatus, VariantProps<typeof chipVariants>['tone']> = {
+  PENDING_PAYMENT: 'info',
   PENDING_CONFIRMATION: 'warning',
   CONFIRMED: 'success',
   REJECTED: 'danger',
   CANCELLED: 'neutral',
+  EXPIRED: 'neutral',
 };
 
 export function BookingStatusChip({ status }: { status: BookingStatus }) {

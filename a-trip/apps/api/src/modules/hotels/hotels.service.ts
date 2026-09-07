@@ -125,6 +125,19 @@ export class HotelsService {
     };
   }
 
+  /** Resolves a public id-or-slug to the hotel id, or 404s. */
+  async resolvePublishedId(idOrSlug: string): Promise<string> {
+    const hotel = await this.prisma.hotel.findFirst({
+      where: {
+        status: HotelStatus.PUBLISHED,
+        OR: [{ slug: idOrSlug }, ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : [])],
+      },
+      select: { id: true },
+    });
+    if (!hotel) throw new NotFoundException('Hotel not found');
+    return hotel.id;
+  }
+
   async findPublicByIdOrSlug(idOrSlug: string, query: HotelDetailQueryDto) {
     this.assertDateRange(query.checkIn, query.checkOut);
 

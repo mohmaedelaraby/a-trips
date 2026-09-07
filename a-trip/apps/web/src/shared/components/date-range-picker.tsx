@@ -43,6 +43,7 @@ export function DateRangePicker({
   label = 'Dates',
   bare = false,
   split = false,
+  unavailableDates,
 }: {
   value: DateRangeValue;
   onChange: (next: DateRangeValue) => void;
@@ -51,12 +52,29 @@ export function DateRangePicker({
   bare?: boolean;
   /** Renders check-in and check-out as two labeled halves instead of one combined summary. */
   split?: boolean;
+  /**
+   * `YYYY-MM-DD` nights the hotel cannot sell. Rendered dimmed and struck
+   * through, and not selectable — better to show why a date is off the table
+   * than to let it be picked and answer with "no rooms available".
+   */
+  unavailableDates?: string[];
 }) {
   const [open, setOpen] = React.useState(false);
   // The calendar edits a local draft so a half-picked range never reaches the
   // parent — otherwise every click would push a new URL / refetch the page.
   const [draft, setDraft] = React.useState<DateRange | undefined>(() => toRange(value));
   const today = todayIso();
+
+  const soldOutSet = React.useMemo(() => new Set(unavailableDates ?? []), [unavailableDates]);
+
+  // react-day-picker calls this per rendered day, so it must stay cheap.
+  const isSoldOut = React.useCallback(
+    (date: Date) => {
+      const iso = toIso(date);
+      return iso !== null && soldOutSet.has(iso);
+    },
+    [soldOutSet],
+  );
 
   // Re-seed the draft from the committed value each time the calendar opens.
   React.useEffect(() => {
@@ -144,9 +162,20 @@ export function DateRangePicker({
             // selected extends that range instead of starting a fresh one — so
             // the very first click would look like a finished selection.
             resetOnSelect
-            disabled={{ before: new Date(`${today}T00:00:00Z`) }}
+            // Past dates and sold-out nights are both unpickable; the modifier
+            // below is what makes the second kind look deliberate rather than
+            // simply out of range.
+            disabled={[{ before: new Date(`${today}T00:00:00Z`) }, isSoldOut]}
+            modifiers={{ soldOut: isSoldOut }}
+            modifiersClassNames={{ soldOut: styles.daySoldOut }}
             defaultMonth={toDate(value.checkIn) ?? new Date()}
           />
+          {soldOutSet.size > 0 ? (
+            <p className={styles.legend}>
+              <span className={styles.legendSwatch} aria-hidden />
+              Crossed-out dates are fully booked at this hotel.
+            </p>
+          ) : null}
           <div className={styles.footer}>
             <button
               type="button"

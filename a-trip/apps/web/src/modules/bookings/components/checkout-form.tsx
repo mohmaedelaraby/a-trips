@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { Info } from 'lucide-react';
 import { Button } from '../../../shared/components/button';
 import { Checkbox, Field, Input, Textarea } from '../../../shared/components/form-controls';
@@ -11,6 +10,7 @@ import { ApiError } from '../../../shared/lib/api-client';
 import { useSession } from '../../auth/hooks/use-auth';
 import { useCreateBooking } from '../hooks/use-bookings';
 import type { HotelDetail, RoomTypeWithAvailability } from '../../hotels/interfaces/hotel';
+import type { Booking } from '../interfaces/booking';
 import styles from '../styles/checkout-form.module.css';
 
 export function CheckoutForm({
@@ -20,6 +20,7 @@ export function CheckoutForm({
   checkOut,
   adults,
   children,
+  onBookingHeld,
 }: {
   hotel: HotelDetail;
   roomType: RoomTypeWithAvailability;
@@ -27,8 +28,9 @@ export function CheckoutForm({
   checkOut: string;
   adults: number;
   children: number;
+  /** Called once the rooms are held; the parent then shows the payment step. */
+  onBookingHeld: (booking: Booking) => void;
 }) {
-  const router = useRouter();
   const { user, isAuthenticated, hydrated } = useSession();
   const createBooking = useCreateBooking();
   const [error, setError] = React.useState<string | null>(null);
@@ -58,7 +60,9 @@ export function CheckoutForm({
         numChildren: children,
         specialRequests: specialRequests.trim() || undefined,
       });
-      router.push(`/booking/${booking.bookingReference}`);
+      // The rooms are now held for the payment window; hand off to PayPal
+      // rather than jumping straight to the confirmation page.
+      onBookingHeld(booking);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong, please try again.');
     }
@@ -91,13 +95,13 @@ export function CheckoutForm({
     <div className={styles.layout}>
       <div>
         <h1 className={styles.heading}>Almost there</h1>
-        <p className={styles.subheading}>We only need your contact details — no card required.</p>
+        <p className={styles.subheading}>Your details first, then payment.</p>
 
         <div className={styles.infoBanner}>
           <Info className={styles.infoIcon} />
           <p>
-            <strong>Your booking will be confirmed by our team within 24 hours.</strong> You&apos;ll get an
-            email as soon as the hotel confirms. Nothing is charged until then.
+            <strong>We hold your room for 15 minutes while you pay.</strong> Payment is taken by
+            PayPal on the next step, and our team confirms with the hotel within 24 hours.
           </p>
         </div>
 
@@ -141,7 +145,7 @@ export function CheckoutForm({
             <a href="#" className={styles.termsLink}>
               booking terms
             </a>{' '}
-            and understand this request is confirmed manually by ATrips.
+            and understand my booking is confirmed by ATrips after payment.
           </label>
 
           {error ? <p className={styles.errorMsg}>{error}</p> : null}
@@ -155,7 +159,7 @@ export function CheckoutForm({
             loading={createBooking.isPending}
             disabled={!availability?.bookable || !agreed}
           >
-            Submit booking request
+            Continue to payment
           </Button>
         </form>
       </div>

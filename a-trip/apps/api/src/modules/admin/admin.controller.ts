@@ -24,6 +24,13 @@ export class AdminController {
     return this.admin.dashboard();
   }
 
+  /** Room types with dates not yet opened for sale — the usual cause of a hotel
+   *  that looks sold out to guests. */
+  @Get('availability-gaps')
+  availabilityGaps() {
+    return this.admin.availabilityGaps();
+  }
+
   // ------------------------------------------------------------ staff users
 
   @Get('users')

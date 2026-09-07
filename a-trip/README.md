@@ -318,6 +318,19 @@ Compose reads these from an optional root `.env`. Local runs read
 | `S3_ENDPOINT` | `http://minio:9000` | Internal address the API writes through |
 | `S3_PUBLIC_URL` | `http://localhost:9000` | **Host-visible** base URL baked into image URLs — the browser loads photos from here, so it must not be the internal address |
 
+### Payments (PayPal)
+
+Checkout takes payment through PayPal before a booking reaches staff. Without
+these the API still boots — `/api/payments/config` reports `configured: false`
+and the checkout says so rather than failing at the click.
+
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `PAYPAL_CLIENT_ID` | — | Sandbox app client id from the [PayPal developer dashboard](https://developer.paypal.com/dashboard/applications/sandbox) |
+| `PAYPAL_CLIENT_SECRET` | — | Sandbox app secret. **Server only** — never sent to the browser |
+| `PAYPAL_ENV` | `sandbox` | `sandbox` or `live` |
+| `PAYPAL_CURRENCY` | `USD` | Must match the currency prices are quoted in |
+
 ### Web
 
 | Variable | Default | Notes |
@@ -364,16 +377,20 @@ Protected routes take an `Authorization: Bearer <jwt>` header.
 | `GET` | `/api/auth/me` |
 | `GET` / `PATCH` | `/api/users/me` |
 | `GET` | `/api/hotels` · `/api/hotels/cities` · `/api/hotels/:idOrSlug` |
+| `GET` | `/api/hotels/:idOrSlug/availability` — per-night sellability, for greying out the date picker |
 | `GET` | `/api/hotels/:idOrSlug/room-types/:roomTypeId/availability` |
-| `POST` | `/api/bookings` |
+| `POST` | `/api/bookings` — holds the rooms for 15 minutes |
 | `GET` | `/api/bookings/my` · `/api/bookings/:reference` |
 | `PATCH` | `/api/bookings/:id/cancel` |
+| `GET` | `/api/payments/config` — public client id and whether PayPal is wired up |
+| `POST` | `/api/payments/paypal/orders/:bookingId` · `/capture` |
 
 ### Admin
 
 | Method | Route |
 | --- | --- |
 | `GET` | `/api/admin/dashboard` |
+| `GET` | `/api/admin/availability-gaps` — room types with dates not yet opened for sale |
 | `GET` `POST` `PATCH` | `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/resend-invite` |
 | `GET` `POST` `PATCH` `DELETE` | `/api/admin/amenities`, `/api/admin/amenities/:id` |
 | `GET` `POST` `PATCH` | `/api/admin/hotels`, `/api/admin/hotels/:id` |
@@ -399,6 +416,35 @@ Defined in [schema.prisma](apps/api/prisma/schema.prisma):
   bulk edits and stop-sell
 - **Booking** (`BookingStatus`) — guest reservations, referenced publicly by
   booking reference
+- **Payment** (`PaymentStatus`) — one payment attempt per booking, holding the
+  gateway's order/capture ids apart from the reservation record
+
+### Booking lifecycle and inventory holds
+
+```
+PENDING_PAYMENT ──pay──▶ PENDING_CONFIRMATION ──staff──▶ CONFIRMED
+   │  (rooms held 15 min)          │                         │
+   ├─hold lapses──▶ EXPIRED        └─staff──▶ REJECTED       └─guest──▶ CANCELLED
+   └─guest cancels──▶ CANCELLED
+```
+
+Creating a booking takes `FOR UPDATE` locks on every night of the stay, checks
+availability and inserts the hold in one transaction, so two guests racing for
+the last room serialise and exactly one wins.
+
+A night's inventory is consumed by `CONFIRMED` and `PENDING_CONFIRMATION`
+bookings, and by a `PENDING_PAYMENT` booking **only while its hold is live**.
+That single rule — `CONSUMES_INVENTORY` in `availability.service.ts` — is shared
+by every query that counts rooms. It means an abandoned checkout releases its
+room the instant the hold lapses, with no sweeper in the path; the background
+sweeper only relabels lapsed rows as `EXPIRED` so guests and staff see an honest
+status.
+
+> `holdExpiresAt` is compared against `NOW() AT TIME ZONE 'UTC'`, not bare
+> `NOW()`. Prisma stores `DateTime` as `timestamp` (naive UTC) while `NOW()` is a
+> `timestamptz` rendered in the server's zone — on a non-UTC server the two
+> disagree by the offset, which makes every live hold look expired and lets two
+> guests book the same room.
 
 Migrations live in [apps/api/prisma/migrations/](apps/api/prisma/migrations/). The
 Prisma client is generated into `apps/api/src/generated/prisma` and compiled into

@@ -148,7 +148,12 @@ model Booking {
   numAdults        Int
   numChildren      Int           @default(0)
   totalPrice       Decimal       @db.Decimal(10, 2)
-  status           BookingStatus @default(PENDING_CONFIRMATION)
+  status           BookingStatus @default(PENDING_PAYMENT)
+  /// While PENDING_PAYMENT, the instant this booking stops holding inventory.
+  /// Availability counts a PENDING_PAYMENT booking only while this is in the
+  /// future, so an abandoned checkout releases its room with no sweep required.
+  holdExpiresAt    DateTime?
+  payment          Payment?
   adminNote        String?
   specialRequests  String?
   createdAt        DateTime      @default(now())
@@ -158,11 +163,44 @@ model Booking {
   @@index([hotelId])
   @@index([status])
   @@index([roomTypeId, checkInDate, checkOutDate])
+  @@index([status, holdExpiresAt])
 }
 
 enum BookingStatus {
+  /// Inventory is held, awaiting payment. Expires at holdExpiresAt.
+  PENDING_PAYMENT
   PENDING_CONFIRMATION
   CONFIRMED
   REJECTED
   CANCELLED
+  /// The payment hold lapsed before the guest paid.
+  EXPIRED
+}
+
+/// One payment attempt per booking. Kept separate from Booking so the gateway's
+/// identifiers and raw payloads never mix into the reservation record.
+model Payment {
+  id        String        @id @default(uuid())
+  bookingId String        @unique
+  booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider  String        @default("PAYPAL")
+  /// Gateway order id, unique so a replayed capture cannot create a second row.
+  providerOrderId   String?       @unique
+  providerCaptureId String?
+  amount    Decimal       @db.Decimal(10, 2)
+  currency  String        @default("USD")
+  status    PaymentStatus @default(PENDING)
+  /// Trimmed gateway response, for support and reconciliation.
+  rawResponse Json?
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }

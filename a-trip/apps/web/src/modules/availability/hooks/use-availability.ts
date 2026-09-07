@@ -26,6 +26,8 @@ export function useBulkSetAvailability(roomTypeId: string) {
       apiPost<BulkAvailabilityResult>(`/admin/room-types/${roomTypeId}/availability/bulk`, payload),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability', roomTypeId] });
+      // Opening or closing dates changes the gap warning.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'availability-gaps'] });
       toast.success(`Updated ${result.datesAffected} date${result.datesAffected === 1 ? '' : 's'}`);
     },
     onError: (error) => {
@@ -41,6 +43,8 @@ export function useSetStopSell(roomTypeId: string) {
       apiPatch<BulkAvailabilityResult>(`/admin/room-types/${roomTypeId}/availability/stop-sell`, payload),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability', roomTypeId] });
+      // Opening or closing dates changes the gap warning.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'availability-gaps'] });
       toast.success(`Updated ${result.datesAffected} date${result.datesAffected === 1 ? '' : 's'}`);
     },
     onError: (error) => {

@@ -9,7 +9,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 import { BookingStatus, RoomTypeStatus } from '../../generated/prisma/enums';
-import { AvailabilityService } from '../availability/availability.service';
+import { AvailabilityService, HOLD_MINUTES } from '../availability/availability.service';
 import { generateBookingReference } from '../../common/utils/booking-reference.util';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
 import { toNumber } from '../../common/utils/decimal.util';
@@ -20,6 +20,8 @@ const bookingInclude = {
   hotel: { include: { images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1 } } },
   roomType: true,
   user: { select: { id: true, name: true, email: true, phone: true } },
+  // Status only — gateway ids and raw payloads never reach a booking response.
+  payment: { select: { status: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingRow = Prisma.BookingGetPayload<{ include: typeof bookingInclude }>;
@@ -38,18 +40,19 @@ export class BookingsService {
   ) {}
 
   /**
-   * Creates a booking request.
+   * Opens a booking and holds the rooms while the guest pays.
    *
    * The availability check and the insert run inside one interactive
    * transaction that first takes FOR UPDATE row locks on every night of the
    * stay, so two concurrent requests for the last unit serialise and exactly
-   * one succeeds - the other sees the first booking and is rejected.
+   * one succeeds - the other sees the first hold and is rejected.
    *
-   * There is no payment step yet: the booking lands as PENDING_CONFIRMATION and
-   * already holds inventory. When a gateway is added it slots in between this
-   * call and admin confirmation (add a Payment row keyed by bookingId and a
-   * PENDING_PAYMENT status ahead of PENDING_CONFIRMATION) with no change to the
-   * availability model.
+   * The booking lands as PENDING_PAYMENT with a holdExpiresAt HOLD_MINUTES in
+   * the future. That hold consumes inventory for as long as it is live, which
+   * is what stops a second guest paying for the same last room. Abandon the
+   * checkout and the room frees itself the moment the hold lapses - see
+   * CONSUMES_INVENTORY. Payment capture then moves it to PENDING_CONFIRMATION
+   * for staff to approve.
    */
   async create(userId: string, dto: CreateBookingDto) {
     const checkIn = parseDateOnly(dto.checkInDate);
@@ -132,9 +135,11 @@ export class BookingsService {
             checkOutDate: checkOut,
             numAdults: dto.numAdults,
             numChildren,
-            // Price is snapshotted here and never recalculated from live rates.
+            // Price is snapshotted here and never recalculated from live rates,
+            // so the amount charged is exactly the amount quoted.
             totalPrice: new Prisma.Decimal(assessment.totalPrice),
-            status: BookingStatus.PENDING_CONFIRMATION,
+            status: BookingStatus.PENDING_PAYMENT,
+            holdExpiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
             specialRequests: dto.specialRequests?.trim() || null,
           },
           include: bookingInclude,
@@ -187,15 +192,17 @@ export class BookingsService {
     });
     if (!booking) throw new NotFoundException('Booking not found');
     if (booking.userId !== userId) throw new ForbiddenException('This is not your booking');
+    // PENDING_PAYMENT is included so abandoning checkout releases the hold at
+    // once rather than sitting on the rooms for the rest of the 15 minutes.
     if (
+      booking.status !== BookingStatus.PENDING_PAYMENT &&
       booking.status !== BookingStatus.PENDING_CONFIRMATION &&
       booking.status !== BookingStatus.CONFIRMED
     ) {
       throw new ConflictException('This booking can no longer be cancelled');
     }
 
-    // Cancelling frees the room implicitly - availability only counts
-    // PENDING_CONFIRMATION and CONFIRMED bookings.
+    // Cancelling frees the room implicitly - see CONSUMES_INVENTORY.
     const updated = await this.prisma.booking.update({
       where: { id: bookingId },
       data: { status: BookingStatus.CANCELLED },
@@ -326,6 +333,10 @@ export class BookingsService {
       numChildren: booking.numChildren,
       totalPrice: toNumber(booking.totalPrice),
       status: booking.status,
+      // Lets the checkout show a live countdown and stop offering to pay once
+      // the hold has gone.
+      holdExpiresAt: booking.holdExpiresAt?.toISOString() ?? null,
+      paymentStatus: booking.payment?.status ?? null,
       adminNote: booking.adminNote,
       specialRequests: booking.specialRequests,
       createdAt: booking.createdAt,

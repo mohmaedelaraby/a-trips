@@ -43,6 +43,33 @@ export interface BatchAssessment {
 
 export const MAX_RANGE_DAYS = 400;
 
+/** How long a booking holds its rooms while the guest completes payment. */
+export const HOLD_MINUTES = 15;
+
+/**
+ * Which bookings consume a night's inventory.
+ *
+ * CONFIRMED and PENDING_CONFIRMATION (paid, awaiting staff) always do. A
+ * PENDING_PAYMENT booking does too, but only while its hold is still live —
+ * that is what stops two guests paying for the same last room, and what makes
+ * an abandoned checkout release the room the moment the hold lapses, with no
+ * sweeper in the path. The sweeper only relabels rows; it never frees them.
+ *
+ * Every query that counts inventory must use this fragment. Diverging on one of
+ * them is how double-booking creeps back in.
+ *
+ * `NOW() AT TIME ZONE 'UTC'`, not bare `NOW()`. Prisma maps DateTime to
+ * `timestamp` (no zone) and writes the UTC wall-clock into it, while `NOW()`
+ * is a `timestamptz` that Postgres renders in the *server's* zone when compared
+ * against a naive timestamp. On any server not set to UTC the two disagree by
+ * the offset — which silently made every live hold look long expired and let
+ * two guests book the same last room.
+ */
+export const CONSUMES_INVENTORY = Prisma.sql`(
+  b."status" IN ('PENDING_CONFIRMATION', 'CONFIRMED')
+  OR (b."status" = 'PENDING_PAYMENT' AND b."holdExpiresAt" > (NOW() AT TIME ZONE 'UTC'))
+)`;
+
 @Injectable()
 export class AvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
@@ -54,9 +81,10 @@ export class AvailabilityService {
    *                   - COUNT(active bookings covering that night)
    *
    * Bookings are counted by overlap on [checkInDate, checkOutDate) so the
-   * check-out night is never consumed. Only PENDING_CONFIRMATION and CONFIRMED
-   * consume inventory, so rejecting or cancelling frees a room with no separate
-   * release step. Nothing is ever stored as a decrementing counter.
+   * check-out night is never consumed. Which statuses consume a night is
+   * defined once in CONSUMES_INVENTORY, so rejecting, cancelling or letting a
+   * payment hold lapse frees the room with no separate release step. Nothing is
+   * ever stored as a decrementing counter.
    */
   private async readNights(
     client: PrismaLike,
@@ -76,7 +104,7 @@ export class AvailabilityService {
         SELECT COUNT(*)::int AS count
         FROM "Booking" b
         WHERE b."roomTypeId" = ra."roomTypeId"
-          AND b."status" IN ('PENDING_CONFIRMATION', 'CONFIRMED')
+          AND ${CONSUMES_INVENTORY}
           AND b."checkInDate" <= ra."date"
           AND b."checkOutDate" > ra."date"
       ) booked ON TRUE
@@ -217,6 +245,68 @@ export class AvailabilityService {
   }
 
   /**
+   * Per-date sellability across every active room type of a hotel, so the public
+   * date picker can grey out nights it is pointless to select.
+   *
+   * A date is `available` when at least one room type has an open calendar row
+   * with no stop-sell and a free unit. Dates with no row at all are simply
+   * absent from the result and are treated as unavailable by the caller.
+   *
+   * This is a per-night view, not a stay assessment: a bookable stay still
+   * requires every one of its nights to be available, which assessRange decides.
+   */
+  async hotelNightlyAvailability(
+    hotelId: string,
+    fromStr: string,
+    toStr: string,
+  ): Promise<{ from: string; to: string; unavailableDates: string[] }> {
+    const from = parseDateOnly(fromStr);
+    const to = parseDateOnly(toStr);
+    if (to <= from) throw new BadRequestException('`to` must be after `from`');
+    if (countNights(from, to) > MAX_RANGE_DAYS) {
+      throw new BadRequestException(`Range cannot exceed ${MAX_RANGE_DAYS} days`);
+    }
+
+    const rows = await this.prisma.$queryRaw<Array<{ date: Date; sellable: boolean }>>`
+      SELECT
+        ra."date",
+        BOOL_OR(
+          NOT ra."stopSell"
+          AND (ra."totalUnits" - COALESCE(booked.count, 0)) > 0
+        ) AS "sellable"
+      FROM "RoomAvailability" ra
+      JOIN "RoomType" rt ON rt."id" = ra."roomTypeId"
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS count
+        FROM "Booking" b
+        WHERE b."roomTypeId" = ra."roomTypeId"
+          AND ${CONSUMES_INVENTORY}
+          AND b."checkInDate" <= ra."date"
+          AND b."checkOutDate" > ra."date"
+      ) booked ON TRUE
+      WHERE rt."hotelId" = ${hotelId}
+        AND rt."status" = ${RoomTypeStatus.ACTIVE}::"RoomTypeStatus"
+        AND ra."date" >= ${from}
+        AND ra."date" < ${to}
+      GROUP BY ra."date"
+    `;
+
+    const sellable = new Set(
+      rows.filter((row) => row.sellable).map((row) => toDateOnlyString(row.date)),
+    );
+
+    // Returning only the closed dates keeps the payload small: a hotel selling
+    // normally sends almost nothing, and the client defaults to "open".
+    const unavailableDates: string[] = [];
+    for (const day of eachStayNight(from, to)) {
+      const key = toDateOnlyString(day);
+      if (!sellable.has(key)) unavailableDates.push(key);
+    }
+
+    return { from: fromStr, to: toStr, unavailableDates };
+  }
+
+  /**
    * Batched assessment for search results - one aggregate query for many room
    * types instead of one round trip each. Uses the same rules as assessRange:
    * every night must have inventory, be free of stop-sell, and have a unit left.
@@ -249,7 +339,7 @@ export class AvailabilityService {
         SELECT COUNT(*)::int AS count
         FROM "Booking" b
         WHERE b."roomTypeId" = ra."roomTypeId"
-          AND b."status" IN ('PENDING_CONFIRMATION', 'CONFIRMED')
+          AND ${CONSUMES_INVENTORY}
           AND b."checkInDate" <= ra."date"
           AND b."checkOutDate" > ra."date"
       ) booked ON TRUE

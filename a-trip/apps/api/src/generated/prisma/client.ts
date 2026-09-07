@@ -74,3 +74,9 @@ export type RoomAvailability = Prisma.RoomAvailabilityModel
  * 
  */
 export type Booking = Prisma.BookingModel
+/**
+ * Model Payment
+ * One payment attempt per booking. Kept separate from Booking so the gateway's
+ * identifiers and raw payloads never mix into the reservation record.
+ */
+export type Payment = Prisma.PaymentModel

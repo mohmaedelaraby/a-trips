@@ -67,8 +67,16 @@ export class RoomTypesService {
 
   async remove(id: string) {
     await this.findOne(id);
+    // A live payment hold counts too: the guest may be on the PayPal page right
+    // now, and deleting the room out from under them would orphan the payment.
     const activeBookings = await this.prisma.booking.count({
-      where: { roomTypeId: id, status: { in: ['PENDING_CONFIRMATION', 'CONFIRMED'] } },
+      where: {
+        roomTypeId: id,
+        OR: [
+          { status: { in: ['PENDING_CONFIRMATION', 'CONFIRMED'] } },
+          { status: 'PENDING_PAYMENT', holdExpiresAt: { gt: new Date() } },
+        ],
+      },
     });
     if (activeBookings > 0) {
       // Deleting would orphan live bookings; deactivating is the safe equivalent.

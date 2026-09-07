@@ -4,17 +4,23 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPin, Wifi } from 'lucide-react';
-import { useHotelDetail } from '../../../../modules/hotels/hooks/use-hotels';
+import {
+  useHotelDetail,
+  useHotelUnavailableDates,
+} from '../../../../modules/hotels/hooks/use-hotels';
 import { RatingStars } from '../../../../shared/components/rating-stars';
 import { Skeleton } from '../../../../shared/components/skeleton';
 import { EmptyState } from '../../../../shared/components/empty-state';
-import { DateRangePicker, type DateRangeValue } from '../../../../shared/components/date-range-picker';
+import {
+  DateRangePicker,
+  type DateRangeValue,
+} from '../../../../shared/components/date-range-picker';
 import { GuestStepper, type GuestValue } from '../../../../shared/components/guest-stepper';
 import { RoomTypeTable } from '../../../../modules/hotels/components/room-type-table';
 import { Button } from '../../../../shared/components/button';
 import { StatusChip } from '../../../../shared/components/status-chip';
 import { ImageLightbox } from '../../../../shared/components/image-lightbox';
-import { formatPrice, pluralize, cn } from '../../../../shared/lib/utils';
+import { addDaysIso, formatPrice, pluralize, cn, todayIso } from '../../../../shared/lib/utils';
 import styles from '../../styles/hotel-detail.module.css';
 
 export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
@@ -33,7 +39,14 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
   const [selectedRoomTypeId, setSelectedRoomTypeId] = React.useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
 
-  const updateParams = (next: Partial<{ checkIn: string | null; checkOut: string | null; adults: number; children: number }>) => {
+  const updateParams = (
+    next: Partial<{
+      checkIn: string | null;
+      checkOut: string | null;
+      adults: number;
+      children: number;
+    }>,
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
     const merged = {
       checkIn: next.checkIn !== undefined ? next.checkIn : (checkIn ?? null),
@@ -53,13 +66,24 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
 
   const query = useHotelDetail(hotelSlug, { checkIn, checkOut, adults, children: childrenCount });
 
+  // A fixed year-long window from today, so the key stays stable while the guest
+  // edits dates and the answer is served from cache instead of refetched.
+  const calendarFrom = React.useMemo(() => todayIso(), []);
+  const calendarTo = React.useMemo(() => addDaysIso(calendarFrom, 365), [calendarFrom]);
+  const availability = useHotelUnavailableDates(hotelSlug, calendarFrom, calendarTo);
+  const unavailableDates = availability.data?.unavailableDates;
+
   const hotel = query.data;
   const hasDates = Boolean(checkIn && checkOut);
 
   const selectedRoom = React.useMemo(() => {
     if (!hotel) return undefined;
     if (selectedRoomTypeId) return hotel.roomTypes.find((r) => r.id === selectedRoomTypeId);
-    return hotel.roomTypes.find((r) => !hasDates || r.availability?.bookable);
+    // Prefer a room that is actually bookable on these dates, but fall back to
+    // the first one so the reservation card keeps its price and its date/guest
+    // pickers when nothing is available. Dropping the card would strand the
+    // guest with no way to change the very dates that emptied it.
+    return hotel.roomTypes.find((r) => !hasDates || r.availability?.bookable) ?? hotel.roomTypes[0];
   }, [hotel, selectedRoomTypeId, hasDates]);
 
   // Only the very first load blanks the page — later date/guest changes keep the
@@ -77,7 +101,10 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
   if (!hotel) {
     return (
       <div className="container-page py-16">
-        <EmptyState title="Hotel not found" description="This hotel may have been unpublished or the link is incorrect." />
+        <EmptyState
+          title="Hotel not found"
+          description="This hotel may have been unpublished or the link is incorrect."
+        />
       </div>
     );
   }
@@ -97,8 +124,17 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
       }).toString()}`
     : null;
 
+  // Nothing to sell on the chosen dates. This is an ordinary outcome of a
+  // search, not an error, so the card stays and only its pricing half changes.
+  const soldOut = hasDates && Boolean(selectedRoom) && !selectedRoom?.availability?.bookable;
+  const hasRooms = hotel.roomTypes.length > 0;
+
   const nights = selectedRoom?.availability?.nights ?? 0;
-  const nightly = hasDates ? (selectedRoom?.availability?.averageNightlyPrice ?? null) : (selectedRoom?.basePrice ?? null);
+  // Sold-out dates carry no nightly rate, so fall back to the room's base price
+  // to keep the card showing what this room normally costs.
+  const nightly = hasDates
+    ? (selectedRoom?.availability?.averageNightlyPrice ?? selectedRoom?.basePrice ?? null)
+    : (selectedRoom?.basePrice ?? null);
   const subtotal = nightly !== null && nights > 0 ? nightly * nights : nightly;
   const taxesAndFees = subtotal !== null ? Math.round(subtotal * 0.1) : null;
   const total = subtotal !== null && taxesAndFees !== null ? subtotal + taxesAndFees : subtotal;
@@ -176,12 +212,21 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>About this hotel</h2>
               {hotel.description ? (
-                <p className={cn(styles.description, !showFullDescription && styles.descriptionClamped)}>
+                <p
+                  className={cn(
+                    styles.description,
+                    !showFullDescription && styles.descriptionClamped,
+                  )}
+                >
                   {hotel.description}
                 </p>
               ) : null}
               {hotel.description && hotel.description.length > 180 ? (
-                <button type="button" onClick={() => setShowFullDescription((v) => !v)} className={styles.linkBtn}>
+                <button
+                  type="button"
+                  onClick={() => setShowFullDescription((v) => !v)}
+                  className={styles.linkBtn}
+                >
                   {showFullDescription ? 'Show less' : 'Read full description'}
                 </button>
               ) : null}
@@ -199,7 +244,11 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                   ))}
                 </div>
                 {hiddenAmenities > 0 && !showAllAmenities ? (
-                  <button type="button" onClick={() => setShowAllAmenities(true)} className={styles.linkBtn}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllAmenities(true)}
+                    className={styles.linkBtn}
+                  >
                     + {hiddenAmenities} more amenities
                   </button>
                 ) : null}
@@ -211,14 +260,20 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                 <h2 className={styles.sectionTitle}>Choose your room</h2>
                 {hasDates ? (
                   <p className={styles.roomAvailability}>
-                    Availability for {checkIn && checkOut ? `${checkIn} – ${checkOut}` : ''} · {pluralize(adults, 'adult')}
+                    Availability for {checkIn && checkOut ? `${checkIn} – ${checkOut}` : ''} ·{' '}
+                    {pluralize(adults, 'adult')}
                   </p>
                 ) : null}
               </div>
 
               <div className={styles.roomFilters}>
                 <div className={styles.roomFilterField}>
-                  <DateRangePicker value={dates} onChange={(next) => updateParams(next)} bare />
+                  <DateRangePicker
+                    value={dates}
+                    onChange={(next) => updateParams(next)}
+                    unavailableDates={unavailableDates}
+                    bare
+                  />
                 </div>
                 <div className={cn(styles.roomFilterField, styles.roomFilterFieldGuests)}>
                   <GuestStepper value={guests} onChange={(next) => updateParams(next)} bare />
@@ -251,36 +306,59 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
           </div>
 
           <aside className={styles.aside}>
+            {/* The card is the only place a guest can change dates and guests,
+                so it always renders. Availability changes what is inside it,
+                never whether it exists. */}
             <div className={styles.summaryCard}>
-              {selectedRoom ? (
+              <div className={styles.priceRow}>
+                <p className={styles.price}>
+                  {formatPrice(nightly)}
+                  <span className={styles.priceUnit}> / night</span>
+                </p>
+                {soldOut ? null : <StatusChip tone="success">Free cancellation</StatusChip>}
+              </div>
+
+              <div className={styles.datesField}>
+                <DateRangePicker
+                  value={dates}
+                  onChange={(next) => updateParams(next)}
+                  className={styles.cardPicker}
+                  unavailableDates={unavailableDates}
+                  bare
+                  split
+                />
+              </div>
+
+              <div className={styles.guestsField}>
+                <GuestStepper
+                  value={guests}
+                  onChange={(next) => updateParams(next)}
+                  className={styles.cardPicker}
+                  bare
+                />
+              </div>
+
+              {!hasRooms ? (
+                <p className={styles.noRooms}>
+                  This hotel has no rooms listed yet. Please check back soon.
+                </p>
+              ) : soldOut ? (
                 <>
-                  <div className={styles.priceRow}>
-                    <p className={styles.price}>
-                      {formatPrice(nightly)}
-                      <span className={styles.priceUnit}> / night</span>
+                  <div className={styles.unavailableNotice} role="status">
+                    <p className={styles.unavailableTitle}>No rooms available for these dates.</p>
+                    <p className={styles.unavailableHint}>
+                      Try different dates, or browse other hotels in {hotel.city}.
                     </p>
-                    <StatusChip tone="success">Free cancellation</StatusChip>
                   </div>
 
-                  <div className={styles.datesField}>
-                    <DateRangePicker
-                      value={dates}
-                      onChange={(next) => updateParams(next)}
-                      className={styles.cardPicker}
-                      bare
-                      split
-                    />
-                  </div>
-
-                  <div className={styles.guestsField}>
-                    <GuestStepper
-                      value={guests}
-                      onChange={(next) => updateParams(next)}
-                      className={styles.cardPicker}
-                      bare
-                    />
-                  </div>
-
+                  <Button variant="outline" size="lg" block asChild className={styles.reserveBtn}>
+                    <Link href={`/hotels?city=${encodeURIComponent(hotel.city)}`}>
+                      See other hotels in {hotel.city}
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <>
                   {hasDates && subtotal !== null ? (
                     <div className={styles.priceBreakdown}>
                       <div className={styles.breakdownRow}>
@@ -306,15 +384,15 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                   </div>
 
                   <Button
-                    asChild={Boolean(checkoutHref && (!hasDates || selectedRoom.availability?.bookable))}
-                    disabled={!checkoutHref || (hasDates && !selectedRoom.availability?.bookable)}
+                    asChild={Boolean(checkoutHref && hasDates)}
+                    disabled={!checkoutHref || !hasDates}
                     variant="accent"
                     size="lg"
                     block
                     className={styles.reserveBtn}
                   >
-                    {checkoutHref && (!hasDates || selectedRoom.availability?.bookable) ? (
-                      <Link href={checkoutHref}>Reserve {selectedRoom.name}</Link>
+                    {checkoutHref && hasDates ? (
+                      <Link href={checkoutHref}>Reserve {selectedRoom?.name}</Link>
                     ) : (
                       <span>Pick your dates</span>
                     )}
@@ -323,8 +401,6 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                     No payment now. Our team confirms your booking within 24 hours.
                   </p>
                 </>
-              ) : (
-                <p className={styles.noRooms}>No rooms available for these dates.</p>
               )}
             </div>
           </aside>

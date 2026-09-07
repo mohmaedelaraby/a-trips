@@ -7,15 +7,22 @@ import type { Booking } from '../interfaces/booking';
 import styles from '../styles/booking-detail-panel.module.css';
 
 const STATUS_BLURB: Record<Booking['status'], string> = {
-  PENDING_CONFIRMATION: 'Pending confirmation.',
+  PENDING_PAYMENT: 'Awaiting payment — your room is held until you pay.',
+  PENDING_CONFIRMATION: 'Paid. Pending confirmation.',
   CONFIRMED: 'Confirmed.',
   REJECTED: 'Rejected.',
   CANCELLED: 'Cancelled.',
+  EXPIRED: 'The payment hold expired and the room was released. Nothing was charged.',
 };
 
 export function BookingDetailPanel({ booking }: { booking: Booking }) {
   const cancel = useCancelBooking();
-  const canCancel = booking.status === 'PENDING_CONFIRMATION' || booking.status === 'CONFIRMED';
+  // An unpaid hold is cancellable too, so a guest can release it deliberately
+  // instead of waiting out the timer.
+  const canCancel =
+    booking.status === 'PENDING_PAYMENT' ||
+    booking.status === 'PENDING_CONFIRMATION' ||
+    booking.status === 'CONFIRMED';
 
   return (
     <div className={styles.panel}>

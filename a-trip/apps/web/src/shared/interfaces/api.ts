@@ -39,16 +39,22 @@ export const RoomTypeStatus = { ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' } as cons
 export type RoomTypeStatus = (typeof RoomTypeStatus)[keyof typeof RoomTypeStatus];
 
 export const BookingStatus = {
+  /** Rooms are held while the guest pays; expires with the hold. */
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
   PENDING_CONFIRMATION: 'PENDING_CONFIRMATION',
   CONFIRMED: 'CONFIRMED',
   REJECTED: 'REJECTED',
   CANCELLED: 'CANCELLED',
+  /** The hold lapsed before payment completed; the rooms went back on sale. */
+  EXPIRED: 'EXPIRED',
 } as const;
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
 
 export const BOOKING_STATUS_LABEL: Record<BookingStatus, string> = {
+  PENDING_PAYMENT: 'Awaiting payment',
   PENDING_CONFIRMATION: 'Awaiting confirmation',
   CONFIRMED: 'Confirmed',
   REJECTED: 'Rejected',
   CANCELLED: 'Cancelled',
+  EXPIRED: 'Payment expired',
 };
