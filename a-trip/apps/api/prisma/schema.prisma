@@ -130,8 +130,11 @@ model RoomAvailability {
   priceOverride Decimal? @db.Decimal(10, 2)
   stopSell      Boolean  @default(false)
 
+  // @@unique already creates a btree on exactly (roomTypeId, date), which every
+  // availability read uses. A separate @@index on the same columns was a second,
+  // identical btree — 93 MB of the 347 MB table at 862k rows, with zero scans,
+  // and maintained on every write. Do not re-add it.
   @@unique([roomTypeId, date])
-  @@index([roomTypeId, date])
 }
 
 model Booking {

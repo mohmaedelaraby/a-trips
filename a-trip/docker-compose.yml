@@ -120,6 +120,14 @@ services:
       S3_BUCKET: ${S3_BUCKET:-atrip-uploads}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      # Checkout takes payment through PayPal before a booking reaches staff.
+      # Left empty the API still boots: /api/payments/config reports
+      # configured:false and the checkout says so instead of failing on click.
+      # The secret is server-side only and never reaches the browser.
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_ENV: ${PAYPAL_ENV:-sandbox}
+      PAYPAL_CURRENCY: ${PAYPAL_CURRENCY:-USD}
     ports:
       - '${API_PORT:-4000}:4000'
     healthcheck:

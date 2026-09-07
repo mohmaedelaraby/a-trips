@@ -172,7 +172,14 @@ export class PaymentsService {
     const result = await this.prisma.booking.updateMany({
       where: {
         status: BookingStatus.PENDING_PAYMENT,
-        holdExpiresAt: { lt: new Date() },
+        OR: [
+          { holdExpiresAt: { lt: new Date() } },
+          // A hold with no expiry is malformed — the status column defaults to
+          // PENDING_PAYMENT, so any insert that forgets holdExpiresAt lands
+          // here. It holds no inventory (the SQL predicate needs a non-null
+          // date), so it would otherwise sit "awaiting payment" forever.
+          { holdExpiresAt: null },
+        ],
       },
       data: { status: BookingStatus.EXPIRED },
     });

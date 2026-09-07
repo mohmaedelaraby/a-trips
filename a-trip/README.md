@@ -169,6 +169,16 @@ That brings up, in order:
 **Every value has a working default, so the stack runs with no `.env` file.**
 To override anything, copy `.env.example` to `.env` first.
 
+Payments are the one thing that needs credentials. Without them the stack still
+comes up and everything except paying works — the checkout reaches the payment
+step and reports that payments are not configured. To enable PayPal sandbox,
+put your credentials in `.env` and rebuild the API:
+
+```bash
+cp .env.example .env       # then fill in PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET
+docker compose up -d --build api
+```
+
 ### Load demo data
 
 ```bash
@@ -495,3 +505,13 @@ MinIO console on 9001.
 
 **API keeps restarting** — `docker compose logs api`. It waits for the Postgres
 healthcheck and a successful `migrate` before it will start.
+
+**Checkout says payments are not configured** — `PAYPAL_CLIENT_ID` and
+`PAYPAL_CLIENT_SECRET` are empty. Set them in `.env` and rebuild the API
+(`docker compose up -d --build api`); confirm with
+`curl localhost:4000/api/payments/config`, which should report
+`"configured": true`.
+
+**Bookings stuck on "Awaiting payment"** — that is a live 15-minute hold. It
+frees its room the moment it lapses, and the sweeper relabels it `EXPIRED`
+within a minute. Nothing is charged.
