@@ -16,6 +16,11 @@
   .layoutWithDrawer {
     grid-template-columns: minmax(0, 1fr) 340px;
   }
+
+  .drawer {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
 .rowSelected td {
@@ -76,9 +81,9 @@
 
 /* ---- drawer ---- */
 
+/* Only pinned once it has its own column. Stacked under the table on smaller
+   screens it would otherwise stick beneath the shell's sticky mobile bar. */
 .drawer {
-  position: sticky;
-  top: 1rem;
   overflow: hidden;
   border-radius: var(--radius-card);
   border: 1px solid var(--color-line);

@@ -1,19 +1,51 @@
 import Link from 'next/link';
+import { comingSoonHref } from '../lib/coming-soon';
 import styles from '../styles/site-footer.module.css';
 
-const COMPANY_LINKS = [
-  { label: 'About ATrips', href: null },
-  { label: 'Contact us', href: null },
-  { label: 'Careers', href: null },
-  { label: 'Partner with us', href: null },
+/**
+ * `soon` entries have no destination of their own yet. They stay visually
+ * quieter than a live link but remain clickable, landing on /coming-soon so a
+ * visitor gets an explanation instead of a dead label.
+ */
+interface FooterLink {
+  label: string;
+  href?: string;
+}
+
+const COMPANY_LINKS: FooterLink[] = [
+  { label: 'About ATrips' },
+  { label: 'Contact us' },
+  { label: 'Careers' },
+  { label: 'Partner with us' },
 ];
 
-const SUPPORT_LINKS = [
-  { label: 'Help centre', href: null },
-  { label: 'Booking policy', href: null },
-  { label: 'Cancellation', href: null },
-  { label: 'Terms & privacy', href: null },
+const SUPPORT_LINKS: FooterLink[] = [
+  { label: 'Help centre' },
+  { label: 'Booking policy' },
+  { label: 'Cancellation' },
+  { label: 'Terms & privacy' },
 ];
+
+function FooterLinkList({ links }: { links: FooterLink[] }) {
+  return (
+    <ul className={styles.linkList}>
+      {links.map((link) => (
+        <li key={link.label}>
+          {link.href ? (
+            <Link href={link.href} className={styles.link}>
+              {link.label}
+            </Link>
+          ) : (
+            <Link href={comingSoonHref(link.label)} className={styles.linkSoon}>
+              {link.label}
+              <span className={styles.soonTag}>Soon</span>
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function SiteFooter() {
   return (
@@ -35,40 +67,12 @@ export function SiteFooter() {
 
         <div>
           <p className={styles.columnHeading}>Company</p>
-          <ul className={styles.linkList}>
-            {COMPANY_LINKS.map((link) =>
-              link.href ? (
-                <li key={link.label}>
-                  <Link href={link.href} className={styles.link}>
-                    {link.label}
-                  </Link>
-                </li>
-              ) : (
-                <li key={link.label} className={styles.linkDisabled}>
-                  {link.label}
-                </li>
-              ),
-            )}
-          </ul>
+          <FooterLinkList links={COMPANY_LINKS} />
         </div>
 
         <div>
           <p className={styles.columnHeading}>Support</p>
-          <ul className={styles.linkList}>
-            {SUPPORT_LINKS.map((link) =>
-              link.href ? (
-                <li key={link.label}>
-                  <Link href={link.href} className={styles.link}>
-                    {link.label}
-                  </Link>
-                </li>
-              ) : (
-                <li key={link.label} className={styles.linkDisabled}>
-                  {link.label}
-                </li>
-              ),
-            )}
-          </ul>
+          <FooterLinkList links={SUPPORT_LINKS} />
         </div>
 
         <div>

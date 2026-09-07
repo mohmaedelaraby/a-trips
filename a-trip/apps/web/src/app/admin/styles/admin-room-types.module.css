@@ -98,19 +98,37 @@
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
-  padding: 1.125rem;
+  padding: 1rem;
 }
 
+@media (min-width: 640px) {
+  .panelBody {
+    padding: 1.125rem;
+  }
+}
+
+/* One column on the narrowest phones: two 42px-wide number fields side by side
+   are unusable, and the labels above them truncate. */
 .grid2 {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
 }
 
 .grid3 {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* ---- stepper input ---- */

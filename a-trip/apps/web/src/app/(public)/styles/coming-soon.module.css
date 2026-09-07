@@ -1,0 +1,231 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 3rem 4rem;
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 2.75rem;
+    padding-block: 5rem 6rem;
+  }
+}
+
+/* ---- hero ---- */
+
+.hero {
+  display: flex;
+  width: 100%;
+  max-width: 42rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  border-radius: 9999px;
+  background-color: var(--color-primary-50);
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-700);
+}
+
+.badgeIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.title {
+  margin-top: 1.25rem;
+  font-size: 1.875rem;
+  line-height: 1.15;
+  color: var(--color-ink);
+  /* Long feature names must not push the page into a horizontal scroll. */
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 3rem;
+  }
+}
+
+.description {
+  margin-top: 0.875rem;
+  max-width: 34rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+}
+
+@media (min-width: 640px) {
+  .description {
+    font-size: 1.0625rem;
+  }
+}
+
+/* ---- actions ---- */
+
+.actions {
+  margin-top: 1.75rem;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .actions {
+    width: auto;
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  height: 2.875rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  padding-inline: 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.primaryAction {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.primaryAction:hover {
+  background-color: var(--color-primary-600);
+}
+
+.secondaryAction {
+  border-color: var(--color-line);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.secondaryAction:hover {
+  background-color: var(--color-canvas);
+}
+
+.note {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+}
+
+/* ---- what is live today ---- */
+
+.liveNow {
+  width: 100%;
+  max-width: 56rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.5rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .liveNow {
+    padding: 2rem;
+  }
+}
+
+.liveNowHeading {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
+.liveNowList {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .liveNowList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.liveNowItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .liveNowItem {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.625rem;
+  }
+}
+
+.liveNowIconWrap {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background-color: var(--color-primary-50);
+}
+
+.liveNowIcon {
+  height: 1.125rem;
+  width: 1.125rem;
+  color: var(--color-primary);
+}
+
+.liveNowText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.liveNowLabel {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.liveNowHint {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}

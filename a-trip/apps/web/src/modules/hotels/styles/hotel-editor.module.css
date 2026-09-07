@@ -34,7 +34,13 @@
 }
 
 .panelBody {
-  padding: 1.25rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .panelBody {
+    padding: 1.25rem;
+  }
 }
 
 .panelTitle {

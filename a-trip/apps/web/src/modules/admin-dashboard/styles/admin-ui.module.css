@@ -5,14 +5,22 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   border-bottom: 1px solid var(--color-line);
   background-color: var(--color-surface);
-  padding: 1.125rem 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .topbar {
+    gap: 1rem;
+    padding: 1.125rem 1.5rem;
+  }
 }
 
 .topbarHeading {
   min-width: 0;
+  flex: 1 1 12rem;
 }
 
 .breadcrumb {
@@ -33,10 +41,17 @@
 
 .topbarTitle {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 640px) {
+  .topbarTitle {
+    font-size: 1.25rem;
+  }
 }
 
 .topbarMeta {
@@ -47,17 +62,28 @@
   color: var(--color-ink-muted);
 }
 
+/* On a phone the actions drop to their own full-width row under the title
+   rather than being squeezed alongside it. */
 .topbarActions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .topbarActions {
+    gap: 0.75rem;
+    width: auto;
+  }
 }
 
 .search {
   height: 2.25rem;
-  width: 16rem;
-  max-width: 100%;
+  width: 100%;
+  flex: 1 1 10rem;
+  min-width: 0;
   border-radius: 0.5rem;
   border: 1px solid var(--color-line);
   background-color: var(--color-surface);
@@ -73,6 +99,13 @@
 .search:focus {
   border-color: var(--color-primary);
   outline: none;
+}
+
+@media (min-width: 640px) {
+  .search {
+    width: 16rem;
+    flex: 0 0 auto;
+  }
 }
 
 /* ---- buttons ---- */
@@ -149,7 +182,14 @@
 /* ---- page body ---- */
 
 .body {
-  padding: 1.5rem;
+  padding: 1rem;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .body {
+    padding: 1.5rem;
+  }
 }
 
 .panel {
@@ -165,7 +205,13 @@
   justify-content: space-between;
   gap: 0.75rem;
   border-bottom: 1px solid var(--color-line);
-  padding: 1rem 1.25rem;
+  padding: 0.875rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .panelHead {
+    padding: 1rem 1.25rem;
+  }
 }
 
 .panelTitle {
@@ -193,24 +239,36 @@
 }
 
 .panelBody {
-  padding: 1.25rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .panelBody {
+    padding: 1.25rem;
+  }
 }
 
 /* ---- tables ---- */
 
+/* Data tables keep all their columns on every screen and scroll sideways inside
+   this wrapper. `max-width: 100%` is what actually confines them — without it a
+   wide table grows its flex/grid parent and the whole page scrolls instead. */
 .tableWrap {
+  max-width: 100%;
   overflow-x: auto;
 }
 
 .table {
   width: 100%;
+  /* Below this the columns collapse into unreadable slivers; scroll instead. */
+  min-width: 34rem;
   border-collapse: collapse;
   font-size: 0.8125rem;
 }
 
 .table thead th {
   border-bottom: 1px solid var(--color-line);
-  padding: 0.625rem 1rem;
+  padding: 0.625rem 0.75rem;
   text-align: left;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -222,9 +280,16 @@
 
 .table tbody td {
   border-bottom: 1px solid var(--color-line);
-  padding: 0.8125rem 1rem;
+  padding: 0.8125rem 0.75rem;
   color: var(--color-ink);
   vertical-align: middle;
+}
+
+@media (min-width: 640px) {
+  .table thead th,
+  .table tbody td {
+    padding-inline: 1rem;
+  }
 }
 
 .table tbody tr:last-child td {
@@ -329,16 +394,33 @@
 
 /* ---- segmented tabs ---- */
 
+/* Status filters can be four or five wide — let them scroll rather than wrap
+   into a ragged block or force the topbar wider than the viewport. */
 .segmented {
-  display: inline-flex;
+  display: flex;
+  max-width: 100%;
   gap: 0.25rem;
+  overflow-x: auto;
   border-radius: 0.625rem;
   border: 1px solid var(--color-line);
   background-color: var(--color-canvas);
   padding: 0.25rem;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .segmented {
+    display: inline-flex;
+    overflow-x: visible;
+  }
 }
 
 .segment {
+  flex-shrink: 0;
   border-radius: 0.4375rem;
   border: none;
   background: transparent;

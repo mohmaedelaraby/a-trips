@@ -19,7 +19,13 @@
 /* ---- month header ---- */
 
 .calendarBody {
-  padding: 1.25rem;
+  padding: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .calendarBody {
+    padding: 1.25rem;
+  }
 }
 
 .calendarHead {
@@ -105,7 +111,13 @@
   margin-top: 1.25rem;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.375rem;
+  gap: 0.1875rem;
+}
+
+@media (min-width: 640px) {
+  .weekdays {
+    gap: 0.375rem;
+  }
 }
 
 .weekday {
@@ -118,31 +130,54 @@
   color: var(--color-ink-muted);
 }
 
+/* Seven columns have to fit whatever the viewport, so on a phone the cells get
+   shorter and tighter rather than the month scrolling sideways. */
 .grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.375rem;
+  gap: 0.1875rem;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    gap: 0.375rem;
+  }
 }
 
 .dayEmpty {
-  min-height: 5.25rem;
-  border-radius: 0.5rem;
+  min-height: 3.25rem;
+  border-radius: 0.375rem;
   background-color: var(--color-canvas);
   opacity: 0.5;
 }
 
 .day {
   display: flex;
-  min-height: 5.25rem;
+  min-height: 3.25rem;
+  min-width: 0;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: 0.5rem;
+  gap: 0.125rem;
+  border-radius: 0.375rem;
   border: 1px solid var(--color-line);
   background-color: var(--color-surface);
-  padding: 0.5rem;
+  padding: 0.25rem;
   text-align: left;
+  overflow: hidden;
   cursor: pointer;
   transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+@media (min-width: 640px) {
+  .dayEmpty,
+  .day {
+    min-height: 5.25rem;
+    border-radius: 0.5rem;
+  }
+
+  .day {
+    padding: 0.5rem;
+  }
 }
 
 .day:hover {
@@ -150,14 +185,28 @@
 }
 
 .dayNumber {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--color-ink);
 }
 
 .dayMeta {
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
+  line-height: 1.25;
   color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 640px) {
+  .dayNumber {
+    font-size: 0.8125rem;
+  }
+
+  .dayMeta {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
 }
 
 .dayUnits {
@@ -184,15 +233,25 @@
 }
 
 .dayStopLabel {
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   font-weight: 600;
+  line-height: 1.25;
   color: var(--color-ink-muted);
 }
 
 .dayNotSet {
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   font-weight: 700;
+  line-height: 1.25;
   color: var(--color-danger);
+}
+
+@media (min-width: 640px) {
+  .dayStopLabel,
+  .dayNotSet {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
 }
 
 .daySelected {
@@ -527,15 +586,33 @@
   margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 0.75rem;
   border-radius: var(--radius-card);
   background-color: var(--color-shell);
-  padding: 0.875rem 1.25rem;
+  padding: 0.875rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .footerEditor {
+    align-items: center;
+    gap: 1rem;
+    padding-inline: 1.25rem;
+  }
 }
 
 .footerRoom {
-  min-width: 9rem;
+  /* Full width on a phone so the room name is not truncated by the controls
+     that wrap alongside it. */
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .footerRoom {
+    flex: 0 1 auto;
+    min-width: 9rem;
+  }
 }
 
 .footerRoomName {

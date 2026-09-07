@@ -1,16 +1,31 @@
+.page {
+  padding-block: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding-block: 2rem;
+  }
+}
+
 .layout {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: 220px 1fr;
+    /* minmax(0, 1fr) keeps a wide table in the content column from stretching
+       the grid instead of scrolling inside it. */
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 1.5rem;
   }
 }
 
 .aside {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   justify-content: space-between;
 }
@@ -20,6 +35,10 @@
   align-items: center;
   gap: 0.75rem;
   padding-inline: 0.25rem;
+}
+
+.profileMeta {
+  min-width: 0;
 }
 
 .avatar {
@@ -49,28 +68,51 @@
   color: var(--color-ink-muted);
 }
 
+/* Horizontal, swipeable rail on phones and tablets; a stacked sidebar list once
+   the layout gains its 220px column at 1024px. */
 .nav {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  flex-direction: row;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    margin-top: 1.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-x: visible;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
 }
 
 .navItem {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
   border-radius: 0.5rem;
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
+  white-space: nowrap;
   text-decoration: none;
 }
 
-.navItemDisabled {
-  cursor: default;
-  user-select: none;
-  color: color-mix(in srgb, var(--color-ink-muted) 60%, transparent);
+@media (min-width: 1024px) {
+  .navItem {
+    gap: 0.625rem;
+  }
+}
+
+.navLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navItemActive {
@@ -86,8 +128,31 @@
   background-color: var(--color-canvas);
 }
 
+/* Not built yet, but still reachable — the link explains itself on /coming-soon.
+   Declared after the inactive rules so it wins at equal specificity. */
+.navItemSoon {
+  color: var(--color-ink-muted);
+  opacity: 0.75;
+}
+
+.navItemSoon:hover {
+  background-color: var(--color-canvas);
+  opacity: 1;
+}
+
+.soonTag {
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  padding: 0.0625rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
+}
+
 .signOut {
-  margin-top: 2rem;
+  margin-top: 1.25rem;
   align-self: flex-start;
   padding-inline: 0.75rem;
   font-size: 0.875rem;
@@ -96,6 +161,12 @@
   background: transparent;
   border: none;
   cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .signOut {
+    margin-top: 2rem;
+  }
 }
 
 .signOut:hover {

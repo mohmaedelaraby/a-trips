@@ -1,9 +1,10 @@
 'use client';
 
+import * as React from 'react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import { cn, initials } from '../../../shared/lib/utils';
 import { useLogout, useSession } from '../../auth/hooks/use-auth';
 import { useRequireAuth } from '../../../shared/hooks/use-require-auth';
@@ -61,6 +62,60 @@ function NavLink({
   );
 }
 
+/**
+ * Brand block, grouped nav and user footer. Shared verbatim between the fixed
+ * desktop sidebar and the mobile drawer so the two can never drift apart.
+ */
+function SidebarBody({
+  pathname,
+  pendingCount,
+  userName,
+  userRole,
+  onSignOut,
+}: {
+  pathname: string;
+  pendingCount?: number;
+  userName?: string;
+  userRole: string;
+  onSignOut: () => void;
+}) {
+  return (
+    <>
+      <div className={styles.brandWrap}>
+        <Link href="/admin" className={styles.brand}>
+          ATrips<span className={styles.brandDot}>.</span>
+        </Link>
+        <span className={styles.portal}>Admin portal</span>
+      </div>
+
+      <nav className={styles.nav}>
+        <p className={styles.navSection}>Manage</p>
+        {MANAGE.map((item) => (
+          <NavLink key={item.href} item={item} pathname={pathname} pendingCount={pendingCount} />
+        ))}
+
+        <p className={cn(styles.navSection, styles.navSectionSpaced)}>Settings</p>
+        {SETTINGS.map((item) => (
+          <NavLink key={item.href} item={item} pathname={pathname} />
+        ))}
+      </nav>
+
+      <div className={styles.sidebarFooter}>
+        <div className={styles.userRow}>
+          <span className={styles.avatar}>{userName ? initials(userName) : ''}</span>
+          <div className={styles.userMeta}>
+            <p className={styles.userName}>{userName}</p>
+            <p className={styles.userRole}>{userRole}</p>
+          </div>
+        </div>
+        <button type="button" onClick={onSignOut} className={styles.signOut}>
+          <LogOut className="h-4 w-4" /> Sign out
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function AdminShell({ children }: { children: ReactNode }) {
   const { ready } = useRequireAuth({ adminOnly: true });
   const { user } = useSession();
@@ -68,6 +123,27 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const dashboard = useAdminDashboard();
   const pendingCount = dashboard.data?.pendingBookings;
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+
+  // Navigating from inside the drawer does not unmount the shell, so the panel
+  // has to be closed explicitly whenever the route changes.
+  React.useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  React.useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDrawerOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [drawerOpen]);
 
   if (!ready) {
     return (
@@ -77,57 +153,63 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
+  const sidebar = (
+    <SidebarBody
+      pathname={pathname}
+      pendingCount={pendingCount}
+      userName={user?.name}
+      userRole={user?.adminRole ? ADMIN_ROLE_LABEL[user.adminRole] : 'Admin'}
+      onSignOut={() => logout('/admin/login')}
+    />
+  );
+
   return (
     <div className={styles.root}>
-      <aside className={styles.sidebar}>
-        <div className={styles.brandWrap}>
-          <Link href="/admin" className={styles.brand}>
-            ATrips<span className={styles.brandDot}>.</span>
-          </Link>
-          <span className={styles.portal}>Admin portal</span>
-        </div>
-
-        <nav className={styles.nav}>
-          <p className={styles.navSection}>Manage</p>
-          {MANAGE.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} pendingCount={pendingCount} />
-          ))}
-
-          <p className={cn(styles.navSection, styles.navSectionSpaced)}>Settings</p>
-          {SETTINGS.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
-          ))}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <div className={styles.userRow}>
-            <span className={styles.avatar}>{user ? initials(user.name) : ''}</span>
-            <div className={styles.userMeta}>
-              <p className={styles.userName}>{user?.name}</p>
-              <p className={styles.userRole}>
-                {user?.adminRole ? ADMIN_ROLE_LABEL[user.adminRole] : 'Admin'}
-              </p>
-            </div>
-          </div>
-          <button type="button" onClick={() => logout('/admin/login')} className={styles.signOut}>
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
-        </div>
-      </aside>
+      <aside className={styles.sidebar}>{sidebar}</aside>
 
       <div className={styles.content}>
         <div className={styles.mobileBar}>
-          <span className={styles.brand}>
+          <button
+            type="button"
+            className={styles.drawerTrigger}
+            aria-label="Open admin menu"
+            aria-expanded={drawerOpen}
+            aria-controls="admin-mobile-drawer"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+            {pendingCount ? <span className={styles.triggerBadge} aria-hidden /> : null}
+          </button>
+
+          <Link href="/admin" className={styles.brand}>
             ATrips<span className={styles.brandDot}>.</span>
-          </span>
-          <nav className={styles.mobileNav}>
-            {[...MANAGE, ...SETTINGS].map((item) => (
-              <Link key={item.href} href={item.href}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          </Link>
+
+          <span className={styles.mobileUser}>{user ? initials(user.name) : ''}</span>
         </div>
+
+        {drawerOpen ? (
+          <div className={styles.drawerRoot}>
+            <button
+              type="button"
+              aria-label="Close admin menu"
+              className={styles.drawerOverlay}
+              onClick={() => setDrawerOpen(false)}
+            />
+            <aside id="admin-mobile-drawer" className={styles.drawer}>
+              <button
+                type="button"
+                className={styles.drawerClose}
+                aria-label="Close admin menu"
+                onClick={() => setDrawerOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+              {sidebar}
+            </aside>
+          </div>
+        ) : null}
+
         <main className={styles.main}>{children}</main>
       </div>
     </div>

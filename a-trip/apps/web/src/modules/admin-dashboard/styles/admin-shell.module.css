@@ -205,15 +205,19 @@
   flex-direction: column;
 }
 
+/* Below 768px the sidebar is replaced by this bar plus a slide-in drawer. The
+   old inline strip of every nav item scrolled horizontally and had no room for
+   the active state, the pending badge, or sign-out. */
 .mobileBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   height: 3.5rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  overflow-x: auto;
+  gap: 0.75rem;
   background-color: var(--color-shell);
-  padding-inline: 1rem;
+  padding-inline: 0.75rem;
 }
 
 @media (min-width: 768px) {
@@ -222,21 +226,104 @@
   }
 }
 
-.mobileNav {
+.drawerTrigger {
+  position: relative;
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.drawerTrigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mirrors the sidebar's pending-bookings badge, so a count waiting behind the
+   closed drawer is still visible. */
+.triggerBadge {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  height: 0.4375rem;
+  width: 0.4375rem;
+  border-radius: 9999px;
+  background-color: var(--color-accent);
+}
+
+.mobileUser {
   display: flex;
-  gap: 0.875rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.14);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #ffffff;
 }
 
-.mobileNav a {
-  color: inherit;
-  text-decoration: none;
-  white-space: nowrap;
+/* ---- mobile drawer ---- */
+
+.drawerRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
 }
 
-.mobileNav a:hover {
+@media (min-width: 768px) {
+  .drawerRoot {
+    display: none;
+  }
+}
+
+.drawerOverlay {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background-color: rgba(6, 20, 15, 0.55);
+  cursor: default;
+}
+
+.drawer {
+  position: relative;
+  display: flex;
+  width: 17rem;
+  max-width: 85vw;
+  flex-direction: column;
+  overflow-y: auto;
+  background-color: var(--color-shell);
+  padding: 1.75rem 0.875rem 1rem;
+}
+
+.drawerClose {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  background-color: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
