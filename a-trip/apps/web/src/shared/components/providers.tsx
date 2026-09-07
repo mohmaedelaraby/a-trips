@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useHydrateSession } from '../../modules/auth/hooks/use-auth';
-import { FOOTER_LINKS_QUERY_KEY } from '../hooks/use-footer-links';
-import type { FooterLinksResponse } from '../interfaces/footer-links';
+import { SITE_CONTENT_QUERY_KEY } from '../hooks/use-site-content';
+import type { SiteContent } from '../interfaces/site-content';
 import { Toaster } from './toaster';
 
 function SessionBoundary({ children }: { children: React.ReactNode }) {
@@ -14,11 +14,11 @@ function SessionBoundary({ children }: { children: React.ReactNode }) {
 
 export function Providers({
   children,
-  footerLinks,
+  siteContent,
 }: {
   children: React.ReactNode;
-  /** Prefetched on the server so the footer renders without a client round trip. */
-  footerLinks?: FooterLinksResponse;
+  /** Prefetched on the server so nav and copy render without a client round trip. */
+  siteContent?: SiteContent;
 }) {
   const [queryClient] = React.useState(() => {
     const client = new QueryClient({
@@ -28,8 +28,8 @@ export function Providers({
     });
     // Seeding the cache rather than passing props down means useFooterLinks()
     // works identically whether or not the server managed to prefetch.
-    if (footerLinks?.groups.length) {
-      client.setQueryData(FOOTER_LINKS_QUERY_KEY, footerLinks);
+    if (siteContent && (siteContent.groups.length || Object.keys(siteContent.settings ?? {}).length)) {
+      client.setQueryData(SITE_CONTENT_QUERY_KEY, siteContent);
     }
     return client;
   });

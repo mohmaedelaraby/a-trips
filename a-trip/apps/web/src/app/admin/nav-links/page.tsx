@@ -3,17 +3,17 @@
 import * as React from 'react';
 import { ArrowDown, ArrowUp, ExternalLink, Trash2 } from 'lucide-react';
 import {
-  useAdminFooterLinks,
-  useCreateFooterLink,
-  useDeleteFooterLink,
-  useReorderFooterLinks,
-  useUpdateFooterLink,
-} from '../../../modules/admin-dashboard/hooks/use-footer-links';
+  useAdminNavLinks,
+  useCreateNavLink,
+  useDeleteNavLink,
+  useReorderNavLinks,
+  useUpdateNavLink,
+} from '../../../modules/admin-dashboard/hooks/use-site-content';
 import {
-  FOOTER_GROUP_LABEL,
-  type AdminFooterLink,
-  type FooterLinkGroup,
-} from '../../../shared/interfaces/footer-links';
+  NAV_GROUP_LABEL,
+  type AdminNavLink,
+  type NavLinkGroup,
+} from '../../../shared/interfaces/site-content';
 import {
   AdminTopbar,
   Panel,
@@ -24,9 +24,9 @@ import {
 } from '../../../modules/admin-dashboard/components/admin-ui';
 import { Skeleton } from '../../../shared/components/skeleton';
 import { cn } from '../../../shared/lib/utils';
-import styles from '../styles/admin-footer-links.module.css';
+import styles from '../styles/admin-nav-links.module.css';
 
-const GROUPS: FooterLinkGroup[] = ['COMPANY', 'SUPPORT'];
+const GROUPS: NavLinkGroup[] = ['HEADER', 'FOOTER_COMPANY', 'FOOTER_SUPPORT'];
 
 /** Mirrors the server rule, so a bad value is caught before the round trip. */
 function hrefError(href: string): string | null {
@@ -43,13 +43,13 @@ function LinkRow({
   total,
   onMove,
 }: {
-  link: AdminFooterLink;
+  link: AdminNavLink;
   index: number;
   total: number;
   onMove: (from: number, to: number) => void;
 }) {
-  const update = useUpdateFooterLink();
-  const remove = useDeleteFooterLink();
+  const update = useUpdateNavLink();
+  const remove = useDeleteNavLink();
 
   const [value, setValue] = React.useState(link.value);
   const [href, setHref] = React.useState(link.href ?? '');
@@ -163,8 +163,8 @@ function LinkRow({
   );
 }
 
-function AddLinkForm({ group }: { group: FooterLinkGroup }) {
-  const create = useCreateFooterLink();
+function AddLinkForm({ group }: { group: NavLinkGroup }) {
+  const create = useCreateNavLink();
   const [value, setValue] = React.useState('');
   const [href, setHref] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
@@ -194,7 +194,7 @@ function AddLinkForm({ group }: { group: FooterLinkGroup }) {
         maxLength={60}
         placeholder="Text on screen"
         onChange={(e) => setValue(e.target.value)}
-        aria-label={`New ${FOOTER_GROUP_LABEL[group]} link text`}
+        aria-label={`New ${NAV_GROUP_LABEL[group]} link text`}
       />
       <input
         className={ui.input}
@@ -202,7 +202,7 @@ function AddLinkForm({ group }: { group: FooterLinkGroup }) {
         maxLength={300}
         placeholder="Links to — leave blank for “coming soon”"
         onChange={(e) => setHref(e.target.value)}
-        aria-label={`New ${FOOTER_GROUP_LABEL[group]} link destination`}
+        aria-label={`New ${NAV_GROUP_LABEL[group]} link destination`}
       />
       <button
         type="submit"
@@ -216,15 +216,15 @@ function AddLinkForm({ group }: { group: FooterLinkGroup }) {
   );
 }
 
-export default function AdminFooterLinksPage() {
-  const query = useAdminFooterLinks();
-  const reorder = useReorderFooterLinks();
+export default function AdminNavLinksPage() {
+  const query = useAdminNavLinks();
+  const reorder = useReorderNavLinks();
   const links = query.data ?? [];
 
-  const byGroup = (group: FooterLinkGroup) =>
+  const byGroup = (group: NavLinkGroup) =>
     links.filter((l) => l.group === group).sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const move = (group: FooterLinkGroup) => (from: number, to: number) => {
+  const move = (group: NavLinkGroup) => (from: number, to: number) => {
     const ids = byGroup(group).map((l) => l.id);
     if (to < 0 || to >= ids.length) return;
     const [moved] = ids.splice(from, 1);
@@ -235,15 +235,16 @@ export default function AdminFooterLinksPage() {
   return (
     <>
       <AdminTopbar
-        title="Footer links"
+        title="Navigation links"
         meta={`${links.length} link${links.length === 1 ? '' : 's'}`}
       />
 
       <div className={ui.body}>
         <p className={styles.intro}>
-          These are the two link columns in the site footer. <strong>Text on screen</strong> is what
-          a visitor reads; <strong>Links to</strong> is where the click goes. Leave the destination
-          blank and the link points at the “coming soon” page instead of going nowhere.
+          Every link in the header bar and both footer columns. <strong>Text on
+          screen</strong> is what a visitor reads; <strong>Links to</strong> is where the click
+          goes. Leave the destination blank and the link points at the “coming soon” page
+          instead of going nowhere.
         </p>
 
         <div className={styles.columns}>
@@ -252,7 +253,7 @@ export default function AdminFooterLinksPage() {
             return (
               <Panel key={group}>
                 <PanelHead
-                  title={FOOTER_GROUP_LABEL[group]}
+                  title={NAV_GROUP_LABEL[group]}
                   hint={`${rows.length} link${rows.length === 1 ? '' : 's'} · shown in this order`}
                 />
                 <div className={styles.panelBody}>

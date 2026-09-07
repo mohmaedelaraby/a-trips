@@ -113,3 +113,33 @@ export function useRemoveHotelImage(hotelId: string) {
     },
   });
 }
+
+/**
+ * Retires a hotel. The API deletes it outright only when nothing references it;
+ * a hotel with bookings is archived instead, and the response says which
+ * happened so the toast can tell the truth.
+ */
+export function useRemoveHotel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiDelete<{ id: string; deleted: boolean; archived: boolean; bookings: number }>(
+        `/admin/hotels/${id}`,
+      ),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
+      queryClient.invalidateQueries({ queryKey: ['hotels'] });
+      if (result.archived) {
+        toast.success(
+          'Hotel archived',
+          `It has ${result.bookings} booking${result.bookings === 1 ? '' : 's'}, so it was hidden from the site rather than deleted.`,
+        );
+      } else {
+        toast.success('Hotel deleted');
+      }
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Could not remove the hotel');
+    },
+  });
+}

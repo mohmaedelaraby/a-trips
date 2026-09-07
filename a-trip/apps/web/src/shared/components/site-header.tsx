@@ -7,32 +7,23 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LogOut, Menu, User as UserIcon, X } from 'lucide-react';
 import { useSession, useLogout } from '../../modules/auth/hooks/use-auth';
 import { comingSoonHref } from '../lib/coming-soon';
+import { useNavLinks, useSetting } from '../hooks/use-site-content';
+import type { NavLink as NavLinkModel } from '../interfaces/site-content';
 import { cn, initials } from '../lib/utils';
 import { Logo } from './logo';
 import styles from '../styles/site-header.module.css';
 
 /**
- * `soon` entries have no page of their own yet, so they point at /coming-soon.
- * They stay dimmed to signal that, but are clickable — a dead label reads as a
- * bug, an explained one reads as a roadmap.
+ * A link with no href is not built yet, so it points at /coming-soon. It stays
+ * dimmed to signal that, but is clickable — a dead label reads as a bug, an
+ * explained one reads as a roadmap.
  */
-interface NavLinkItem {
-  label: string;
-  href: string;
-  soon?: boolean;
+function hrefFor(link: NavLinkModel) {
+  return link.href ?? comingSoonHref(link.value);
 }
 
-const NAV_LINKS: NavLinkItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Hotels', href: '/hotels' },
-  { label: 'About', href: comingSoonHref('About'), soon: true },
-  { label: 'Contact', href: comingSoonHref('Contact'), soon: true },
-  { label: 'Tours', href: comingSoonHref('Tours'), soon: true },
-  { label: 'Flights', href: comingSoonHref('Flights'), soon: true },
-];
-
-function isActive(link: NavLinkItem, pathname: string) {
-  if (link.soon) return false;
+function isActive(link: NavLinkModel, pathname: string) {
+  if (!link.href) return false;
   return link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
 }
 
@@ -41,6 +32,8 @@ export function SiteHeader() {
   const logout = useLogout();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const { links: navLinks } = useNavLinks('HEADER');
+  const currencyLabel = useSetting('site.currencyLabel', 'USD $');
 
   // A tap on a nav item navigates without unmounting the header, so the panel
   // has to be closed explicitly when the route changes.
@@ -81,24 +74,24 @@ export function SiteHeader() {
           <Logo inverted />
 
           <nav className={styles.nav}>
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
-                key={link.label}
-                href={link.href}
+                key={link.id}
+                href={hrefFor(link)}
                 className={cn(
                   styles.navLink,
-                  link.soon && styles.navLinkSoon,
+                  !link.href && styles.navLinkSoon,
                   isActive(link, pathname) && styles.navLinkActive,
                 )}
               >
-                {link.label}
+                {link.value}
               </Link>
             ))}
           </nav>
         </div>
 
         <div className={styles.actions}>
-          <span className={styles.currency}>USD $</span>
+          <span className={styles.currency}>{currencyLabel}</span>
 
           {isAuthenticated && user ? (
             <DropdownMenu.Root>
@@ -157,17 +150,17 @@ export function SiteHeader() {
             onClick={() => setMenuOpen(false)}
           />
           <nav id="site-mobile-menu" className={styles.mobileMenu}>
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
-                key={link.label}
-                href={link.href}
+                key={link.id}
+                href={hrefFor(link)}
                 className={cn(
                   styles.mobileLink,
                   isActive(link, pathname) && styles.mobileLinkActive,
                 )}
               >
-                {link.label}
-                {link.soon ? <span className={styles.mobileSoonTag}>Soon</span> : null}
+                {link.value}
+                {!link.href ? <span className={styles.mobileSoonTag}>Soon</span> : null}
               </Link>
             ))}
 

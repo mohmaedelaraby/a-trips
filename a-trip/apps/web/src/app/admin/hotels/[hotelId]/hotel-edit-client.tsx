@@ -42,6 +42,7 @@ export function HotelEditClient({ hotelId }: { hotelId: string }) {
       availabilityEndsOn={null}
       initialValues={{
         name: hotel.name,
+        slug: hotel.slug,
         city: hotel.city,
         country: hotel.country,
         address: hotel.address,

@@ -128,6 +128,8 @@ services:
       PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
       PAYPAL_ENV: ${PAYPAL_ENV:-sandbox}
       PAYPAL_CURRENCY: ${PAYPAL_CURRENCY:-USD}
+      # Tax rate used to split a tax-inclusive total for display.
+      PRICING_TAX_RATE: ${PRICING_TAX_RATE:-0.1}
     ports:
       - '${API_PORT:-4000}:4000'
     healthcheck:

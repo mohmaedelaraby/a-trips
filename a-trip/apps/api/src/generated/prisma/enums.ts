@@ -36,17 +36,19 @@ export const UserStatus = {
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 
-export const FooterLinkGroup = {
-  COMPANY: 'COMPANY',
-  SUPPORT: 'SUPPORT'
+export const NavLinkGroup = {
+  HEADER: 'HEADER',
+  FOOTER_COMPANY: 'FOOTER_COMPANY',
+  FOOTER_SUPPORT: 'FOOTER_SUPPORT'
 } as const
 
-export type FooterLinkGroup = (typeof FooterLinkGroup)[keyof typeof FooterLinkGroup]
+export type NavLinkGroup = (typeof NavLinkGroup)[keyof typeof NavLinkGroup]
 
 
 export const HotelStatus = {
   DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED'
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
 } as const
 
 export type HotelStatus = (typeof HotelStatus)[keyof typeof HotelStatus]

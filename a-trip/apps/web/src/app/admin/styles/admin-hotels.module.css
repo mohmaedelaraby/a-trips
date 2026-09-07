@@ -66,3 +66,13 @@
 .starEmpty {
   color: var(--color-line);
 }
+
+/* Destructive, so it reads apart from the navigational actions beside it. */
+.removeAction {
+  color: var(--color-danger);
+}
+
+.removeAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

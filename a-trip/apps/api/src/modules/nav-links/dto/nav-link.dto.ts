@@ -8,11 +8,11 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { FooterLinkGroup } from '../../../generated/prisma/enums';
+import { NavLinkGroup } from '../../../generated/prisma/enums';
 
-export class CreateFooterLinkDto {
-  @IsEnum(FooterLinkGroup)
-  group: FooterLinkGroup;
+export class CreateNavLinkDto {
+  @IsEnum(NavLinkGroup)
+  group: NavLinkGroup;
 
   /** The text a visitor reads. */
   @IsString()
@@ -44,10 +44,10 @@ export class CreateFooterLinkDto {
 }
 
 /** Every field optional: the admin UI patches one thing at a time. */
-export class UpdateFooterLinkDto {
+export class UpdateNavLinkDto {
   @IsOptional()
-  @IsEnum(FooterLinkGroup)
-  group?: FooterLinkGroup;
+  @IsEnum(NavLinkGroup)
+  group?: NavLinkGroup;
 
   @IsOptional()
   @IsString()
@@ -74,10 +74,10 @@ export class UpdateFooterLinkDto {
   isActive?: boolean;
 }
 
-export class ReorderFooterLinksDto {
+export class ReorderNavLinksDto {
   /** Link ids in their new display order, within one group. */
-  @IsEnum(FooterLinkGroup)
-  group: FooterLinkGroup;
+  @IsEnum(NavLinkGroup)
+  group: NavLinkGroup;
 
   @IsString({ each: true })
   ids: string[];

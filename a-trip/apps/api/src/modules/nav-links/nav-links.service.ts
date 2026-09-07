@@ -1,15 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { FooterLinkGroup } from '../../generated/prisma/enums';
+import { NavLinkGroup } from '../../generated/prisma/enums';
 import type {
-  CreateFooterLinkDto,
-  ReorderFooterLinksDto,
-  UpdateFooterLinkDto,
-} from './dto/footer-link.dto';
+  CreateNavLinkDto,
+  ReorderNavLinksDto,
+  UpdateNavLinkDto,
+} from './dto/nav-link.dto';
 
-type FooterLinkRow = {
+type NavLinkRow = {
   id: string;
-  group: FooterLinkGroup;
+  group: NavLinkGroup;
   value: string;
   href: string | null;
   openInNewTab: boolean;
@@ -20,7 +20,7 @@ type FooterLinkRow = {
 const ORDER = [{ sortOrder: 'asc' }, { value: 'asc' }] as const;
 
 @Injectable()
-export class FooterLinksService {
+export class NavLinksService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -30,8 +30,8 @@ export class FooterLinksService {
    * re-sorting or bucketing, and so adding a group later does not require a
    * matching change in the web app.
    */
-  async publicFooter() {
-    const rows = await this.prisma.footerLink.findMany({
+  async publicNav() {
+    const rows = await this.prisma.navLink.findMany({
       where: { isActive: true },
       orderBy: [...ORDER],
       select: {
@@ -43,14 +43,15 @@ export class FooterLinksService {
       },
     });
 
-    const groups: Record<FooterLinkGroup, typeof rows> = {
-      COMPANY: [],
-      SUPPORT: [],
+    const groups: Record<NavLinkGroup, typeof rows> = {
+      HEADER: [],
+      FOOTER_COMPANY: [],
+      FOOTER_SUPPORT: [],
     };
     for (const row of rows) groups[row.group].push(row);
 
     return {
-      groups: (Object.keys(groups) as FooterLinkGroup[]).map((group) => ({
+      groups: (Object.keys(groups) as NavLinkGroup[]).map((group) => ({
         group,
         links: groups[group].map(({ group: _g, ...link }) => link),
       })),
@@ -61,11 +62,11 @@ export class FooterLinksService {
 
   /** Admin list includes inactive rows; the public feed does not. */
   list() {
-    return this.prisma.footerLink.findMany({ orderBy: [{ group: 'asc' }, ...ORDER] });
+    return this.prisma.navLink.findMany({ orderBy: [{ group: 'asc' }, ...ORDER] });
   }
 
-  async create(dto: CreateFooterLinkDto) {
-    return this.prisma.footerLink.create({
+  async create(dto: CreateNavLinkDto) {
+    return this.prisma.navLink.create({
       data: {
         group: dto.group,
         value: dto.value.trim(),
@@ -79,9 +80,9 @@ export class FooterLinksService {
     });
   }
 
-  async update(id: string, dto: UpdateFooterLinkDto) {
+  async update(id: string, dto: UpdateNavLinkDto) {
     await this.assertExists(id);
-    return this.prisma.footerLink.update({
+    return this.prisma.navLink.update({
       where: { id },
       data: {
         ...(dto.group !== undefined ? { group: dto.group } : {}),
@@ -96,13 +97,13 @@ export class FooterLinksService {
 
   async remove(id: string) {
     await this.assertExists(id);
-    await this.prisma.footerLink.delete({ where: { id } });
+    await this.prisma.navLink.delete({ where: { id } });
     return { id, deleted: true };
   }
 
   /** Writes the new order in one transaction so the footer never renders half-reordered. */
-  async reorder(dto: ReorderFooterLinksDto) {
-    const rows = await this.prisma.footerLink.findMany({
+  async reorder(dto: ReorderNavLinksDto) {
+    const rows = await this.prisma.navLink.findMany({
       where: { id: { in: dto.ids } },
       select: { id: true, group: true },
     });
@@ -114,7 +115,7 @@ export class FooterLinksService {
 
     await this.prisma.$transaction(
       dto.ids.map((id, index) =>
-        this.prisma.footerLink.update({ where: { id }, data: { sortOrder: index } }),
+        this.prisma.navLink.update({ where: { id }, data: { sortOrder: index } }),
       ),
     );
     return this.list();
@@ -122,8 +123,8 @@ export class FooterLinksService {
 
   // --------------------------------------------------------------- helpers
 
-  private async nextSortOrder(group: FooterLinkGroup): Promise<number> {
-    const last = await this.prisma.footerLink.findFirst({
+  private async nextSortOrder(group: NavLinkGroup): Promise<number> {
+    const last = await this.prisma.navLink.findFirst({
       where: { group },
       orderBy: { sortOrder: 'desc' },
       select: { sortOrder: true },
@@ -150,8 +151,8 @@ export class FooterLinksService {
     );
   }
 
-  private async assertExists(id: string): Promise<FooterLinkRow> {
-    const row = await this.prisma.footerLink.findUnique({ where: { id } });
+  private async assertExists(id: string): Promise<NavLinkRow> {
+    const row = await this.prisma.navLink.findUnique({ where: { id } });
     if (!row) throw new NotFoundException('Footer link not found');
     return row;
   }

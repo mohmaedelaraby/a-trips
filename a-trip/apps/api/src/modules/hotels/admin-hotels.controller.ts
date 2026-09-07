@@ -57,6 +57,15 @@ export class AdminHotelsController {
     return this.hotels.update(id, dto);
   }
 
+  /**
+   * Removes a hotel outright when nothing references it, and archives it when
+   * bookings do — the response says which happened.
+   */
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.hotels.remove(id);
+  }
+
   @Post(':id/images')
   addImages(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AddHotelImagesDto) {
     return this.hotels.addImages(id, dto);

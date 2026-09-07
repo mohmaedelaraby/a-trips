@@ -53,8 +53,9 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Amenity: 'Amenity',
-  FooterLink: 'FooterLink',
+  NavLink: 'NavLink',
   Hotel: 'Hotel',
+  SiteSetting: 'SiteSetting',
   HotelImage: 'HotelImage',
   RoomType: 'RoomType',
   RoomAvailability: 'RoomAvailability',
@@ -108,7 +109,7 @@ export const AmenityScalarFieldEnum = {
 export type AmenityScalarFieldEnum = (typeof AmenityScalarFieldEnum)[keyof typeof AmenityScalarFieldEnum]
 
 
-export const FooterLinkScalarFieldEnum = {
+export const NavLinkScalarFieldEnum = {
   id: 'id',
   group: 'group',
   value: 'value',
@@ -120,12 +121,13 @@ export const FooterLinkScalarFieldEnum = {
   updatedAt: 'updatedAt'
 } as const
 
-export type FooterLinkScalarFieldEnum = (typeof FooterLinkScalarFieldEnum)[keyof typeof FooterLinkScalarFieldEnum]
+export type NavLinkScalarFieldEnum = (typeof NavLinkScalarFieldEnum)[keyof typeof NavLinkScalarFieldEnum]
 
 
 export const HotelScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
+  previousSlugs: 'previousSlugs',
   name: 'name',
   city: 'city',
   address: 'address',
@@ -142,6 +144,17 @@ export const HotelScalarFieldEnum = {
 } as const
 
 export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]
+
+
+export const SiteSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  group: 'group',
+  label: 'label',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SiteSettingScalarFieldEnum = (typeof SiteSettingScalarFieldEnum)[keyof typeof SiteSettingScalarFieldEnum]
 
 
 export const HotelImageScalarFieldEnum = {

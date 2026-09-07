@@ -130,7 +130,12 @@ export class HotelsService {
     const hotel = await this.prisma.hotel.findFirst({
       where: {
         status: HotelStatus.PUBLISHED,
-        OR: [{ slug: idOrSlug }, ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : [])],
+        OR: [
+          { slug: idOrSlug },
+          // Renamed hotels keep answering to their old links.
+          { previousSlugs: { has: idOrSlug } },
+          ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : []),
+        ],
       },
       select: { id: true },
     });
@@ -144,7 +149,12 @@ export class HotelsService {
     const hotel = await this.prisma.hotel.findFirst({
       where: {
         status: HotelStatus.PUBLISHED,
-        OR: [{ slug: idOrSlug }, ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : [])],
+        OR: [
+          { slug: idOrSlug },
+          // Renamed hotels keep answering to their old links.
+          { previousSlugs: { has: idOrSlug } },
+          ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : []),
+        ],
       },
       include: {
         images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
@@ -286,10 +296,21 @@ export class HotelsService {
   }
 
   async update(id: string, dto: UpdateHotelDto) {
-    await this.assertExists(id);
+    const current = await this.assertExists(id);
+
+    // A slug is a public URL. Changing it keeps the old one working: it moves
+    // into previousSlugs, which the lookup also matches, so links already
+    // shared or indexed still resolve instead of 404ing.
+    let slugChange: { slug: string; previousSlugs: string[] } | null = null;
+    if (dto.slug !== undefined) {
+      const next = await this.resolveSlugChange(current, dto.slug);
+      if (next) slugChange = next;
+    }
+
     const hotel = await this.prisma.hotel.update({
       where: { id },
       data: {
+        ...(slugChange ?? {}),
         ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
         ...(dto.city !== undefined ? { city: dto.city.trim() } : {}),
         ...(dto.address !== undefined ? { address: dto.address.trim() } : {}),
@@ -450,6 +471,9 @@ export class HotelsService {
         sortOrder: image.sortOrder,
         isPrimary: image.isPrimary,
       })),
+      /** Links this hotel still answers to after a slug change. */
+      previousSlugs: hotel.previousSlugs,
+      createdBy: hotel.createdBy,
       createdAt: hotel.createdAt,
       updatedAt: hotel.updatedAt,
     };
@@ -471,8 +495,12 @@ export class HotelsService {
   }
 
   private async assertExists(id: string) {
-    const hotel = await this.prisma.hotel.findUnique({ where: { id }, select: { id: true } });
+    const hotel = await this.prisma.hotel.findUnique({
+      where: { id },
+      select: { id: true, slug: true, previousSlugs: true },
+    });
     if (!hotel) throw new NotFoundException('Hotel not found');
+    return hotel;
   }
 
   private async uniqueSlug(source: string) {
@@ -485,6 +513,72 @@ export class HotelsService {
       suffix += 1;
     }
     return candidate;
+  }
+
+  /**
+   * Validates a requested slug and works out the new previousSlugs list.
+   * Returns null when the slug is unchanged, so the update touches nothing.
+   */
+  private async resolveSlugChange(
+    current: { id: string; slug: string; previousSlugs: string[] },
+    requested: string,
+  ): Promise<{ slug: string; previousSlugs: string[] } | null> {
+    const next = slugify(requested);
+    if (!next) {
+      throw new BadRequestException('Slug must contain at least one letter or number');
+    }
+    if (next === current.slug) return null;
+
+    const clash = await this.prisma.hotel.findFirst({
+      where: {
+        id: { not: current.id },
+        OR: [{ slug: next }, { previousSlugs: { has: next } }],
+      },
+      select: { id: true },
+    });
+    if (clash) {
+      throw new BadRequestException('Another hotel already uses that link, including its old links');
+    }
+
+    // The outgoing slug joins the history; the incoming one leaves it, so a
+    // slug reverted to an earlier value is not both current and historical.
+    const history = current.previousSlugs.filter((slug) => slug !== next);
+    return {
+      slug: next,
+      previousSlugs: [...new Set([...history, current.slug])],
+    };
+  }
+
+  /**
+   * Retires a hotel.
+   *
+   * Deleted outright only when nothing references it. A hotel with bookings is
+   * archived instead — hidden from the site but kept on record, because those
+   * reservations belong to real guests and cascading them away would erase
+   * their history. Mirrors how room types deactivate rather than delete.
+   */
+  async remove(id: string) {
+    await this.assertExists(id);
+
+    const bookings = await this.prisma.booking.count({ where: { hotelId: id } });
+    if (bookings > 0) {
+      const hotel = await this.prisma.hotel.update({
+        where: { id },
+        data: { status: HotelStatus.ARCHIVED },
+        include: hotelInclude,
+      });
+      return {
+        id,
+        deleted: false,
+        archived: true,
+        bookings,
+        hotel: this.toHotelDto(hotel),
+      };
+    }
+
+    // Room types, availability and images cascade from the schema.
+    await this.prisma.hotel.delete({ where: { id } });
+    return { id, deleted: true, archived: false, bookings: 0 };
   }
 }
 

@@ -13,6 +13,7 @@ import { AvailabilityService, HOLD_MINUTES } from '../availability/availability.
 import { generateBookingReference } from '../../common/utils/booking-reference.util';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
 import { toNumber } from '../../common/utils/decimal.util';
+import { buildPriceBreakdown } from '../../common/utils/pricing.util';
 import { countNights, parseDateOnly, startOfTodayUtc } from '../../common/utils/date.util';
 import type { AdminBookingQueryDto, BookingDecisionDto, CreateBookingDto } from './dto/booking.dto';
 
@@ -332,6 +333,9 @@ export class BookingsService {
       numAdults: booking.numAdults,
       numChildren: booking.numChildren,
       totalPrice: toNumber(booking.totalPrice),
+      // Same split the availability assessment returns, so the confirmation page
+      // shows the identical figures the guest saw before paying.
+      priceBreakdown: buildPriceBreakdown(toNumber(booking.totalPrice)),
       status: booking.status,
       // Lets the checkout show a live countdown and stop offering to pay once
       // the hold has gone.

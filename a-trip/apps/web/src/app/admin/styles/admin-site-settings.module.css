@@ -1,0 +1,101 @@
+.intro {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+}
+
+.intro strong {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .body {
+    padding: 1.125rem;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: 14rem minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+  }
+}
+
+.labelCol {
+  min-width: 0;
+}
+
+.key {
+  display: block;
+  margin-top: 0.125rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.inputCol {
+  min-width: 0;
+}
+
+.inputCol textarea {
+  /* The shared .input is sized for one line; copy fields need room to breathe. */
+  height: auto;
+  padding-block: 0.5rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.metaCol {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.resetBtn {
+  display: inline-flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.resetBtn:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.resetBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

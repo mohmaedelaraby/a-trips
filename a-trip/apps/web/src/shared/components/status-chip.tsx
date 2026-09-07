@@ -49,10 +49,17 @@ export function BookingStatusChip({ status }: { status: BookingStatus }) {
   );
 }
 
+const HOTEL_STATUS: Record<HotelStatus, { label: string; tone: VariantProps<typeof chipVariants>['tone'] }> = {
+  PUBLISHED: { label: 'Published', tone: 'success' },
+  DRAFT: { label: 'Draft', tone: 'neutral' },
+  ARCHIVED: { label: 'Archived', tone: 'danger' },
+};
+
 export function HotelStatusChip({ status }: { status: HotelStatus }) {
+  const meta = HOTEL_STATUS[status] ?? HOTEL_STATUS.DRAFT;
   return (
-    <StatusChip tone={status === 'PUBLISHED' ? 'success' : 'neutral'} withDot>
-      {status === 'PUBLISHED' ? 'Published' : 'Draft'}
+    <StatusChip tone={meta.tone} withDot>
+      {meta.label}
     </StatusChip>
   );
 }

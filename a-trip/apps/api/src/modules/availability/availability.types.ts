@@ -1,3 +1,5 @@
+import type { PriceBreakdown } from '../../common/utils/pricing.util';
+
 export interface NightAssessment {
   date: string;
   totalUnits: number;
@@ -17,6 +19,11 @@ export interface RangeAssessment {
   minUnitsAvailable: number;
   totalPrice: number | null;
   averageNightlyPrice: number | null;
+  /**
+   * Server-computed split of totalPrice. The UI renders these numbers rather
+   * than recomputing tax, so every screen quotes the same figure.
+   */
+  priceBreakdown: PriceBreakdown | null;
   reason?: UnavailableReason;
   nightsDetail: NightAssessment[];
 }

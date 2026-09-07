@@ -396,3 +396,37 @@
   font-weight: 600;
   color: var(--color-warning-fg);
 }
+
+/* ---- slug field ---- */
+
+.slugField {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.slugPrefix {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--color-line);
+  border-right: 0;
+  border-radius: 0.5rem 0 0 0.5rem;
+  background-color: var(--color-canvas);
+  padding-inline: 0.625rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+}
+
+.slugField input {
+  border-radius: 0 0.5rem 0.5rem 0;
+  min-width: 0;
+}
+
+.slugHint {
+  margin-top: 0.3125rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}

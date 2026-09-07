@@ -89,6 +89,15 @@ export class CreateHotelDto {
 }
 
 export class UpdateHotelDto {
+  /**
+   * Public URL key. Changing it retires the old one into previousSlugs, which
+   * still resolves, so links already shared or indexed keep working.
+   */
+  @IsOptional()
+  @IsString()
+  @Length(2, 160)
+  slug?: string;
+
   @IsOptional()
   @IsString()
   @Length(2, 160)

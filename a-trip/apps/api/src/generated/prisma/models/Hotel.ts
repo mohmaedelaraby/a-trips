@@ -75,6 +75,7 @@ export type HotelMaxAggregateOutputType = {
 export type HotelCountAggregateOutputType = {
   id: number
   slug: number
+  previousSlugs: number
   name: number
   city: number
   address: number
@@ -141,6 +142,7 @@ export type HotelMaxAggregateInputType = {
 export type HotelCountAggregateInputType = {
   id?: true
   slug?: true
+  previousSlugs?: true
   name?: true
   city?: true
   address?: true
@@ -246,6 +248,7 @@ export type HotelGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type HotelGroupByOutputType = {
   id: string
   slug: string
+  previousSlugs: string[]
   name: string
   city: string
   address: string
@@ -287,6 +290,7 @@ export type HotelWhereInput = {
   NOT?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
   id?: Prisma.StringFilter<"Hotel"> | string
   slug?: Prisma.StringFilter<"Hotel"> | string
+  previousSlugs?: Prisma.StringNullableListFilter<"Hotel">
   name?: Prisma.StringFilter<"Hotel"> | string
   city?: Prisma.StringFilter<"Hotel"> | string
   address?: Prisma.StringFilter<"Hotel"> | string
@@ -308,6 +312,7 @@ export type HotelWhereInput = {
 export type HotelOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
+  previousSlugs?: Prisma.SortOrder
   name?: Prisma.SortOrder
   city?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -332,6 +337,7 @@ export type HotelWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
   OR?: Prisma.HotelWhereInput[]
   NOT?: Prisma.HotelWhereInput | Prisma.HotelWhereInput[]
+  previousSlugs?: Prisma.StringNullableListFilter<"Hotel">
   name?: Prisma.StringFilter<"Hotel"> | string
   city?: Prisma.StringFilter<"Hotel"> | string
   address?: Prisma.StringFilter<"Hotel"> | string
@@ -353,6 +359,7 @@ export type HotelWhereUniqueInput = Prisma.AtLeast<{
 export type HotelOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
+  previousSlugs?: Prisma.SortOrder
   name?: Prisma.SortOrder
   city?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -379,6 +386,7 @@ export type HotelScalarWhereWithAggregatesInput = {
   NOT?: Prisma.HotelScalarWhereWithAggregatesInput | Prisma.HotelScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   slug?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
+  previousSlugs?: Prisma.StringNullableListFilter<"Hotel">
   name?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   city?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
   address?: Prisma.StringWithAggregatesFilter<"Hotel"> | string
@@ -397,6 +405,7 @@ export type HotelScalarWhereWithAggregatesInput = {
 export type HotelCreateInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -418,6 +427,7 @@ export type HotelCreateInput = {
 export type HotelUncheckedCreateInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -439,6 +449,7 @@ export type HotelUncheckedCreateInput = {
 export type HotelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -460,6 +471,7 @@ export type HotelUpdateInput = {
 export type HotelUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -481,6 +493,7 @@ export type HotelUncheckedUpdateInput = {
 export type HotelCreateManyInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -499,6 +512,7 @@ export type HotelCreateManyInput = {
 export type HotelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -517,6 +531,7 @@ export type HotelUpdateManyMutationInput = {
 export type HotelUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -543,6 +558,7 @@ export type StringNullableListFilter<$PrismaModel = never> = {
 export type HotelCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
+  previousSlugs?: Prisma.SortOrder
   name?: Prisma.SortOrder
   city?: Prisma.SortOrder
   address?: Prisma.SortOrder
@@ -609,8 +625,17 @@ export type HotelScalarRelationFilter = {
   isNot?: Prisma.HotelWhereInput
 }
 
+export type HotelCreatepreviousSlugsInput = {
+  set: string[]
+}
+
 export type HotelCreateamenitiesInput = {
   set: string[]
+}
+
+export type HotelUpdatepreviousSlugsInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -675,6 +700,7 @@ export type HotelUpdateOneRequiredWithoutBookingsNestedInput = {
 export type HotelCreateWithoutImagesInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -695,6 +721,7 @@ export type HotelCreateWithoutImagesInput = {
 export type HotelUncheckedCreateWithoutImagesInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -731,6 +758,7 @@ export type HotelUpdateToOneWithWhereWithoutImagesInput = {
 export type HotelUpdateWithoutImagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -751,6 +779,7 @@ export type HotelUpdateWithoutImagesInput = {
 export type HotelUncheckedUpdateWithoutImagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -771,6 +800,7 @@ export type HotelUncheckedUpdateWithoutImagesInput = {
 export type HotelCreateWithoutRoomTypesInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -791,6 +821,7 @@ export type HotelCreateWithoutRoomTypesInput = {
 export type HotelUncheckedCreateWithoutRoomTypesInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -827,6 +858,7 @@ export type HotelUpdateToOneWithWhereWithoutRoomTypesInput = {
 export type HotelUpdateWithoutRoomTypesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -847,6 +879,7 @@ export type HotelUpdateWithoutRoomTypesInput = {
 export type HotelUncheckedUpdateWithoutRoomTypesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -867,6 +900,7 @@ export type HotelUncheckedUpdateWithoutRoomTypesInput = {
 export type HotelCreateWithoutBookingsInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -887,6 +921,7 @@ export type HotelCreateWithoutBookingsInput = {
 export type HotelUncheckedCreateWithoutBookingsInput = {
   id?: string
   slug: string
+  previousSlugs?: Prisma.HotelCreatepreviousSlugsInput | string[]
   name: string
   city: string
   address: string
@@ -923,6 +958,7 @@ export type HotelUpdateToOneWithWhereWithoutBookingsInput = {
 export type HotelUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -943,6 +979,7 @@ export type HotelUpdateWithoutBookingsInput = {
 export type HotelUncheckedUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
+  previousSlugs?: Prisma.HotelUpdatepreviousSlugsInput | string[]
   name?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1012,6 +1049,7 @@ export type HotelCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.
 export type HotelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   slug?: boolean
+  previousSlugs?: boolean
   name?: boolean
   city?: boolean
   address?: boolean
@@ -1034,6 +1072,7 @@ export type HotelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type HotelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   slug?: boolean
+  previousSlugs?: boolean
   name?: boolean
   city?: boolean
   address?: boolean
@@ -1052,6 +1091,7 @@ export type HotelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type HotelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   slug?: boolean
+  previousSlugs?: boolean
   name?: boolean
   city?: boolean
   address?: boolean
@@ -1070,6 +1110,7 @@ export type HotelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type HotelSelectScalar = {
   id?: boolean
   slug?: boolean
+  previousSlugs?: boolean
   name?: boolean
   city?: boolean
   address?: boolean
@@ -1085,7 +1126,7 @@ export type HotelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HotelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "city" | "address" | "country" | "description" | "stars" | "latitude" | "longitude" | "amenities" | "status" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["hotel"]>
+export type HotelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "previousSlugs" | "name" | "city" | "address" | "country" | "description" | "stars" | "latitude" | "longitude" | "amenities" | "status" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["hotel"]>
 export type HotelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   images?: boolean | Prisma.Hotel$imagesArgs<ExtArgs>
   roomTypes?: boolean | Prisma.Hotel$roomTypesArgs<ExtArgs>
@@ -1104,7 +1145,16 @@ export type $HotelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    /**
+     * Editable from the portal. Changing it does not break existing links —
+     * the old value moves into previousSlugs and still resolves.
+     */
     slug: string
+    /**
+     * Slugs this hotel used to answer to, kept so shared links and search
+     * engine results survive a rename.
+     */
+    previousSlugs: string[]
     name: string
     city: string
     address: string
@@ -1115,6 +1165,9 @@ export type $HotelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     longitude: number | null
     amenities: string[]
     status: $Enums.HotelStatus
+    /**
+     * Id of the staff member who created the hotel.
+     */
     createdBy: string | null
     createdAt: Date
     updatedAt: Date
@@ -1546,6 +1599,7 @@ export interface Prisma__HotelClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface HotelFieldRefs {
   readonly id: Prisma.FieldRef<"Hotel", 'String'>
   readonly slug: Prisma.FieldRef<"Hotel", 'String'>
+  readonly previousSlugs: Prisma.FieldRef<"Hotel", 'String[]'>
   readonly name: Prisma.FieldRef<"Hotel", 'String'>
   readonly city: Prisma.FieldRef<"Hotel", 'String'>
   readonly address: Prisma.FieldRef<"Hotel", 'String'>

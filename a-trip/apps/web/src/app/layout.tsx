@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import '../shared/styles/globals.css';
 import { Providers } from '../shared/components/providers';
-import { fetchFooterLinks } from '../shared/lib/footer-links.server';
+import { fetchSiteContent } from '../shared/lib/site-content.server';
 
 export const metadata: Metadata = {
   title: { default: 'A Trip — Egypt hotels, booked direct', template: '%s · A Trip' },
@@ -11,16 +11,16 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  // Footer links are identical for every visitor, so they are fetched once here
-  // and handed to the client cache. That keeps them in the server-rendered HTML
-  // (crawlable, no placeholder flash) while still costing exactly one upstream
-  // call, shared across visitors rather than one per session.
-  const footerLinks = await fetchFooterLinks();
+  // The site chrome is identical for every visitor, so it is fetched once here
+  // and handed to the client cache. That keeps the nav and copy in the
+  // server-rendered HTML (crawlable, no placeholder flash) while still costing
+  // exactly one upstream call, shared across visitors rather than per session.
+  const siteContent = await fetchSiteContent();
 
   return (
     <html lang="en">
       <body>
-        <Providers footerLinks={footerLinks}>{children}</Providers>
+        <Providers siteContent={siteContent}>{children}</Providers>
       </body>
     </html>
   );

@@ -54,14 +54,15 @@ model Amenity {
   updatedAt DateTime @updatedAt
 }
 
-/// Footer navigation, editable from the admin portal.
+/// Site navigation, editable from the admin portal — the header bar and both
+/// footer link columns.
 ///
 /// `value` is what a visitor reads, `href` is where the click goes. An empty
 /// href means the destination is not built yet, and the site routes it to
 /// /coming-soon instead of rendering a dead label.
-model FooterLink {
+model NavLink {
   id        String          @id @default(uuid())
-  group     FooterLinkGroup
+  group     NavLinkGroup
   value     String
   /// Absolute URL, or a site-relative path starting with "/". Null = coming soon.
   href      String?
@@ -75,15 +76,21 @@ model FooterLink {
   @@index([group, sortOrder])
 }
 
-/// Which footer column a link belongs to. The footer has two link columns.
-enum FooterLinkGroup {
-  COMPANY
-  SUPPORT
+/// Where a link appears: the header bar, or one of the two footer columns.
+enum NavLinkGroup {
+  HEADER
+  FOOTER_COMPANY
+  FOOTER_SUPPORT
 }
 
 model Hotel {
   id          String       @id @default(uuid())
+  /// Editable from the portal. Changing it does not break existing links —
+  /// the old value moves into previousSlugs and still resolves.
   slug        String       @unique
+  /// Slugs this hotel used to answer to, kept so shared links and search
+  /// engine results survive a rename.
+  previousSlugs String[]   @default([])
   name        String
   city        String
   address     String
@@ -97,6 +104,7 @@ model Hotel {
   images      HotelImage[]
   roomTypes   RoomType[]
   bookings    Booking[]
+  /// Id of the staff member who created the hotel.
   createdBy   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -108,6 +116,25 @@ model Hotel {
 enum HotelStatus {
   DRAFT
   PUBLISHED
+  /// Retired but retained: hidden from the site, kept because bookings
+  /// reference it. Deleting such a hotel would orphan real reservations.
+  ARCHIVED
+}
+
+/// Editable site copy that is not a hotel — contact details, social links,
+/// the home page hero, the currency label. One row per setting so a new piece
+/// of copy needs no migration.
+model SiteSetting {
+  /// Stable identifier the site reads, e.g. "contact.email".
+  key       String   @id
+  value     String
+  /// Groups settings in the admin UI; carries no meaning to the site.
+  group     String   @default("general")
+  /// Shown beside the field in the portal so staff know what they are editing.
+  label     String
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
 }
 
 model HotelImage {

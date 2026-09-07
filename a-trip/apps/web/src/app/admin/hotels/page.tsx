@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useAdminHotels } from '../../../modules/hotels/hooks/use-admin-hotels';
+import { useAdminHotels, useRemoveHotel } from '../../../modules/hotels/hooks/use-admin-hotels';
 import { useCities } from '../../../modules/hotels/hooks/use-hotels';
 import { useAdminDashboard } from '../../../modules/admin-dashboard/hooks/use-dashboard';
 import {
@@ -43,6 +43,7 @@ export default function AdminHotelsListPage() {
 
   const dashboard = useAdminDashboard();
   const cities = useCities();
+  const removeHotel = useRemoveHotel();
   const query = useAdminHotels({
     q: q || undefined,
     status: tab === 'all' ? undefined : (tab as HotelStatus),
@@ -155,6 +156,7 @@ export default function AdminHotelsListPage() {
                 ) : (
                   items.map((hotel) => {
                     const draft = hotel.status === 'DRAFT';
+                    const archived = hotel.status === 'ARCHIVED';
                     const cover = hotel.images.find((image) => image.isPrimary) ?? hotel.images[0];
                     return (
                       <tr key={hotel.id}>
@@ -182,7 +184,9 @@ export default function AdminHotelsListPage() {
                         </td>
                         <td>{hotel.roomTypeCount}</td>
                         <td>
-                          <Pill tone={draft ? 'neutral' : 'success'}>{draft ? 'Draft' : 'Published'}</Pill>
+                          <Pill tone={archived ? 'danger' : draft ? 'neutral' : 'success'}>
+                            {archived ? 'Archived' : draft ? 'Draft' : 'Published'}
+                          </Pill>
                         </td>
                         <td>
                           <div className={ui.actionsCell}>
@@ -194,12 +198,31 @@ export default function AdminHotelsListPage() {
                             </Link>
                             <Link
                               href={`/admin/hotels/${hotel.id}/availability`}
-                              className={cn(ui.actionLink, draft && ui.actionLinkDisabled)}
-                              aria-disabled={draft}
-                              tabIndex={draft ? -1 : undefined}
+                              className={cn(ui.actionLink, (draft || archived) && ui.actionLinkDisabled)}
+                              aria-disabled={draft || archived}
+                              tabIndex={draft || archived ? -1 : undefined}
                             >
                               Availability
                             </Link>
+                            <button
+                              type="button"
+                              className={cn(ui.actionLink, styles.removeAction)}
+                              disabled={removeHotel.isPending}
+                              onClick={() => {
+                                // The server decides between delete and archive
+                                // based on whether bookings exist; the wording
+                                // here says so rather than promising deletion.
+                                if (
+                                  window.confirm(
+                                    `Remove “${hotel.name}”?\n\nIf it has bookings it will be archived — hidden from the site but kept on record. If it has none it will be deleted permanently.`,
+                                  )
+                                ) {
+                                  removeHotel.mutate(hotel.id);
+                                }
+                              }}
+                            >
+                              Remove
+                            </button>
                           </div>
                         </td>
                       </tr>

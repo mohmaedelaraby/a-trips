@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import { SITE_SETTING_DEFAULTS } from '../src/modules/site-settings/site-settings.service';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }),
@@ -146,39 +147,63 @@ async function seedAmenities() {
 }
 
 /**
- * The footer links that used to be hardcoded in the web app. Seeded so a fresh
+ * The navigation links that used to be hardcoded in the web app. Seeded so a fresh
  * install renders the same footer it always did, with every row now editable
  * from the admin portal. A null href routes to /coming-soon.
  */
-const FOOTER_LINKS: Array<{
-  group: 'COMPANY' | 'SUPPORT';
+const NAV_LINKS: Array<{
+  group: 'HEADER' | 'FOOTER_COMPANY' | 'FOOTER_SUPPORT';
   value: string;
   href: string | null;
 }> = [
-  { group: 'COMPANY', value: 'About ATrips', href: null },
-  { group: 'COMPANY', value: 'Contact us', href: null },
-  { group: 'COMPANY', value: 'Careers', href: null },
-  { group: 'COMPANY', value: 'Partner with us', href: null },
-  { group: 'SUPPORT', value: 'Help centre', href: null },
-  { group: 'SUPPORT', value: 'Booking policy', href: null },
-  { group: 'SUPPORT', value: 'Cancellation', href: null },
-  { group: 'SUPPORT', value: 'Terms & privacy', href: null },
+  { group: 'HEADER', value: 'Home', href: '/' },
+  { group: 'HEADER', value: 'Hotels', href: '/hotels' },
+  { group: 'HEADER', value: 'About', href: null },
+  { group: 'HEADER', value: 'Contact', href: null },
+  { group: 'HEADER', value: 'Tours', href: null },
+  { group: 'HEADER', value: 'Flights', href: null },
+  { group: 'FOOTER_COMPANY', value: 'About ATrips', href: null },
+  { group: 'FOOTER_COMPANY', value: 'Contact us', href: null },
+  { group: 'FOOTER_COMPANY', value: 'Careers', href: null },
+  { group: 'FOOTER_COMPANY', value: 'Partner with us', href: null },
+  { group: 'FOOTER_SUPPORT', value: 'Help centre', href: null },
+  { group: 'FOOTER_SUPPORT', value: 'Booking policy', href: null },
+  { group: 'FOOTER_SUPPORT', value: 'Cancellation', href: null },
+  { group: 'FOOTER_SUPPORT', value: 'Terms & privacy', href: null },
 ];
 
-async function seedFooterLinks() {
+async function seedNavLinks() {
   // Keyed on group+value rather than id so re-running never duplicates a row,
   // and so an admin's edits to href/order survive a re-seed.
-  for (const [index, link] of FOOTER_LINKS.entries()) {
-    const existing = await prisma.footerLink.findFirst({
+  const nextOrder = new Map<string, number>();
+  for (const link of NAV_LINKS) {
+    // Order runs per group, since each group is its own list on screen.
+    const order = nextOrder.get(link.group) ?? 0;
+    nextOrder.set(link.group, order + 1);
+
+    const existing = await prisma.navLink.findFirst({
       where: { group: link.group, value: link.value },
       select: { id: true },
     });
     if (existing) continue;
-    await prisma.footerLink.create({
-      data: { ...link, sortOrder: index % 4, isActive: true },
+    await prisma.navLink.create({
+      data: { ...link, sortOrder: order, isActive: true },
     });
   }
-  console.log(`✔ ${FOOTER_LINKS.length} footer links`);
+  console.log(`✔ ${NAV_LINKS.length} navigation links`);
+}
+
+async function seedSiteSettings() {
+  // Defaults live in the service and apply when no row exists, so this only
+  // materialises them for the admin screen to edit.
+  for (const setting of SITE_SETTING_DEFAULTS) {
+    await prisma.siteSetting.upsert({
+      where: { key: setting.key },
+      create: setting,
+      update: { group: setting.group, label: setting.label },
+    });
+  }
+  console.log(`✔ ${SITE_SETTING_DEFAULTS.length} site settings`);
 }
 
 async function seedRoomTypeUnits() {
@@ -234,7 +259,8 @@ async function seedAvailability() {
 async function main() {
   await seedStaff();
   await seedAmenities();
-  await seedFooterLinks();
+  await seedNavLinks();
+  await seedSiteSettings();
   await seedRoomTypeUnits();
   await seedAvailability();
 }

@@ -44,9 +44,13 @@ export function CheckoutForm({
 
   const availability = roomType.availability;
   const nights = availability?.nights ?? 0;
-  const total = availability?.totalPrice ?? 0;
   const primaryImage = hotel.images.find((i) => i.isPrimary) ?? hotel.images[0];
-  const taxesAndFees = Math.round((availability?.averageNightlyPrice ?? 0) * nights * 0.1);
+
+  // Straight from the server, so this page and the hotel card cannot drift.
+  const breakdown = availability?.priceBreakdown ?? null;
+  const total = breakdown?.total ?? availability?.totalPrice ?? 0;
+  const taxesAndFees = breakdown?.taxAmount ?? 0;
+  const roomSubtotal = breakdown?.roomSubtotal ?? total - taxesAndFees;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,10 +214,8 @@ export function CheckoutForm({
 
         <div className={`${styles.summarySection} ${styles.summarySectionMuted}`}>
           <div className={styles.summaryRow}>
-            <span>
-              {formatPrice(availability?.averageNightlyPrice ?? roomType.basePrice)} × {pluralize(nights, 'night')}
-            </span>
-            <span>{formatPrice(total - taxesAndFees)}</span>
+            <span>Room, {pluralize(nights, 'night')}</span>
+            <span>{formatPrice(roomSubtotal)}</span>
           </div>
           <div className={styles.summaryRow}>
             <span>Taxes &amp; city fee</span>
@@ -222,7 +224,9 @@ export function CheckoutForm({
         </div>
 
         <div className={styles.summaryTotal}>
-          <span>Total due at hotel</span>
+          {/* Was "Total due at hotel" — payment is taken by PayPal on the next
+              step now, so that label promised the wrong thing. */}
+          <span>Total</span>
           <span>{formatPrice(total)}</span>
         </div>
 

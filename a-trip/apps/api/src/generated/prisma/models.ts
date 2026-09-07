@@ -10,8 +10,9 @@
  */
 export type * from './models/User'
 export type * from './models/Amenity'
-export type * from './models/FooterLink'
+export type * from './models/NavLink'
 export type * from './models/Hotel'
+export type * from './models/SiteSetting'
 export type * from './models/HotelImage'
 export type * from './models/RoomType'
 export type * from './models/RoomAvailability'

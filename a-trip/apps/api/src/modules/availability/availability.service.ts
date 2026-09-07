@@ -11,6 +11,7 @@ import {
   toDateOnlyString,
 } from '../../common/utils/date.util';
 import { round2, toNumber } from '../../common/utils/decimal.util';
+import { buildPriceBreakdown } from '../../common/utils/pricing.util';
 import type { BulkAvailabilityDto } from './dto/bulk-availability.dto';
 import type { StopSellDto } from './dto/stop-sell.dto';
 import type { NightAssessment, RangeAssessment } from './availability.types';
@@ -170,6 +171,7 @@ export class AvailabilityService {
         minUnitsAvailable: 0,
         totalPrice: null,
         averageNightlyPrice: null,
+        priceBreakdown: null,
         reason: 'INACTIVE',
         nightsDetail: [],
       };
@@ -235,6 +237,7 @@ export class AvailabilityService {
       minUnitsAvailable,
       totalPrice: missingInventory ? null : round2(total),
       averageNightlyPrice: missingInventory ? null : round2(total / nights),
+      priceBreakdown: missingInventory ? null : buildPriceBreakdown(round2(total)),
       ...(reason ? { reason } : {}),
       nightsDetail,
     };

@@ -1,8 +1,8 @@
-import type { FooterLinksResponse } from '../interfaces/footer-links';
+import type { SiteContent } from '../interfaces/site-content';
 import type { ApiResponse } from '../interfaces/api';
 
 /**
- * Server-side fetch of the footer feed, used to prefetch it in the root layout.
+ * Server-side fetch of the site chrome, used to prefetch it in the root layout.
  *
  * Deliberately plain `fetch` rather than the axios client: that one reads the
  * auth token from localStorage and has no meaning on the server. Using fetch
@@ -22,18 +22,18 @@ function serverApiBase(): string {
   );
 }
 
-export async function fetchFooterLinks(): Promise<FooterLinksResponse> {
-  const empty: FooterLinksResponse = { groups: [] };
+export async function fetchSiteContent(): Promise<SiteContent> {
+  const empty: SiteContent = { groups: [], settings: {} };
   try {
-    const res = await fetch(`${serverApiBase()}/footer-links`, {
-      next: { revalidate: REVALIDATE_SECONDS, tags: ['footer-links'] },
+    const res = await fetch(`${serverApiBase()}/site-content`, {
+      next: { revalidate: REVALIDATE_SECONDS, tags: ['site-content'] },
     });
     if (!res.ok) return empty;
-    const body = (await res.json()) as ApiResponse<FooterLinksResponse>;
+    const body = (await res.json()) as ApiResponse<SiteContent>;
     return body.data ?? empty;
   } catch {
-    // The footer is chrome. If the API is unreachable at render time the page
-    // still ships; the client query will fill it in.
+    // Chrome only. If the API is unreachable at render time the page still
+    // ships; the client query fills it in and components use their fallbacks.
     return empty;
   }
 }

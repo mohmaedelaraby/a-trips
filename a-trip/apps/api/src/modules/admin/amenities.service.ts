@@ -37,22 +37,67 @@ export class AmenitiesService {
     });
   }
 
+  /**
+   * Renaming an amenity rewrites it on every hotel that lists it.
+   *
+   * Hotel.amenities is a String[] of names, not a relation, so the catalogue row
+   * and the hotels that use it are only joined by the string itself. Updating
+   * the catalogue alone would leave hotels holding the old name: the amenity
+   * would silently stop matching the search filter, and its usage count here
+   * would drop to zero, with nothing appearing to fail.
+   *
+   * Both writes go in one transaction so a rename can never land half-applied.
+   */
   async update(id: string, dto: AmenityDto) {
-    await this.assertExists(id);
-    return this.prisma.amenity.update({
-      where: { id },
-      data: { name: dto.name.trim(), category: dto.category?.trim() || null },
-    });
+    const current = await this.assertExists(id);
+    const name = dto.name.trim();
+
+    if (name !== current.name) {
+      const clash = await this.prisma.amenity.findUnique({ where: { name } });
+      if (clash) throw new BadRequestException('Another amenity already has that name');
+    }
+
+    const [amenity] = await this.prisma.$transaction([
+      this.prisma.amenity.update({
+        where: { id },
+        data: { name, category: dto.category?.trim() || null },
+      }),
+      ...(name !== current.name
+        ? [
+            this.prisma.$executeRaw`
+              UPDATE "Hotel"
+              SET "amenities" = array_replace("amenities", ${current.name}, ${name})
+              WHERE ${current.name} = ANY("amenities")
+            `,
+          ]
+        : []),
+    ]);
+
+    return amenity;
   }
 
+  /** Deleting drops the amenity from every hotel that lists it, for the same reason. */
   async remove(id: string) {
-    await this.assertExists(id);
-    await this.prisma.amenity.delete({ where: { id } });
+    const current = await this.assertExists(id);
+
+    await this.prisma.$transaction([
+      this.prisma.$executeRaw`
+        UPDATE "Hotel"
+        SET "amenities" = array_remove("amenities", ${current.name})
+        WHERE ${current.name} = ANY("amenities")
+      `,
+      this.prisma.amenity.delete({ where: { id } }),
+    ]);
+
     return { id, deleted: true };
   }
 
   private async assertExists(id: string) {
-    const amenity = await this.prisma.amenity.findUnique({ where: { id }, select: { id: true } });
+    const amenity = await this.prisma.amenity.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
     if (!amenity) throw new NotFoundException('Amenity not found');
+    return amenity;
   }
 }

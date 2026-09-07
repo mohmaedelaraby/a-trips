@@ -28,19 +28,27 @@ export type User = Prisma.UserModel
  */
 export type Amenity = Prisma.AmenityModel
 /**
- * Model FooterLink
- * Footer navigation, editable from the admin portal.
+ * Model NavLink
+ * Site navigation, editable from the admin portal — the header bar and both
+ * footer link columns.
  * 
  * `value` is what a visitor reads, `href` is where the click goes. An empty
  * href means the destination is not built yet, and the site routes it to
  * /coming-soon instead of rendering a dead label.
  */
-export type FooterLink = Prisma.FooterLinkModel
+export type NavLink = Prisma.NavLinkModel
 /**
  * Model Hotel
  * 
  */
 export type Hotel = Prisma.HotelModel
+/**
+ * Model SiteSetting
+ * Editable site copy that is not a hotel — contact details, social links,
+ * the home page hero, the currency label. One row per setting so a new piece
+ * of copy needs no migration.
+ */
+export type SiteSetting = Prisma.SiteSettingModel
 /**
  * Model HotelImage
  * 

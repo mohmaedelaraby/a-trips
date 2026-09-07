@@ -186,11 +186,11 @@ export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
 }
 
-export type EnumFooterLinkGroupFilter<$PrismaModel = never> = {
-  equals?: $Enums.FooterLinkGroup | Prisma.EnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  in?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  notIn?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel> | $Enums.FooterLinkGroup
+export type EnumNavLinkGroupFilter<$PrismaModel = never> = {
+  equals?: $Enums.NavLinkGroup | Prisma.EnumNavLinkGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel> | $Enums.NavLinkGroup
 }
 
 export type BoolFilter<$PrismaModel = never> = {
@@ -209,14 +209,14 @@ export type IntFilter<$PrismaModel = never> = {
   not?: Prisma.NestedIntFilter<$PrismaModel> | number
 }
 
-export type EnumFooterLinkGroupWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.FooterLinkGroup | Prisma.EnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  in?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  notIn?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumFooterLinkGroupWithAggregatesFilter<$PrismaModel> | $Enums.FooterLinkGroup
+export type EnumNavLinkGroupWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NavLinkGroup | Prisma.EnumNavLinkGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNavLinkGroupWithAggregatesFilter<$PrismaModel> | $Enums.NavLinkGroup
   _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel>
 }
 
 export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -628,11 +628,11 @@ export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeFilter<$PrismaModel>
 }
 
-export type NestedEnumFooterLinkGroupFilter<$PrismaModel = never> = {
-  equals?: $Enums.FooterLinkGroup | Prisma.EnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  in?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  notIn?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel> | $Enums.FooterLinkGroup
+export type NestedEnumNavLinkGroupFilter<$PrismaModel = never> = {
+  equals?: $Enums.NavLinkGroup | Prisma.EnumNavLinkGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel> | $Enums.NavLinkGroup
 }
 
 export type NestedBoolFilter<$PrismaModel = never> = {
@@ -640,14 +640,14 @@ export type NestedBoolFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
 }
 
-export type NestedEnumFooterLinkGroupWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.FooterLinkGroup | Prisma.EnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  in?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  notIn?: $Enums.FooterLinkGroup[] | Prisma.ListEnumFooterLinkGroupFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumFooterLinkGroupWithAggregatesFilter<$PrismaModel> | $Enums.FooterLinkGroup
+export type NestedEnumNavLinkGroupWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NavLinkGroup | Prisma.EnumNavLinkGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.NavLinkGroup[] | Prisma.ListEnumNavLinkGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumNavLinkGroupWithAggregatesFilter<$PrismaModel> | $Enums.NavLinkGroup
   _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumFooterLinkGroupFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNavLinkGroupFilter<$PrismaModel>
 }
 
 export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {

@@ -24,6 +24,19 @@ export interface RoomType {
 
 export type UnavailableReason = 'STOP_SELL' | 'NO_INVENTORY' | 'SOLD_OUT' | 'INACTIVE' | 'CAPACITY';
 
+/**
+ * Server-computed price split. Quoted prices are tax-inclusive, so `total` is
+ * what the guest pays and `taxAmount` is the part of it that is tax — never an
+ * addition to it. Render these values; do not recompute tax in the UI.
+ */
+export interface PriceBreakdown {
+  roomSubtotal: number;
+  taxAmount: number;
+  total: number;
+  taxRate: number;
+  taxIncluded: true;
+}
+
 export interface RoomTypeAvailability {
   checkIn: string;
   checkOut: string;
@@ -32,6 +45,7 @@ export interface RoomTypeAvailability {
   minUnitsAvailable: number;
   totalPrice: number | null;
   averageNightlyPrice: number | null;
+  priceBreakdown: PriceBreakdown | null;
   reason?: UnavailableReason;
 }
 

@@ -399,8 +399,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Amenity: 'Amenity',
-  FooterLink: 'FooterLink',
+  NavLink: 'NavLink',
   Hotel: 'Hotel',
+  SiteSetting: 'SiteSetting',
   HotelImage: 'HotelImage',
   RoomType: 'RoomType',
   RoomAvailability: 'RoomAvailability',
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "amenity" | "footerLink" | "hotel" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment"
+    modelProps: "user" | "amenity" | "navLink" | "hotel" | "siteSetting" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -573,77 +574,77 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    FooterLink: {
-      payload: Prisma.$FooterLinkPayload<ExtArgs>
-      fields: Prisma.FooterLinkFieldRefs
+    NavLink: {
+      payload: Prisma.$NavLinkPayload<ExtArgs>
+      fields: Prisma.NavLinkFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.FooterLinkFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload> | null
+          args: Prisma.NavLinkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.FooterLinkFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         findFirst: {
-          args: Prisma.FooterLinkFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload> | null
+          args: Prisma.NavLinkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.FooterLinkFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         findMany: {
-          args: Prisma.FooterLinkFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+          args: Prisma.NavLinkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>[]
         }
         create: {
-          args: Prisma.FooterLinkCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         createMany: {
-          args: Prisma.FooterLinkCreateManyArgs<ExtArgs>
+          args: Prisma.NavLinkCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.FooterLinkCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+          args: Prisma.NavLinkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>[]
         }
         delete: {
-          args: Prisma.FooterLinkDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         update: {
-          args: Prisma.FooterLinkUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         deleteMany: {
-          args: Prisma.FooterLinkDeleteManyArgs<ExtArgs>
+          args: Prisma.NavLinkDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.FooterLinkUpdateManyArgs<ExtArgs>
+          args: Prisma.NavLinkUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.FooterLinkUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+          args: Prisma.NavLinkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>[]
         }
         upsert: {
-          args: Prisma.FooterLinkUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+          args: Prisma.NavLinkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavLinkPayload>
         }
         aggregate: {
-          args: Prisma.FooterLinkAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateFooterLink>
+          args: Prisma.NavLinkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNavLink>
         }
         groupBy: {
-          args: Prisma.FooterLinkGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.FooterLinkGroupByOutputType>[]
+          args: Prisma.NavLinkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NavLinkGroupByOutputType>[]
         }
         count: {
-          args: Prisma.FooterLinkCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.FooterLinkCountAggregateOutputType> | number
+          args: Prisma.NavLinkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NavLinkCountAggregateOutputType> | number
         }
       }
     }
@@ -718,6 +719,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.HotelCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.HotelCountAggregateOutputType> | number
+        }
+      }
+    }
+    SiteSetting: {
+      payload: Prisma.$SiteSettingPayload<ExtArgs>
+      fields: Prisma.SiteSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SiteSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SiteSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.SiteSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SiteSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        findMany: {
+          args: Prisma.SiteSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>[]
+        }
+        create: {
+          args: Prisma.SiteSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        createMany: {
+          args: Prisma.SiteSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SiteSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.SiteSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        update: {
+          args: Prisma.SiteSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.SiteSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SiteSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SiteSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.SiteSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.SiteSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSiteSetting>
+        }
+        groupBy: {
+          args: Prisma.SiteSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SiteSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteSettingCountAggregateOutputType> | number
         }
       }
     }
@@ -1160,7 +1235,7 @@ export const AmenityScalarFieldEnum = {
 export type AmenityScalarFieldEnum = (typeof AmenityScalarFieldEnum)[keyof typeof AmenityScalarFieldEnum]
 
 
-export const FooterLinkScalarFieldEnum = {
+export const NavLinkScalarFieldEnum = {
   id: 'id',
   group: 'group',
   value: 'value',
@@ -1172,12 +1247,13 @@ export const FooterLinkScalarFieldEnum = {
   updatedAt: 'updatedAt'
 } as const
 
-export type FooterLinkScalarFieldEnum = (typeof FooterLinkScalarFieldEnum)[keyof typeof FooterLinkScalarFieldEnum]
+export type NavLinkScalarFieldEnum = (typeof NavLinkScalarFieldEnum)[keyof typeof NavLinkScalarFieldEnum]
 
 
 export const HotelScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
+  previousSlugs: 'previousSlugs',
   name: 'name',
   city: 'city',
   address: 'address',
@@ -1194,6 +1270,17 @@ export const HotelScalarFieldEnum = {
 } as const
 
 export type HotelScalarFieldEnum = (typeof HotelScalarFieldEnum)[keyof typeof HotelScalarFieldEnum]
+
+
+export const SiteSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  group: 'group',
+  label: 'label',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SiteSettingScalarFieldEnum = (typeof SiteSettingScalarFieldEnum)[keyof typeof SiteSettingScalarFieldEnum]
 
 
 export const HotelImageScalarFieldEnum = {
@@ -1396,16 +1483,16 @@ export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
- * Reference to a field of type 'FooterLinkGroup'
+ * Reference to a field of type 'NavLinkGroup'
  */
-export type EnumFooterLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FooterLinkGroup'>
+export type EnumNavLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NavLinkGroup'>
     
 
 
 /**
- * Reference to a field of type 'FooterLinkGroup[]'
+ * Reference to a field of type 'NavLinkGroup[]'
  */
-export type ListEnumFooterLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FooterLinkGroup[]'>
+export type ListEnumNavLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NavLinkGroup[]'>
     
 
 
@@ -1680,8 +1767,9 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   amenity?: Prisma.AmenityOmit
-  footerLink?: Prisma.FooterLinkOmit
+  navLink?: Prisma.NavLinkOmit
   hotel?: Prisma.HotelOmit
+  siteSetting?: Prisma.SiteSettingOmit
   hotelImage?: Prisma.HotelImageOmit
   roomType?: Prisma.RoomTypeOmit
   roomAvailability?: Prisma.RoomAvailabilityOmit

@@ -32,7 +32,12 @@ export interface PaginatedResult<T> {
 export const Role = { USER: 'USER', ADMIN: 'ADMIN' } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 
-export const HotelStatus = { DRAFT: 'DRAFT', PUBLISHED: 'PUBLISHED' } as const;
+export const HotelStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  /** Retired but kept because bookings reference it. Hidden from the site. */
+  ARCHIVED: 'ARCHIVED',
+} as const;
 export type HotelStatus = (typeof HotelStatus)[keyof typeof HotelStatus];
 
 export const RoomTypeStatus = { ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' } as const;

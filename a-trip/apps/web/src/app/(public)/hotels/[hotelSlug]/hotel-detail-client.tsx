@@ -135,9 +135,18 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
   const nightly = hasDates
     ? (selectedRoom?.availability?.averageNightlyPrice ?? selectedRoom?.basePrice ?? null)
     : (selectedRoom?.basePrice ?? null);
-  const subtotal = nightly !== null && nights > 0 ? nightly * nights : nightly;
-  const taxesAndFees = subtotal !== null ? Math.round(subtotal * 0.1) : null;
-  const total = subtotal !== null && taxesAndFees !== null ? subtotal + taxesAndFees : subtotal;
+
+  // The server owns the tax split. This page used to add 10% on top while
+  // checkout presented the same 10% as included, so the two screens quoted
+  // different totals for one stay and neither matched the amount charged.
+  const breakdown = selectedRoom?.availability?.priceBreakdown ?? null;
+  const subtotal = breakdown
+    ? breakdown.roomSubtotal
+    : nightly !== null && nights > 0
+      ? nightly * nights
+      : nightly;
+  const taxesAndFees = breakdown?.taxAmount ?? null;
+  const total = breakdown ? breakdown.total : subtotal;
 
   return (
     <div>
@@ -361,10 +370,11 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                 <>
                   {hasDates && subtotal !== null ? (
                     <div className={styles.priceBreakdown}>
+                      {/* Room and tax are the two halves of the total, so the
+                          rows add up. Labelling this "nightly × nights" would
+                          not: that product is the gross, tax included. */}
                       <div className={styles.breakdownRow}>
-                        <span>
-                          {formatPrice(nightly)} × {pluralize(nights, 'night')}
-                        </span>
+                        <span>Room, {pluralize(nights, 'night')}</span>
                         <span>{formatPrice(subtotal)}</span>
                       </div>
                       <div className={styles.breakdownRow}>

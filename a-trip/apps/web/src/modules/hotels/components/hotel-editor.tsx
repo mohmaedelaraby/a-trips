@@ -35,6 +35,8 @@ const DESCRIPTION_LIMIT = 1200;
 
 export interface HotelEditorValues {
   name: string;
+  /** Public URL key. Blank on create, where the server derives it. */
+  slug: string;
   city: string;
   country: string;
   address: string;
@@ -48,6 +50,7 @@ export interface HotelEditorValues {
 
 const EMPTY: HotelEditorValues = {
   name: '',
+  slug: '',
   city: 'Cairo',
   country: 'Egypt',
   address: '',
@@ -149,6 +152,9 @@ export function HotelEditor({
       longitude: Number.isFinite(longitude) ? longitude : undefined,
       amenities: values.amenities,
       status: values.published ? 'PUBLISHED' : 'DRAFT',
+      // Only sent when the editor actually has one, so creating a hotel still
+      // lets the server derive the slug from the name and city.
+      ...(values.slug.trim() ? { slug: values.slug.trim() } : {}),
     });
   };
 
@@ -214,6 +220,29 @@ export function HotelEditor({
                     />
                     {errors.name ? <p className={ui.fieldError}>{errors.name}</p> : null}
                   </div>
+
+                  {/* Only shown once the hotel exists: on create the server
+                      derives the slug from the name and city. */}
+                  {values.slug ? (
+                    <div>
+                      <label htmlFor="hotel-slug" className={ui.fieldLabel}>
+                        Page link
+                      </label>
+                      <div className={styles.slugField}>
+                        <span className={styles.slugPrefix}>/hotels/</span>
+                        <input
+                          id="hotel-slug"
+                          className={ui.input}
+                          value={values.slug}
+                          onChange={(event) => set('slug', event.target.value)}
+                        />
+                      </div>
+                      <p className={styles.slugHint}>
+                        Changing this keeps the old link working — it still opens this hotel.
+                      </p>
+                      {errors.slug ? <p className={ui.fieldError}>{errors.slug}</p> : null}
+                    </div>
+                  ) : null}
 
                   <div className={styles.fieldRow}>
                     <div>
