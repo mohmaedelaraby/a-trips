@@ -50,6 +50,15 @@ export type User = Prisma.UserModel
  */
 export type Amenity = Prisma.AmenityModel
 /**
+ * Model FooterLink
+ * Footer navigation, editable from the admin portal.
+ * 
+ * `value` is what a visitor reads, `href` is where the click goes. An empty
+ * href means the destination is not built yet, and the site routes it to
+ * /coming-soon instead of rendering a dead label.
+ */
+export type FooterLink = Prisma.FooterLinkModel
+/**
  * Model Hotel
  * 
  */

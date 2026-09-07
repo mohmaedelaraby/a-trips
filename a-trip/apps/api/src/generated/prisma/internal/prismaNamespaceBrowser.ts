@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Amenity: 'Amenity',
+  FooterLink: 'FooterLink',
   Hotel: 'Hotel',
   HotelImage: 'HotelImage',
   RoomType: 'RoomType',
@@ -105,6 +106,21 @@ export const AmenityScalarFieldEnum = {
 } as const
 
 export type AmenityScalarFieldEnum = (typeof AmenityScalarFieldEnum)[keyof typeof AmenityScalarFieldEnum]
+
+
+export const FooterLinkScalarFieldEnum = {
+  id: 'id',
+  group: 'group',
+  value: 'value',
+  href: 'href',
+  openInNewTab: 'openInNewTab',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FooterLinkScalarFieldEnum = (typeof FooterLinkScalarFieldEnum)[keyof typeof FooterLinkScalarFieldEnum]
 
 
 export const HotelScalarFieldEnum = {

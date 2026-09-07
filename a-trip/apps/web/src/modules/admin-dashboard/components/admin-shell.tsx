@@ -31,6 +31,7 @@ const MANAGE: NavItem[] = [
 const SETTINGS: NavItem[] = [
   { href: '/admin/users', label: 'Admin users' },
   { href: '/admin/amenities', label: 'Amenities' },
+  { href: '/admin/footer-links', label: 'Footer links' },
 ];
 
 function isActive(item: NavItem, pathname: string) {

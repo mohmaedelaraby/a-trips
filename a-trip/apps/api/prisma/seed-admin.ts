@@ -145,6 +145,42 @@ async function seedAmenities() {
   console.log(`✔ ${AMENITIES.length} amenities`);
 }
 
+/**
+ * The footer links that used to be hardcoded in the web app. Seeded so a fresh
+ * install renders the same footer it always did, with every row now editable
+ * from the admin portal. A null href routes to /coming-soon.
+ */
+const FOOTER_LINKS: Array<{
+  group: 'COMPANY' | 'SUPPORT';
+  value: string;
+  href: string | null;
+}> = [
+  { group: 'COMPANY', value: 'About ATrips', href: null },
+  { group: 'COMPANY', value: 'Contact us', href: null },
+  { group: 'COMPANY', value: 'Careers', href: null },
+  { group: 'COMPANY', value: 'Partner with us', href: null },
+  { group: 'SUPPORT', value: 'Help centre', href: null },
+  { group: 'SUPPORT', value: 'Booking policy', href: null },
+  { group: 'SUPPORT', value: 'Cancellation', href: null },
+  { group: 'SUPPORT', value: 'Terms & privacy', href: null },
+];
+
+async function seedFooterLinks() {
+  // Keyed on group+value rather than id so re-running never duplicates a row,
+  // and so an admin's edits to href/order survive a re-seed.
+  for (const [index, link] of FOOTER_LINKS.entries()) {
+    const existing = await prisma.footerLink.findFirst({
+      where: { group: link.group, value: link.value },
+      select: { id: true },
+    });
+    if (existing) continue;
+    await prisma.footerLink.create({
+      data: { ...link, sortOrder: index % 4, isActive: true },
+    });
+  }
+  console.log(`✔ ${FOOTER_LINKS.length} footer links`);
+}
+
 async function seedRoomTypeUnits() {
   const roomTypes = await prisma.roomType.findMany({ select: { id: true, name: true } });
   for (const [index, roomType] of roomTypes.entries()) {
@@ -198,6 +234,7 @@ async function seedAvailability() {
 async function main() {
   await seedStaff();
   await seedAmenities();
+  await seedFooterLinks();
   await seedRoomTypeUnits();
   await seedAvailability();
 }

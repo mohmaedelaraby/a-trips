@@ -150,3 +150,15 @@
     justify-content: space-between;
   }
 }
+
+/* Holds the column's height while the links load, so the page does not jump. */
+.linkPlaceholder {
+  height: 0.875rem;
+  width: 60%;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.linkPlaceholder:nth-child(2) { width: 75%; }
+.linkPlaceholder:nth-child(3) { width: 52%; }
+.linkPlaceholder:nth-child(4) { width: 68%; }

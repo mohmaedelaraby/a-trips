@@ -36,6 +36,14 @@ export const UserStatus = {
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 
+export const FooterLinkGroup = {
+  COMPANY: 'COMPANY',
+  SUPPORT: 'SUPPORT'
+} as const
+
+export type FooterLinkGroup = (typeof FooterLinkGroup)[keyof typeof FooterLinkGroup]
+
+
 export const HotelStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED'

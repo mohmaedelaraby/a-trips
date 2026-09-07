@@ -1,0 +1,174 @@
+.intro {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+}
+
+.intro strong {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 1280px) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .panelBody {
+    padding: 1.125rem;
+  }
+}
+
+.empty {
+  padding: 0.5rem 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+}
+
+/* ---- one link row ---- */
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'reorder fields'
+    'meta    meta'
+    'actions actions';
+  gap: 0.625rem 0.75rem;
+  align-items: start;
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 0.875rem;
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'reorder fields meta actions';
+    align-items: end;
+  }
+}
+
+/* A hidden link still edits normally; it just does not render on the site. */
+.rowHidden {
+  background-color: var(--color-canvas);
+}
+
+.rowHidden .fields {
+  opacity: 0.55;
+}
+
+.reorder {
+  grid-area: reorder;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.125rem;
+}
+
+.moveBtn {
+  display: inline-flex;
+  height: 1.5rem;
+  width: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.moveBtn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.moveBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.fields {
+  grid-area: fields;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+@media (min-width: 600px) {
+  .fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  }
+}
+
+.field {
+  display: block;
+  min-width: 0;
+}
+
+.rowMeta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-bottom: 0.375rem;
+  white-space: nowrap;
+}
+
+.rowActions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.375rem;
+}
+
+.rowError {
+  grid-column: 1 / -1;
+  margin-top: -0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* ---- add form ---- */
+
+.addForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  border-top: 1px dashed var(--color-line);
+  padding-top: 0.875rem;
+}
+
+@media (min-width: 600px) {
+  .addForm {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+    align-items: center;
+  }
+}
+
+.addForm .rowError {
+  grid-column: 1 / -1;
+}

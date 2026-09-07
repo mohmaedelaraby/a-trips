@@ -393,6 +393,7 @@ Protected routes take an `Authorization: Bearer <jwt>` header.
 | `GET` | `/api/bookings/my` · `/api/bookings/:reference` |
 | `PATCH` | `/api/bookings/:id/cancel` |
 | `GET` | `/api/payments/config` — public client id and whether PayPal is wired up |
+| `GET` | `/api/footer-links` — the whole site footer in one call, admin-managed |
 | `POST` | `/api/payments/paypal/orders/:bookingId` · `/capture` |
 
 ### Admin
@@ -401,6 +402,7 @@ Protected routes take an `Authorization: Bearer <jwt>` header.
 | --- | --- |
 | `GET` | `/api/admin/dashboard` |
 | `GET` | `/api/admin/availability-gaps` — room types with dates not yet opened for sale |
+| `GET` `POST` `PATCH` `DELETE` | `/api/admin/footer-links`, `/:id`, `/reorder` |
 | `GET` `POST` `PATCH` | `/api/admin/users`, `/api/admin/users/:id`, `/api/admin/users/:id/resend-invite` |
 | `GET` `POST` `PATCH` `DELETE` | `/api/admin/amenities`, `/api/admin/amenities/:id` |
 | `GET` `POST` `PATCH` | `/api/admin/hotels`, `/api/admin/hotels/:id` |
@@ -428,6 +430,11 @@ Defined in [schema.prisma](apps/api/prisma/schema.prisma):
   booking reference
 - **Payment** (`PaymentStatus`) — one payment attempt per booking, holding the
   gateway's order/capture ids apart from the reservation record
+- **FooterLink** (`FooterLinkGroup`) — the site footer's two link columns, edited
+  from the admin portal. `value` is the text a visitor reads, `href` is where the
+  click goes; a null `href` routes to `/coming-soon` rather than rendering a dead
+  label. Served to the site as a single `GET /api/footer-links` call, prefetched
+  in the root layout so the links are in the server-rendered HTML
 
 ### Booking lifecycle and inventory holds
 

@@ -160,6 +160,10 @@ services:
         condition: service_healthy
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+      # Server-side fetches (the root layout prefetches the footer links) run
+      # inside the container, where `localhost` is the web container itself.
+      # They go over the compose network instead.
+      INTERNAL_API_URL: http://api:4000/api
       PORT: 3000
     ports:
       - '${WEB_PORT:-3000}:3000'

@@ -1,53 +1,75 @@
+'use client';
+
 import Link from 'next/link';
 import { comingSoonHref } from '../lib/coming-soon';
+import { useFooterLinks } from '../hooks/use-footer-links';
+import {
+  FOOTER_GROUP_LABEL,
+  type FooterLink as FooterLinkModel,
+  type FooterLinkGroup,
+} from '../interfaces/footer-links';
 import styles from '../styles/site-footer.module.css';
 
 /**
- * `soon` entries have no destination of their own yet. They stay visually
- * quieter than a live link but remain clickable, landing on /coming-soon so a
- * visitor gets an explanation instead of a dead label.
+ * Column order is fixed by the design; which links sit in each column, what
+ * they say and where they point all come from the admin portal.
  */
-interface FooterLink {
-  label: string;
-  href?: string;
+const COLUMNS: FooterLinkGroup[] = ['COMPANY', 'SUPPORT'];
+
+function isExternal(href: string) {
+  return /^https?:\/\//i.test(href);
 }
 
-const COMPANY_LINKS: FooterLink[] = [
-  { label: 'About ATrips' },
-  { label: 'Contact us' },
-  { label: 'Careers' },
-  { label: 'Partner with us' },
-];
+function FooterLinkItem({ link }: { link: FooterLinkModel }) {
+  // No destination yet: still clickable, but visibly a roadmap item.
+  if (!link.href) {
+    return (
+      <li>
+        <Link href={comingSoonHref(link.value)} className={styles.linkSoon}>
+          {link.value}
+          <span className={styles.soonTag}>Soon</span>
+        </Link>
+      </li>
+    );
+  }
 
-const SUPPORT_LINKS: FooterLink[] = [
-  { label: 'Help centre' },
-  { label: 'Booking policy' },
-  { label: 'Cancellation' },
-  { label: 'Terms & privacy' },
-];
+  // An external destination leaves the app, so it gets a plain anchor and the
+  // rel guard that comes with target="_blank".
+  if (isExternal(link.href)) {
+    return (
+      <li>
+        <a
+          href={link.href}
+          className={styles.link}
+          {...(link.openInNewTab
+            ? { target: '_blank', rel: 'noopener noreferrer' }
+            : { rel: 'noopener' })}
+        >
+          {link.value}
+        </a>
+      </li>
+    );
+  }
 
-function FooterLinkList({ links }: { links: FooterLink[] }) {
   return (
-    <ul className={styles.linkList}>
-      {links.map((link) => (
-        <li key={link.label}>
-          {link.href ? (
-            <Link href={link.href} className={styles.link}>
-              {link.label}
-            </Link>
-          ) : (
-            <Link href={comingSoonHref(link.label)} className={styles.linkSoon}>
-              {link.label}
-              <span className={styles.soonTag}>Soon</span>
-            </Link>
-          )}
-        </li>
-      ))}
-    </ul>
+    <li>
+      <Link
+        href={link.href}
+        className={styles.link}
+        {...(link.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {link.value}
+      </Link>
+    </li>
   );
 }
 
 export function SiteFooter() {
+  const { data, isLoading } = useFooterLinks();
+
+  const linksFor = (group: FooterLinkGroup) =>
+    data?.groups.find((g) => g.group === group)?.links ?? [];
+
   return (
     <footer className={styles.footer}>
       <div className={`container-page ${styles.grid}`}>
@@ -65,15 +87,29 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div>
-          <p className={styles.columnHeading}>Company</p>
-          <FooterLinkList links={COMPANY_LINKS} />
-        </div>
-
-        <div>
-          <p className={styles.columnHeading}>Support</p>
-          <FooterLinkList links={SUPPORT_LINKS} />
-        </div>
+        {COLUMNS.map((group) => {
+          const links = linksFor(group);
+          return (
+            <div key={group}>
+              <p className={styles.columnHeading}>{FOOTER_GROUP_LABEL[group]}</p>
+              {isLoading ? (
+                // Placeholder rows keep the footer from collapsing and shoving
+                // the page around when the links arrive.
+                <ul className={styles.linkList} aria-hidden>
+                  {[0, 1, 2, 3].map((i) => (
+                    <li key={i} className={styles.linkPlaceholder} />
+                  ))}
+                </ul>
+              ) : (
+                <ul className={styles.linkList}>
+                  {links.map((link) => (
+                    <FooterLinkItem key={link.id} link={link} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
 
         <div>
           <p className={styles.columnHeading}>Get in touch</p>

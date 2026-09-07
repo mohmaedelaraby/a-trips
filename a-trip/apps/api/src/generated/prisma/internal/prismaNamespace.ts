@@ -399,6 +399,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Amenity: 'Amenity',
+  FooterLink: 'FooterLink',
   Hotel: 'Hotel',
   HotelImage: 'HotelImage',
   RoomType: 'RoomType',
@@ -420,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "amenity" | "hotel" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment"
+    modelProps: "user" | "amenity" | "footerLink" | "hotel" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -569,6 +570,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AmenityCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AmenityCountAggregateOutputType> | number
+        }
+      }
+    }
+    FooterLink: {
+      payload: Prisma.$FooterLinkPayload<ExtArgs>
+      fields: Prisma.FooterLinkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FooterLinkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FooterLinkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        findFirst: {
+          args: Prisma.FooterLinkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FooterLinkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        findMany: {
+          args: Prisma.FooterLinkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+        }
+        create: {
+          args: Prisma.FooterLinkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        createMany: {
+          args: Prisma.FooterLinkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FooterLinkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+        }
+        delete: {
+          args: Prisma.FooterLinkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        update: {
+          args: Prisma.FooterLinkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        deleteMany: {
+          args: Prisma.FooterLinkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FooterLinkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FooterLinkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>[]
+        }
+        upsert: {
+          args: Prisma.FooterLinkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FooterLinkPayload>
+        }
+        aggregate: {
+          args: Prisma.FooterLinkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFooterLink>
+        }
+        groupBy: {
+          args: Prisma.FooterLinkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FooterLinkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FooterLinkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FooterLinkCountAggregateOutputType> | number
         }
       }
     }
@@ -1085,6 +1160,21 @@ export const AmenityScalarFieldEnum = {
 export type AmenityScalarFieldEnum = (typeof AmenityScalarFieldEnum)[keyof typeof AmenityScalarFieldEnum]
 
 
+export const FooterLinkScalarFieldEnum = {
+  id: 'id',
+  group: 'group',
+  value: 'value',
+  href: 'href',
+  openInNewTab: 'openInNewTab',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FooterLinkScalarFieldEnum = (typeof FooterLinkScalarFieldEnum)[keyof typeof FooterLinkScalarFieldEnum]
+
+
 export const HotelScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -1306,6 +1396,27 @@ export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'FooterLinkGroup'
+ */
+export type EnumFooterLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FooterLinkGroup'>
+    
+
+
+/**
+ * Reference to a field of type 'FooterLinkGroup[]'
+ */
+export type ListEnumFooterLinkGroupFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FooterLinkGroup[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1344,13 +1455,6 @@ export type EnumHotelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'HotelStatus[]'
  */
 export type ListEnumHotelStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HotelStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1576,6 +1680,7 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   amenity?: Prisma.AmenityOmit
+  footerLink?: Prisma.FooterLinkOmit
   hotel?: Prisma.HotelOmit
   hotelImage?: Prisma.HotelImageOmit
   roomType?: Prisma.RoomTypeOmit

@@ -54,6 +54,33 @@ model Amenity {
   updatedAt DateTime @updatedAt
 }
 
+/// Footer navigation, editable from the admin portal.
+///
+/// `value` is what a visitor reads, `href` is where the click goes. An empty
+/// href means the destination is not built yet, and the site routes it to
+/// /coming-soon instead of rendering a dead label.
+model FooterLink {
+  id        String          @id @default(uuid())
+  group     FooterLinkGroup
+  value     String
+  /// Absolute URL, or a site-relative path starting with "/". Null = coming soon.
+  href      String?
+  /// Absolute hrefs open in a new tab unless this is explicitly turned off.
+  openInNewTab Boolean      @default(false)
+  sortOrder Int             @default(0)
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([group, sortOrder])
+}
+
+/// Which footer column a link belongs to. The footer has two link columns.
+enum FooterLinkGroup {
+  COMPANY
+  SUPPORT
+}
+
 model Hotel {
   id          String       @id @default(uuid())
   slug        String       @unique

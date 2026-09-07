@@ -403,10 +403,6 @@ export type HotelImageUncheckedUpdateManyWithoutHotelNestedInput = {
   deleteMany?: Prisma.HotelImageScalarWhereInput | Prisma.HotelImageScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type HotelImageCreateWithoutHotelInput = {
   id?: string
   url: string
