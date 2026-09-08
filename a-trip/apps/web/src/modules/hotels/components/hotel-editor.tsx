@@ -9,6 +9,12 @@ import { cn } from '../../../shared/lib/utils';
 import { toast } from '../../../shared/stores/toast.store';
 import type { CreateHotelPayload } from '../interfaces/admin-hotel';
 import type { HotelImage } from '../interfaces/hotel';
+import {
+  DraftRoomsPanel,
+  defaultDraftAvailability,
+  type DraftAvailability,
+  type DraftRoomType,
+} from './draft-rooms-panel';
 import styles from '../styles/hotel-editor.module.css';
 
 /** Mirrors MAX_UPLOAD_BYTES on the API; keep the two in step. */
@@ -61,6 +67,15 @@ const EMPTY: HotelEditorValues = {
   published: false,
 };
 
+/**
+ * What the create form collects beyond the hotel row itself. Empty on the edit
+ * screen, which has dedicated pages for rooms and the calendar.
+ */
+export interface HotelEditorExtras {
+  rooms: DraftRoomType[];
+  availability: DraftAvailability;
+}
+
 export function HotelEditor({
   title,
   breadcrumb,
@@ -78,6 +93,7 @@ export function HotelEditor({
   uploadProgress,
   onRemoveImage,
   onReorderImages,
+  collectRooms = false,
 }: {
   title: string;
   breadcrumb?: React.ReactNode;
@@ -90,7 +106,12 @@ export function HotelEditor({
   hotelId?: string;
   saving?: boolean;
   submitLabel?: string;
-  onSubmit: (payload: CreateHotelPayload) => void;
+  onSubmit: (payload: CreateHotelPayload, extras: HotelEditorExtras) => void;
+  /**
+   * Collect room types and their opening dates in this form. Used on create,
+   * where the alternative is saving a hotel that no guest can book.
+   */
+  collectRooms?: boolean;
   onUploadImages?: (files: File[]) => void;
   uploading?: boolean;
   uploadProgress?: number | null;
@@ -99,9 +120,13 @@ export function HotelEditor({
 }) {
   const [values, setValues] = React.useState<HotelEditorValues>({ ...EMPTY, ...initialValues });
   const [amenityDraft, setAmenityDraft] = React.useState('');
-  const [errors, setErrors] = React.useState<Partial<Record<keyof HotelEditorValues, string>>>({});
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [dragIndex, setDragIndex] = React.useState<number | null>(null);
   const [overIndex, setOverIndex] = React.useState<number | null>(null);
+  const [rooms, setRooms] = React.useState<DraftRoomType[]>([]);
+  const [availability, setAvailability] = React.useState<DraftAvailability>(
+    defaultDraftAvailability,
+  );
   const [fileDropActive, setFileDropActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -168,10 +193,26 @@ export function HotelEditor({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const nextErrors: Partial<Record<keyof HotelEditorValues, string>> = {};
+    const nextErrors: Record<string, string> = {};
     if (values.name.trim().length < 2) nextErrors.name = 'Enter the hotel name';
     if (values.city.trim().length < 2) nextErrors.city = 'Choose a city';
     if (values.address.trim().length < 2) nextErrors.address = 'Enter the street address';
+
+    if (collectRooms) {
+      for (const room of rooms) {
+        if (room.name.trim().length < 2) {
+          nextErrors[`room-${room.key}-name`] = 'Enter a room name';
+        }
+        const price = Number(room.basePrice);
+        if (!room.basePrice.trim() || !Number.isFinite(price) || price <= 0) {
+          nextErrors[`room-${room.key}-price`] = 'Enter a nightly price above 0';
+        }
+      }
+      if (rooms.length > 0 && availability.to < availability.from) {
+        nextErrors.availability = 'The end date must be on or after the start date';
+      }
+    }
+
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -195,7 +236,7 @@ export function HotelEditor({
       // Sent every time, including blanks: clearing a field is how an admin
       // removes a translation and falls back to the English.
       translations: { AR: values.ar },
-    });
+    }, { rooms, availability });
   };
 
   /**
@@ -214,27 +255,35 @@ export function HotelEditor({
       warn: 'Description is empty',
     },
     {
-      ok: Boolean(hotelId) && roomTypeCount > 0 && roomTypesWithoutPrice === 0,
-      label: 'All room types priced',
+      ok: collectRooms
+        ? rooms.length > 0
+        : Boolean(hotelId) && roomTypeCount > 0 && roomTypesWithoutPrice === 0,
+      label: collectRooms
+        ? `${rooms.length} room type${rooms.length === 1 ? '' : 's'} ready`
+        : 'All room types priced',
       warn: hotelId
         ? roomTypesWithoutPrice === 0
           ? roomTypeCount === 0 ? 'No room types yet' : ''
           : `${roomTypesWithoutPrice} room type${roomTypesWithoutPrice === 1 ? '' : 's'} ha${
               roomTypesWithoutPrice === 1 ? 's' : 've'
             } no price`
-        : 'Add room types after saving',
+        : rooms.length > 0
+          ? ''
+          : 'No rooms yet — guests cannot book',
       ...(hotelId
         ? { href: `/admin/hotels/${hotelId}/room-types`, cta: 'Manage room types' }
         : {}),
     },
     {
-      ok: Boolean(availabilityEndsOn),
-      label: `Availability loaded to ${availabilityEndsOn ?? ''}`,
+      ok: collectRooms ? rooms.length > 0 : Boolean(availabilityEndsOn),
+      label: collectRooms
+        ? `Opening ${availability.from} to ${availability.to}`
+        : `Availability loaded to ${availabilityEndsOn ?? ''}`,
       // The most common reason a finished-looking hotel shows nothing to
       // guests, so it names the consequence rather than just the gap.
       warn: hotelId
         ? 'No availability — guests see no rooms'
-        : 'Open dates for sale after saving',
+        : 'Add a room above to open dates for sale',
       ...(hotelId
         ? { href: `/admin/availability?hotelId=${hotelId}`, cta: 'Open the calendar' }
         : {}),
@@ -578,6 +627,18 @@ export function HotelEditor({
                 )}
               </div>
             </Panel>
+
+            {collectRooms ? (
+              <Panel>
+                <DraftRoomsPanel
+                  rooms={rooms}
+                  onRoomsChange={setRooms}
+                  availability={availability}
+                  onAvailabilityChange={setAvailability}
+                  errors={errors}
+                />
+              </Panel>
+            ) : null}
           </div>
 
           <div className={styles.column}>

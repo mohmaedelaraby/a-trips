@@ -3,13 +3,18 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { HotelEditor } from '../../../../modules/hotels/components/hotel-editor';
+import {
+  HotelEditor,
+  type HotelEditorExtras,
+} from '../../../../modules/hotels/components/hotel-editor';
 import {
   useCreateHotel,
   useUploadImagesToHotel,
 } from '../../../../modules/hotels/hooks/use-admin-hotels';
+import { apiPost } from '../../../../shared/lib/api-client';
 import { toast } from '../../../../shared/stores/toast.store';
-import type { HotelImage } from '../../../../modules/hotels/interfaces/hotel';
+import type { HotelImage, RoomType } from '../../../../modules/hotels/interfaces/hotel';
+import type { CreateHotelPayload } from '../../../../modules/hotels/interfaces/admin-hotel';
 
 /** A photo picked before the hotel exists: the file, plus a local preview URL. */
 interface PendingPhoto {
@@ -19,13 +24,17 @@ interface PendingPhoto {
 }
 
 /**
- * Photos can be chosen while creating a hotel, even though uploading needs an
- * id the hotel does not have yet.
+ * Creating a hotel in one pass.
  *
- * They are held in memory with object-URL previews and sent the moment the
- * create call returns an id. Doing it the other way round — making people save
- * first and come back to add photos — is what the page used to do, and it read
- * as the upload button being broken.
+ * The hotel row alone is not a listing a guest can find: without a room type
+ * there is nothing to sell, and without RoomAvailability rows every search
+ * reports "no rooms available", which is indistinguishable from sold out. Both
+ * used to live on screens you visited after saving, so hotels routinely went
+ * live invisible.
+ *
+ * So this page submits a sequence rather than one request — hotel, photos,
+ * rooms, then the opening dates for each room. Ordering is forced by the API:
+ * every later step needs an id the previous one returns.
  */
 export default function NewHotelPage() {
   const router = useRouter();
@@ -34,6 +43,7 @@ export default function NewHotelPage() {
 
   const [pending, setPending] = React.useState<PendingPhoto[]>([]);
   const [uploadProgress, setUploadProgress] = React.useState<number | null>(null);
+  const [busy, setBusy] = React.useState(false);
 
   // Object URLs hold their blob alive until revoked. Revoking happens here on
   // unmount, and in removePhoto for individually discarded ones.
@@ -83,34 +93,78 @@ export default function NewHotelPage() {
     isPrimary: index === 0,
   }));
 
-  const submit = (payload: Parameters<typeof createHotel.mutate>[0]) => {
+  const submit = (payload: CreateHotelPayload, extras: HotelEditorExtras) => {
+    setBusy(true);
+
     createHotel.mutate(payload, {
       onSuccess: async (hotel) => {
-        if (pending.length === 0) {
-          router.push(`/admin/hotels/${hotel.id}`);
-          return;
+        // Each step reports its own failure and none of them undo the hotel:
+        // it is already saved, and the edit screen can finish whatever did not
+        // land. Silently rolling back would lose the rest of the form.
+        const problems: string[] = [];
+
+        if (pending.length > 0) {
+          try {
+            await uploadImages.mutateAsync({
+              hotelId: hotel.id,
+              files: pending.map((photo) => photo.file),
+              onProgress: setUploadProgress,
+            });
+          } catch {
+            problems.push('photos');
+          } finally {
+            setUploadProgress(null);
+          }
         }
 
-        try {
-          await uploadImages.mutateAsync({
-            hotelId: hotel.id,
-            files: pending.map((photo) => photo.file),
-            onProgress: setUploadProgress,
-          });
-          toast.success(
-            pending.length === 1 ? 'Hotel created with 1 photo' : `Hotel created with ${pending.length} photos`,
-          );
-        } catch {
-          // The hotel itself saved, so this is not a failed create. Say what
-          // actually happened and still go to the hotel, where the photos can
-          // be retried, rather than stranding the user on a form whose data is
-          // already persisted.
-          toast.error('Hotel created, but the photos could not be uploaded. Try adding them again.');
-        } finally {
-          setUploadProgress(null);
-          router.push(`/admin/hotels/${hotel.id}`);
+        let roomsCreated = 0;
+        let nightsOpened = 0;
+
+        for (const room of extras.rooms) {
+          try {
+            const created = await apiPost<RoomType>(`/admin/hotels/${hotel.id}/room-types`, {
+              name: room.name.trim(),
+              description: room.description.trim() || undefined,
+              capacityAdults: room.capacityAdults,
+              capacityChildren: room.capacityChildren,
+              numOfBeds: room.numOfBeds,
+              totalUnits: room.totalUnits,
+              basePrice: Number(room.basePrice),
+            });
+            roomsCreated += 1;
+
+            // Opening dates is what actually puts the room on sale, so it runs
+            // per room rather than once: each has its own unit count.
+            const result = await apiPost<{ datesAffected: number }>(
+              `/admin/room-types/${created.id}/availability/bulk`,
+              {
+                from: extras.availability.from,
+                to: extras.availability.to,
+                totalUnits: room.totalUnits,
+              },
+            );
+            nightsOpened = Math.max(nightsOpened, result.datesAffected);
+          } catch {
+            problems.push(`room "${room.name.trim() || 'unnamed'}"`);
+          }
         }
+
+        if (problems.length > 0) {
+          toast.error(
+            'Hotel saved, but some steps failed',
+            `Could not finish: ${problems.join(', ')}. Open the hotel to complete them.`,
+          );
+        } else if (roomsCreated > 0) {
+          toast.success(
+            'Hotel is ready to book',
+            `${roomsCreated} room type${roomsCreated === 1 ? '' : 's'} with ${nightsOpened} night${nightsOpened === 1 ? '' : 's'} on sale.`,
+          );
+        }
+
+        setBusy(false);
+        router.push(`/admin/hotels/${hotel.id}`);
       },
+      onError: () => setBusy(false),
     });
   };
 
@@ -119,7 +173,8 @@ export default function NewHotelPage() {
       title="Add hotel"
       breadcrumb={<Link href="/admin/hotels">Hotels /</Link>}
       submitLabel="Create hotel"
-      saving={createHotel.isPending || uploadImages.isPending}
+      saving={busy || createHotel.isPending}
+      collectRooms
       images={previewImages}
       onUploadImages={addPhotos}
       onRemoveImage={removePhoto}
