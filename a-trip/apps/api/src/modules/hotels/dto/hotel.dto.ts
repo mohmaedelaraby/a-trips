@@ -87,6 +87,17 @@ export class CreateHotelDto {
   @ValidateNested({ each: true })
   @Type(() => HotelImageDto)
   images?: HotelImageDto[];
+
+  /**
+   * Same shape as on update: { AR: { name, description, city, address } }.
+   *
+   * Accepted on create because the editor submits one payload for both, and
+   * with `forbidNonWhitelisted` an unknown property is a 400 — leaving this out
+   * made every "Create hotel" from the admin portal fail outright.
+   */
+  @IsOptional()
+  @IsObject()
+  translations?: Record<string, Record<string, string>>;
 }
 
 export class UpdateHotelDto {

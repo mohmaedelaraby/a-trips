@@ -4,7 +4,7 @@ import { AvailabilityService } from '../availability/availability.service';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
 import { toNumber } from '../../common/utils/decimal.util';
-import { countNights, parseDateOnly } from '../../common/utils/date.util';
+import { countNights, parseDateOnly, startOfTodayUtc } from '../../common/utils/date.util';
 import { HotelsRepository } from './repositories/hotels.repository';
 import {
   hotelKeyPrefix,
@@ -210,13 +210,22 @@ export class HotelsService {
     const hotel = await this.repository.findByIdWithRelations(id);
     if (!hotel) throw new NotFoundException('Hotel not found');
 
-    const rows = await this.repository.findTranslations(
-      id,
-      hotel.roomTypes.map((rt) => rt.id),
-    );
+    const [rows, availabilityEnd] = await Promise.all([
+      this.repository.findTranslations(
+        id,
+        hotel.roomTypes.map((rt) => rt.id),
+      ),
+      this.repository.findAvailabilityEnd(id, startOfTodayUtc()),
+    ]);
 
     return {
       ...toHotelDto(hotel),
+      /**
+       * How far the calendar is loaded, for the editor's readiness checklist.
+       * Null means nothing is on sale from today onwards — the single most
+       * common reason a published hotel looks empty to guests.
+       */
+      availabilityEndsOn: availabilityEnd ? availabilityEnd.toISOString().slice(0, 10) : null,
       translations: nestTranslations(rows, hotelKeyPrefix(id)),
       roomTypes: hotel.roomTypes.map((rt) => ({
         ...toRoomTypeDto(rt),
@@ -250,6 +259,10 @@ export class HotelsService {
           }
         : undefined,
     });
+
+    // After the row exists, since the keys are `hotel.<id>.<field>`.
+    await this.saveTranslations(hotelKeyPrefix(hotel.id), dto.translations);
+
     return toHotelDto(hotel);
   }
 

@@ -39,7 +39,9 @@ export function HotelEditClient({ hotelId }: { hotelId: string }) {
       saving={updateHotel.isPending}
       images={hotel.images}
       roomTypesWithoutPrice={hotel.roomTypes.filter((room) => !room.basePrice).length}
-      availabilityEndsOn={null}
+      roomTypeCount={hotel.roomTypes.length}
+      availabilityEndsOn={hotel.availabilityEndsOn ?? null}
+      hotelId={hotelId}
       initialValues={{
         name: hotel.name,
         slug: hotel.slug,

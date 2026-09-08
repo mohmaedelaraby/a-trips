@@ -128,21 +128,30 @@ const NAV_LINKS: Array<{
   group: 'HEADER' | 'FOOTER_COMPANY' | 'FOOTER_SUPPORT';
   value: string;
   href: string | null;
+  /**
+   * Arabic label, stored as `nav.<id>` in the Translation table.
+   *
+   * Nav links are admin-managed content, so unlike the static UI strings their
+   * wording cannot live in the web app's JSON — it has to be seeded here.
+   * Without it the header stayed English on the Arabic site while everything
+   * around it translated, which reads as the language switch being broken.
+   */
+  ar: string;
 }> = [
-  { group: 'HEADER', value: 'Home', href: '/' },
-  { group: 'HEADER', value: 'Hotels', href: '/hotels' },
-  { group: 'HEADER', value: 'About', href: null },
-  { group: 'HEADER', value: 'Contact', href: null },
-  { group: 'HEADER', value: 'Tours', href: null },
-  { group: 'HEADER', value: 'Flights', href: null },
-  { group: 'FOOTER_COMPANY', value: 'About ATrips', href: null },
-  { group: 'FOOTER_COMPANY', value: 'Contact us', href: null },
-  { group: 'FOOTER_COMPANY', value: 'Careers', href: null },
-  { group: 'FOOTER_COMPANY', value: 'Partner with us', href: null },
-  { group: 'FOOTER_SUPPORT', value: 'Help centre', href: null },
-  { group: 'FOOTER_SUPPORT', value: 'Booking policy', href: null },
-  { group: 'FOOTER_SUPPORT', value: 'Cancellation', href: null },
-  { group: 'FOOTER_SUPPORT', value: 'Terms & privacy', href: null },
+  { group: 'HEADER', value: 'Home', href: '/', ar: 'الرئيسية' },
+  { group: 'HEADER', value: 'Hotels', href: '/hotels', ar: 'الفنادق' },
+  { group: 'HEADER', value: 'About', href: null, ar: 'من نحن' },
+  { group: 'HEADER', value: 'Contact', href: null, ar: 'اتصل بنا' },
+  { group: 'HEADER', value: 'Tours', href: null, ar: 'الرحلات' },
+  { group: 'HEADER', value: 'Flights', href: null, ar: 'الطيران' },
+  { group: 'FOOTER_COMPANY', value: 'About ATrips', href: null, ar: 'عن أتريبس' },
+  { group: 'FOOTER_COMPANY', value: 'Contact us', href: null, ar: 'تواصل معنا' },
+  { group: 'FOOTER_COMPANY', value: 'Careers', href: null, ar: 'الوظائف' },
+  { group: 'FOOTER_COMPANY', value: 'Partner with us', href: null, ar: 'كن شريكًا معنا' },
+  { group: 'FOOTER_SUPPORT', value: 'Help centre', href: null, ar: 'مركز المساعدة' },
+  { group: 'FOOTER_SUPPORT', value: 'Booking policy', href: null, ar: 'سياسة الحجز' },
+  { group: 'FOOTER_SUPPORT', value: 'Cancellation', href: null, ar: 'الإلغاء' },
+  { group: 'FOOTER_SUPPORT', value: 'Terms & privacy', href: null, ar: 'الشروط والخصوصية' },
 ];
 
 async function seedNavLinks() {
@@ -158,12 +167,26 @@ async function seedNavLinks() {
       where: { group: link.group, value: link.value },
       select: { id: true },
     });
-    if (existing) continue;
-    await prisma.navLink.create({
-      data: { ...link, sortOrder: order, isActive: true },
+
+    const { ar, ...row } = link;
+    const id =
+      existing?.id ??
+      (
+        await prisma.navLink.create({
+          data: { ...row, sortOrder: order, isActive: true },
+          select: { id: true },
+        })
+      ).id;
+
+    // Upserted even for links that already exist: the row may predate this
+    // Arabic, and the label is useless to an Arabic reader without it.
+    await prisma.translation.upsert({
+      where: { key_locale: { key: `nav.${id}`, locale: 'AR' } },
+      create: { key: `nav.${id}`, locale: 'AR', value: ar },
+      update: { value: ar },
     });
   }
-  console.log(`✔ ${NAV_LINKS.length} navigation links`);
+  console.log(`✔ ${NAV_LINKS.length} navigation links (English + Arabic)`);
 }
 
 async function seedSiteSettings() {

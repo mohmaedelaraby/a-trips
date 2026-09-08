@@ -84,6 +84,12 @@ export interface HotelListItem extends Hotel {
 }
 
 export interface HotelDetail extends Hotel {
+  /**
+   * Admin responses only: the last date the calendar is loaded to, counting
+   * today onwards. Null means nothing is on sale — the hotel looks empty to
+   * guests however complete the rest of its content is.
+   */
+  availabilityEndsOn?: string | null;
   /** Admin responses only: per-locale overrides for the translatable fields. */
   translations?: Record<string, Record<string, string>>;
   roomTypes: RoomTypeWithAvailability[];

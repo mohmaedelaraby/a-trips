@@ -397,6 +397,19 @@
   color: var(--color-warning-fg);
 }
 
+/* The action that clears the warning, sitting inline with the warning itself. */
+.checkLink {
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.checkLink:hover {
+  opacity: 0.8;
+}
+
 /* ---- slug field ---- */
 
 .slugField {

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPatch, apiPost, ApiError } from '../../../shared/lib/api-client';
+import { invalidateAdminSummary } from '../../admin-dashboard/hooks/use-dashboard';
 import { toast } from '../../../shared/stores/toast.store';
 import type {
   AvailabilityCalendar,
@@ -25,6 +26,7 @@ export function useBulkSetAvailability(roomTypeId: string) {
     mutationFn: (payload: BulkAvailabilityPayload) =>
       apiPost<BulkAvailabilityResult>(`/admin/room-types/${roomTypeId}/availability/bulk`, payload),
     onSuccess: (result) => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability', roomTypeId] });
       // Opening or closing dates changes the gap warning.
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability-gaps'] });
@@ -42,6 +44,7 @@ export function useSetStopSell(roomTypeId: string) {
     mutationFn: (payload: StopSellPayload) =>
       apiPatch<BulkAvailabilityResult>(`/admin/room-types/${roomTypeId}/availability/stop-sell`, payload),
     onSuccess: (result) => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability', roomTypeId] });
       // Opening or closing dates changes the gap warning.
       queryClient.invalidateQueries({ queryKey: ['admin', 'availability-gaps'] });

@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiDelete, apiPatch, apiPost, ApiError } from '../../../shared/lib/api-client';
+import { invalidateAdminSummary } from '../../admin-dashboard/hooks/use-dashboard';
 import { toast } from '../../../shared/stores/toast.store';
 import type { CreateRoomTypePayload, UpdateRoomTypePayload } from '../interfaces/admin-room-type';
 import type { RoomType } from '../interfaces/hotel';
@@ -12,6 +13,7 @@ export function useCreateRoomType(hotelId: string) {
     mutationFn: (payload: CreateRoomTypePayload) =>
       apiPost<RoomType>(`/admin/hotels/${hotelId}/room-types`, payload),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
       toast.success('Room type added');
     },
@@ -27,6 +29,7 @@ export function useUpdateRoomType(hotelId: string, roomTypeId: string) {
     mutationFn: (payload: UpdateRoomTypePayload) =>
       apiPatch<RoomType>(`/admin/room-types/${roomTypeId}`, payload),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
       toast.success('Room type updated');
     },
@@ -43,6 +46,7 @@ export function useSaveRoomType(hotelId: string) {
     mutationFn: ({ id, ...payload }: UpdateRoomTypePayload & { id: string }) =>
       apiPatch<RoomType>(`/admin/room-types/${id}`, payload),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
       toast.success('Room type saved');
     },
@@ -57,6 +61,7 @@ export function useDeleteRoomType(hotelId: string) {
   return useMutation({
     mutationFn: (roomTypeId: string) => apiDelete(`/admin/room-types/${roomTypeId}`),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
       toast.success('Room type removed');
     },

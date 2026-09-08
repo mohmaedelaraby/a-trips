@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiDelete, apiGet, apiPatch, apiPost, apiUpload, ApiError } from '../../../shared/lib/api-client';
+import { invalidateAdminSummary } from '../../admin-dashboard/hooks/use-dashboard';
 import { toast } from '../../../shared/stores/toast.store';
 import type {
   AdminHotelList,
@@ -33,6 +34,7 @@ export function useCreateHotel() {
   return useMutation({
     mutationFn: (payload: CreateHotelPayload) => apiPost<AdminHotelListItem>('/admin/hotels', payload),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
       toast.success('Hotel created');
     },
@@ -47,6 +49,7 @@ export function useUpdateHotel(id: string) {
   return useMutation({
     mutationFn: (payload: UpdateHotelPayload) => apiPatch<AdminHotelListItem>(`/admin/hotels/${id}`, payload),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
       toast.success('Hotel updated');
     },
@@ -62,6 +65,7 @@ export function useAddHotelImages(hotelId: string) {
     mutationFn: (images: Array<{ url: string; isPrimary?: boolean }>) =>
       apiPost(`/admin/hotels/${hotelId}/images`, { images }),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
     },
     onError: (error) => {
@@ -77,6 +81,7 @@ export function useUploadHotelImages(hotelId: string) {
     mutationFn: ({ files, onProgress }: { files: File[]; onProgress?: (percent: number) => void }) =>
       apiUpload<HotelDetail>(`/admin/hotels/${hotelId}/images/upload`, files, 'files', onProgress),
     onSuccess: (_data, variables) => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
       toast.success(
         variables.files.length === 1 ? 'Photo uploaded' : `${variables.files.length} photos uploaded`,
@@ -88,11 +93,68 @@ export function useUploadHotelImages(hotelId: string) {
   });
 }
 
+/**
+ * The server takes at most 10 files per request, so larger picks are sent in
+ * batches of this size rather than failing the whole selection.
+ */
+export const MAX_FILES_PER_UPLOAD = 10;
+
+/**
+ * Upload variant for the create flow.
+ *
+ * `useUploadHotelImages` binds the hotel id when the hook runs, which the
+ * "Add hotel" page cannot do — the hotel does not exist until it is saved. Here
+ * the id is a mutation argument instead, so photos picked before saving can be
+ * attached the moment the hotel comes back with an id.
+ */
+export function useUploadImagesToHotel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      hotelId,
+      files,
+      onProgress,
+    }: {
+      hotelId: string;
+      files: File[];
+      onProgress?: (percent: number) => void;
+    }) => {
+      const batches: File[][] = [];
+      for (let i = 0; i < files.length; i += MAX_FILES_PER_UPLOAD) {
+        batches.push(files.slice(i, i + MAX_FILES_PER_UPLOAD));
+      }
+
+      let done = 0;
+      let last: HotelDetail | undefined;
+      for (const batch of batches) {
+        last = await apiUpload<HotelDetail>(
+          `/admin/hotels/${hotelId}/images/upload`,
+          batch,
+          'files',
+          // Report progress across the whole selection, not per batch, so the
+          // percentage never restarts at zero partway through.
+          (percent) =>
+            onProgress?.(
+              Math.round(((done + (percent / 100) * batch.length) / files.length) * 100),
+            ),
+        );
+        done += batch.length;
+      }
+      return last;
+    },
+    onSuccess: () => {
+      invalidateAdminSummary(queryClient);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
+    },
+  });
+}
+
 export function useReorderHotelImages(hotelId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (imageIds: string[]) => apiPatch(`/admin/hotels/${hotelId}/images/order`, { imageIds }),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
     },
     onError: (error) => {
@@ -106,6 +168,7 @@ export function useRemoveHotelImage(hotelId: string) {
   return useMutation({
     mutationFn: (imageId: string) => apiDelete(`/admin/hotels/${hotelId}/images/${imageId}`),
     onSuccess: () => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels', hotelId] });
     },
     onError: (error) => {
@@ -127,6 +190,7 @@ export function useRemoveHotel() {
         `/admin/hotels/${id}`,
       ),
     onSuccess: (result) => {
+      invalidateAdminSummary(queryClient);
       queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] });
       queryClient.invalidateQueries({ queryKey: ['hotels'] });
       if (result.archived) {

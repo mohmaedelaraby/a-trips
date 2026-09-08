@@ -6,9 +6,14 @@ import { X } from 'lucide-react';
 import { AdminTopbar, Panel, Toggle, adminUi as ui } from '../../admin-dashboard/components/admin-ui';
 import { useAmenities } from '../../admin-dashboard/hooks/use-admin-users';
 import { cn } from '../../../shared/lib/utils';
+import { toast } from '../../../shared/stores/toast.store';
 import type { CreateHotelPayload } from '../interfaces/admin-hotel';
 import type { HotelImage } from '../interfaces/hotel';
 import styles from '../styles/hotel-editor.module.css';
+
+/** Mirrors MAX_UPLOAD_BYTES on the API; keep the two in step. */
+const MAX_IMAGE_MB = 8;
+const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
 
 const COUNTRIES = ['Egypt', 'Jordan', 'Morocco', 'United Arab Emirates', 'Saudi Arabia', 'Tunisia'];
 const CITIES = [
@@ -62,7 +67,9 @@ export function HotelEditor({
   initialValues,
   images = [],
   roomTypesWithoutPrice = 0,
+  roomTypeCount = 0,
   availabilityEndsOn,
+  hotelId,
   saving,
   submitLabel = 'Save hotel',
   onSubmit,
@@ -77,7 +84,10 @@ export function HotelEditor({
   initialValues?: Partial<HotelEditorValues>;
   images?: HotelImage[];
   roomTypesWithoutPrice?: number;
+  roomTypeCount?: number;
   availabilityEndsOn?: string | null;
+  /** Present only once the hotel exists; gates links to its sub-screens. */
+  hotelId?: string;
   saving?: boolean;
   submitLabel?: string;
   onSubmit: (payload: CreateHotelPayload) => void;
@@ -97,9 +107,29 @@ export function HotelEditor({
 
   const acceptFiles = (list: FileList | null) => {
     if (!list || !onUploadImages) return;
+    const picked = Array.from(list);
+
     // Ignore anything that is not an image so a stray drop cannot start an
     // upload the API would only reject.
-    const files = Array.from(list).filter((file) => file.type.startsWith('image/'));
+    const images = picked.filter((file) => file.type.startsWith('image/'));
+
+    // Size is checked here as well as on the server because the request carries
+    // every file together: one oversized photo would otherwise fail the whole
+    // batch, losing the good ones with it and giving no hint which was at fault.
+    const files = images.filter((file) => file.size <= MAX_IMAGE_BYTES);
+    const tooLarge = images.filter((file) => file.size > MAX_IMAGE_BYTES);
+
+    if (picked.length > images.length) {
+      toast.error('Only image files can be uploaded');
+    }
+    if (tooLarge.length > 0) {
+      toast.error(
+        tooLarge.length === 1
+          ? `"${tooLarge[0].name}" is larger than ${MAX_IMAGE_MB}MB`
+          : `${tooLarge.length} photos are larger than ${MAX_IMAGE_MB}MB and were skipped`,
+      );
+    }
+
     if (files.length > 0) onUploadImages(files);
   };
 
@@ -168,7 +198,15 @@ export function HotelEditor({
     });
   };
 
-  const checks = [
+  /**
+   * Readiness checklist.
+   *
+   * Each unmet item carries the link that fixes it. Room types and availability
+   * live on their own screens keyed by hotel id, so before the hotel is saved
+   * there is nowhere to send anyone — those rows say so instead of linking into
+   * a route that cannot exist yet.
+   */
+  const checks: Array<{ ok: boolean; label: string; warn: string; href?: string; cta?: string }> = [
     { ok: images.length >= 4, label: 'At least 4 photos', warn: `${images.length} of 4 photos` },
     {
       ok: values.description.trim().length > 0,
@@ -176,16 +214,30 @@ export function HotelEditor({
       warn: 'Description is empty',
     },
     {
-      ok: roomTypesWithoutPrice === 0,
+      ok: Boolean(hotelId) && roomTypeCount > 0 && roomTypesWithoutPrice === 0,
       label: 'All room types priced',
-      warn: `${roomTypesWithoutPrice} room type${roomTypesWithoutPrice === 1 ? '' : 's'} ha${
-        roomTypesWithoutPrice === 1 ? 's' : 've'
-      } no price`,
+      warn: hotelId
+        ? roomTypesWithoutPrice === 0
+          ? roomTypeCount === 0 ? 'No room types yet' : ''
+          : `${roomTypesWithoutPrice} room type${roomTypesWithoutPrice === 1 ? '' : 's'} ha${
+              roomTypesWithoutPrice === 1 ? 's' : 've'
+            } no price`
+        : 'Add room types after saving',
+      ...(hotelId
+        ? { href: `/admin/hotels/${hotelId}/room-types`, cta: 'Manage room types' }
+        : {}),
     },
     {
       ok: Boolean(availabilityEndsOn),
-      label: `Availability set to ${availabilityEndsOn ?? ''}`,
-      warn: 'No availability loaded',
+      label: `Availability loaded to ${availabilityEndsOn ?? ''}`,
+      // The most common reason a finished-looking hotel shows nothing to
+      // guests, so it names the consequence rather than just the gap.
+      warn: hotelId
+        ? 'No availability — guests see no rooms'
+        : 'Open dates for sale after saving',
+      ...(hotelId
+        ? { href: `/admin/availability?hotelId=${hotelId}`, cta: 'Open the calendar' }
+        : {}),
     },
   ];
 
@@ -644,6 +696,16 @@ export function HotelEditor({
                       </span>
                       <span className={check.ok ? undefined : styles.checkWarnText}>
                         {check.ok ? check.label : check.warn}
+                        {/* The fix is one click from the warning that names it,
+                            rather than something to go hunting for in the nav. */}
+                        {!check.ok && check.href ? (
+                          <>
+                            {' '}
+                            <Link href={check.href} className={styles.checkLink}>
+                              {check.cta}
+                            </Link>
+                          </>
+                        ) : null}
                       </span>
                     </div>
                   ))}

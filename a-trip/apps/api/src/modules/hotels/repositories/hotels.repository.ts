@@ -83,6 +83,21 @@ export class HotelsRepository {
     return this.prisma.hotel.findUnique({ where: { id }, include: hotelInclude });
   }
 
+  /**
+   * The last date this hotel has any inventory loaded for.
+   *
+   * Past dates are excluded deliberately: a hotel whose calendar stopped last
+   * month has nothing on sale, and reporting that stale date as "availability
+   * set to ..." would read as healthy when the hotel is invisible to guests.
+   */
+  async findAvailabilityEnd(hotelId: string, from: Date): Promise<Date | null> {
+    const result = await this.prisma.roomAvailability.aggregate({
+      _max: { date: true },
+      where: { roomType: { hotelId }, date: { gte: from } },
+    });
+    return result._max.date;
+  }
+
   findIdentity(id: string) {
     return this.prisma.hotel.findUnique({
       where: { id },

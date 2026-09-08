@@ -9,8 +9,47 @@ hotels, room types, availability calendars, bookings, amenities and staff users.
 
 ---
 
+## Quick start
+
+Docker Desktop is the only prerequisite. Clone the repo and run **one command**:
+
+```bash
+docker compose --profile seed up -d --wait
+```
+
+That builds the images, starts Postgres, MinIO, the API and the web app, applies migrations,
+loads demo data, and waits until every service passes its healthcheck. First run takes a few
+minutes to build; afterwards it is ~25 seconds. When the command returns, the app is ready:
+
+| | URL | Sign in with |
+| --- | --- | --- |
+| Storefront | <http://localhost:3000> | `sara@example.test` / `Password123!` |
+| Admin portal | <http://localhost:3000/admin/login> | `admin@atrip.test` / `Password123!` |
+| API docs | <http://localhost:4000/api/docs> | — |
+| MinIO console | <http://localhost:9001> | `minioadmin` / `minioadmin` |
+
+```bash
+docker compose logs -f api web   # follow logs
+docker compose stop              # stop, keep data
+docker compose down -v           # stop and delete all data
+```
+
+Re-running the quick-start command **re-seeds**: hotels and bookings are rebuilt from
+scratch, so any test bookings are lost. To restart without touching data, use
+`docker compose up -d --wait` (no `--profile seed`).
+
+> **Ports already in use?** The stack needs 3000, 4000, 5439, 9000 and 9001. Override any of
+> them, for example if you also run `pnpm dev`:
+>
+> ```bash
+> WEB_PORT=3100 CORS_ORIGIN=http://localhost:3100 docker compose --profile seed up -d --wait
+> ```
+
+---
+
 ## Table of contents
 
+- [Quick start](#quick-start)
 - [Tech stack](#tech-stack)
 - [Repository structure](#repository-structure)
 - [Running with Docker (recommended)](#running-with-docker-recommended)
@@ -489,7 +528,8 @@ Root [package.json](package.json):
 | --- | --- |
 | `pnpm dev` | `turbo run dev` — both apps in watch mode |
 | `pnpm build` / `lint` / `typecheck` / `test` | Turborepo pipelines across the workspace |
-| `pnpm docker:up` | `docker compose up -d --build` |
+| `pnpm start` | **Whole stack, built, seeded and healthy** — the one-command quick start |
+| `pnpm docker:up` | `docker compose up -d --build` (no seed, keeps existing data) |
 | `pnpm docker:down` | `docker compose down` |
 | `pnpm docker:reset` | `docker compose down -v` (deletes volumes) |
 | `pnpm docker:seed` | Runs the seed profile |
