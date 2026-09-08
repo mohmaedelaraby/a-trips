@@ -30,6 +30,17 @@ async function bootstrap(): Promise<void> {
     .build();
   SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swagger));
 
+  // Without this the container never shuts down cleanly. Node runs as PID 1
+  // here, and PID 1 gets no default signal disposition from the kernel: an
+  // unhandled SIGTERM is simply ignored, so `docker stop` waits out the grace
+  // period and then SIGKILLs. That severs in-flight booking transactions while
+  // they hold FOR UPDATE locks, and skips OnModuleDestroy entirely — the Prisma
+  // pool is never drained and the hold sweeper's interval is never cleared.
+  //
+  // enableShutdownHooks registers the signal handlers that run those hooks, so
+  // a stop closes the server, finishes what is in flight, and exits promptly.
+  app.enableShutdownHooks();
+
   const port = Number(process.env.PORT ?? 4000);
   await app.listen(port);
   new Logger('Bootstrap').log(`API listening on http://localhost:${port}/api`);

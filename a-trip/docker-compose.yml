@@ -10,6 +10,15 @@
 
 name: a-trip
 
+# Containers marked `restart: unless-stopped` run until told otherwise, and
+# Docker's default json-file driver never truncates — an API logging every
+# request will fill the host disk given long enough. Capped and rotated.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -19,12 +28,21 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-atrip}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atrip}
       POSTGRES_DB: ${POSTGRES_DB:-atrip}
+      # Pinned, not incidental. Prisma stores DateTime as `timestamp` (no zone)
+      # holding UTC wall-clock, while NOW() is a `timestamptz` Postgres renders
+      # in the server's zone. When those disagreed, every live payment hold
+      # looked long expired and two guests could book the same last room. The
+      # query fixed it with `NOW() AT TIME ZONE 'UTC'`; this makes the container
+      # agree too, so the two can never drift apart again.
+      TZ: UTC
+      PGTZ: UTC
     ports:
       # Published on 5439 so it cannot collide with a Postgres already running
       # on the host's default 5432 (or the 5433 instance used for local dev).
       - '${POSTGRES_PORT:-5439}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    logging: *default-logging
     healthcheck:
       # Dependents wait on this, so the API never starts against a socket that
       # is listening but not yet accepting queries.
@@ -50,6 +68,7 @@ services:
       - '${S3_CONSOLE_PORT:-9001}:9001'
     volumes:
       - miniodata:/data
+    logging: *default-logging
     healthcheck:
       test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
@@ -72,8 +91,13 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-atrip}:${POSTGRES_PASSWORD:-atrip}@postgres:5432/${POSTGRES_DB:-atrip}
     restart: 'no'
 
-  # Optional: demo hotels plus the admin-portal fixtures (staff, amenities,
-  # units, 90 days of availability). Not part of `up` — run it explicitly.
+  # Optional: demo hotels plus the admin-portal fixtures (staff, the amenity
+  # catalogue in English and Arabic, units, 90 days of availability). Not part
+  # of `up` — run it explicitly.
+  #
+  # Re-runnable. Hotels and bookings are rebuilt from scratch, but the amenity
+  # catalogue, nav links and site settings are upserted, so anything added or
+  # translated through the admin portal survives a re-seed.
   seed:
     profiles: ['seed']
     build:
@@ -120,6 +144,9 @@ services:
       S3_BUCKET: ${S3_BUCKET:-atrip-uploads}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+      # Ignored by MinIO, but the SDK sends it and real S3 rejects a mismatch,
+      # so it is a knob you need the day you point S3_ENDPOINT at AWS.
+      S3_REGION: ${S3_REGION:-us-east-1}
       # Checkout takes payment through PayPal before a booking reaches staff.
       # Left empty the API still boots: /api/payments/config reports
       # configured:false and the checkout says so instead of failing on click.
@@ -130,8 +157,15 @@ services:
       PAYPAL_CURRENCY: ${PAYPAL_CURRENCY:-USD}
       # Tax rate used to split a tax-inclusive total for display.
       PRICING_TAX_RATE: ${PRICING_TAX_RATE:-0.1}
+      # Same reason as on postgres: hold expiry is compared in UTC, so the API
+      # must not be reasoning about "now" in a different zone from the database.
+      TZ: UTC
     ports:
       - '${API_PORT:-4000}:4000'
+    # Nest closes its Prisma pool on SIGTERM; give in-flight bookings — which
+    # hold row locks — time to commit rather than being cut mid-transaction.
+    stop_grace_period: 30s
+    logging: *default-logging
     healthcheck:
       test:
         [
@@ -167,8 +201,24 @@ services:
       # They go over the compose network instead.
       INTERNAL_API_URL: http://api:4000/api
       PORT: 3000
+      TZ: UTC
     ports:
       - '${WEB_PORT:-3000}:3000'
+    logging: *default-logging
+    healthcheck:
+      # The standalone server answers / once Next has finished booting, so this
+      # is what `docker compose up --wait` and any orchestrator gate on.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   pgdata:

@@ -88,8 +88,9 @@ a-trip/
 │   │   ├── prisma/
 │   │   │   ├── migrations/         # SQL migration history
 │   │   │   ├── schema.prisma       # Data model
+│   │   │   ├── amenity-catalogue.ts # Shared amenity list (EN + AR) — both seeds
 │   │   │   ├── seed.ts             # Guest-facing demo data (hotels, rooms, users)
-│   │   │   └── seed-admin.ts       # Admin fixtures (staff, amenities, availability)
+│   │   │   └── seed-admin.ts       # Admin fixtures (staff, units, availability)
 │   │   ├── src/
 │   │   │   ├── main.ts             # Bootstrap: /api prefix, CORS, validation, Swagger
 │   │   │   ├── app.module.ts
@@ -97,7 +98,10 @@ a-trip/
 │   │   │   ├── common/             # decorators, guards, filters, interceptors, interfaces, utils
 │   │   │   ├── prisma/             # PrismaService / module
 │   │   │   ├── generated/prisma/   # Generated Prisma client (compiled into dist)
-│   │   │   └── modules/
+│   │   │   └── modules/           # each: dto/ repositories/ utils/ + service + controller
+│   │   │       │                   #   repositories/ own all Prisma access,
+│   │   │       │                   #   utils/ hold mappers and pure helpers,
+│   │   │       │                   #   services keep business rules only
 │   │   │       ├── auth/           # register, login, me — JWT issuing
 │   │   │       ├── users/          # profile read/update
 │   │   │       ├── hotels/         # public search + admin CRUD, images, ordering
@@ -188,8 +192,15 @@ pnpm docker:seed
 ```
 
 This runs `prisma/seed.ts` (demo hotels, room types, guest accounts) followed by
-`prisma/seed-admin.ts` (staff accounts, amenities, units, 90 days of availability).
-It is idempotent — re-running upserts rather than duplicating.
+`prisma/seed-admin.ts` (staff accounts, units, 90 days of availability). Both
+share one amenity catalogue, `prisma/amenity-catalogue.ts`, which carries each
+amenity's English name and its Arabic — the name doubles as the search filter
+key and as the key its translation is stored under, so the two seeds must agree
+on it exactly. Add an amenity there, not in either seed.
+
+Re-running rebuilds hotels and bookings, but upserts the amenity catalogue, nav
+links and site settings, so anything added or translated through the admin
+portal survives.
 
 ### URLs
 

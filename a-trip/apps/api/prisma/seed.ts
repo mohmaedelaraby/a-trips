@@ -2,6 +2,7 @@ import 'dotenv/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
+import { AMENITIES, seedAmenityCatalogue } from './amenity-catalogue';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }),
@@ -49,47 +50,6 @@ interface HotelSeed {
   rooms: RoomSeed[];
 }
 
-const AMENITIES = {
-  pool: 'Swimming pool',
-  wifi: 'Free Wi-Fi',
-  breakfast: 'Breakfast included',
-  spa: 'Spa',
-  gym: 'Fitness centre',
-  parking: 'Free parking',
-  restaurant: 'Restaurant',
-  bar: 'Bar',
-  ac: 'Air conditioning',
-  familyRooms: 'Family rooms',
-  airport: 'Airport shuttle',
-  nileView: 'Nile view',
-  pyramidView: 'Pyramid view',
-  beach: 'Private beach',
-  desk: 'Tour desk',
-};
-
-/**
- * The amenity catalogue behind the admin page, with the Arabic each name shows
- * as. Translations are keyed `amenity.<name>` — by name, not id — because
- * Hotel.amenities stores names, so rendering a hotel needs no extra lookup.
- * Keep the keys of AMENITIES and the entries here in step.
- */
-const AMENITY_CATALOGUE: Array<{ name: string; category: string; ar: string }> = [
-  { name: AMENITIES.pool, category: 'Leisure', ar: 'حمام سباحة' },
-  { name: AMENITIES.wifi, category: 'Connectivity', ar: 'واي فاي مجاني' },
-  { name: AMENITIES.breakfast, category: 'Dining', ar: 'إفطار مجاني' },
-  { name: AMENITIES.spa, category: 'Leisure', ar: 'سبا' },
-  { name: AMENITIES.gym, category: 'Leisure', ar: 'صالة رياضية' },
-  { name: AMENITIES.parking, category: 'Services', ar: 'موقف سيارات مجاني' },
-  { name: AMENITIES.restaurant, category: 'Dining', ar: 'مطعم' },
-  { name: AMENITIES.bar, category: 'Dining', ar: 'بار' },
-  { name: AMENITIES.ac, category: 'Room', ar: 'تكييف' },
-  { name: AMENITIES.familyRooms, category: 'Room', ar: 'غرف عائلية' },
-  { name: AMENITIES.airport, category: 'Services', ar: 'خدمة نقل من المطار' },
-  { name: AMENITIES.nileView, category: 'View', ar: 'إطلالة على النيل' },
-  { name: AMENITIES.pyramidView, category: 'View', ar: 'إطلالة على الأهرامات' },
-  { name: AMENITIES.beach, category: 'Leisure', ar: 'شاطئ خاص' },
-  { name: AMENITIES.desk, category: 'Services', ar: 'مكتب سياحي' },
-];
 
 const HOTELS: HotelSeed[] = [
   {
@@ -385,17 +345,11 @@ async function main(): Promise<void> {
   await prisma.hotelImage.deleteMany();
   await prisma.hotel.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.amenity.deleteMany();
-  // Only the amenity keys: hotel and room-type overrides key off ids that are
-  // about to be recreated, and the site copy is admin-owned, not seeded here.
-  await prisma.translation.deleteMany({ where: { key: { startsWith: 'amenity.' } } });
 
-  for (const item of AMENITY_CATALOGUE) {
-    await prisma.amenity.create({ data: { name: item.name, category: item.category } });
-    await prisma.translation.create({
-      data: { key: `amenity.${item.name}`, locale: 'AR', value: item.ar },
-    });
-  }
+  // Upserted, not wiped and recreated: the catalogue is admin-editable, so a
+  // re-seed must not delete amenities someone added through the portal, nor the
+  // Arabic they wrote for them.
+  const amenityCount = await seedAmenityCatalogue(prisma);
 
   const passwordHash = await bcrypt.hash('Password123!', 12);
 
@@ -539,7 +493,7 @@ async function main(): Promise<void> {
       `  room types:   ${roomTypeCount}`,
       `  availability: ${availabilityRows} nightly rows`,
       `  bookings:     2`,
-      `  amenities:    ${AMENITY_CATALOGUE.length} (English + Arabic)`,
+      `  amenities:    ${amenityCount} (English + Arabic)`,
       '',
       '  Admin login:  admin@atrip.test / Password123!',
       '  Guest login:  sara@example.test / Password123!',

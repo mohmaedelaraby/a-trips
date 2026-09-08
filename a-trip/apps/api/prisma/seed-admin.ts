@@ -10,36 +10,13 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { SITE_SETTING_DEFAULTS } from '../src/modules/site-settings/site-settings.service';
+import { SITE_SETTING_DEFAULTS } from '../src/modules/site-settings/utils/site-setting.util';
+import { BCRYPT_ROUNDS } from '../src/modules/users/utils/password.util';
+import { seedAmenityCatalogue } from './amenity-catalogue';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }),
 });
-
-/** Mirrors BCRYPT_ROUNDS in UsersService. */
-const BCRYPT_ROUNDS = 12;
-
-const AMENITIES: Array<{ name: string; category: string }> = [
-  { name: 'Free Wi-Fi', category: 'Connectivity' },
-  { name: 'Swimming pool', category: 'Leisure' },
-  { name: 'Spa', category: 'Leisure' },
-  { name: 'Private beach', category: 'Leisure' },
-  { name: 'Gym', category: 'Leisure' },
-  { name: 'Breakfast included', category: 'Food & drink' },
-  { name: 'Restaurant', category: 'Food & drink' },
-  { name: 'Bar', category: 'Food & drink' },
-  { name: 'Room service', category: 'Food & drink' },
-  { name: 'Free parking', category: 'Transport' },
-  { name: 'Airport shuttle', category: 'Transport' },
-  { name: 'Tour desk', category: 'Services' },
-  { name: 'Laundry service', category: 'Services' },
-  { name: '24h front desk', category: 'Services' },
-  { name: 'Air conditioning', category: 'Room features' },
-  { name: 'Family rooms', category: 'Room features' },
-  { name: 'Nile view', category: 'Views' },
-  { name: 'Pyramid view', category: 'Views' },
-  { name: 'Sea view', category: 'Views' },
-];
 
 const STAFF = [
   {
@@ -136,14 +113,10 @@ async function seedStaff() {
 }
 
 async function seedAmenities() {
-  for (const amenity of AMENITIES) {
-    await prisma.amenity.upsert({
-      where: { name: amenity.name },
-      create: amenity,
-      update: { category: amenity.category },
-    });
-  }
-  console.log(`✔ ${AMENITIES.length} amenities`);
+  // Catalogue and Arabic both come from the shared file, so this seed and the
+  // guest seed can never disagree on an amenity name.
+  const count = await seedAmenityCatalogue(prisma);
+  console.log(`✔ ${count} amenities (English + Arabic)`);
 }
 
 /**
