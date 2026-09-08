@@ -8,6 +8,8 @@ import {
   CalendarQueryDto,
 } from '../availability/dto/availability-query.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { FALLBACK_LOCALE, TranslationsService } from '../translations/translations.service';
+import { Locale } from '../../generated/prisma/enums';
 
 @ApiTags('hotels')
 @Public()
@@ -16,11 +18,17 @@ export class HotelsController {
   constructor(
     private readonly hotels: HotelsService,
     private readonly availability: AvailabilityService,
+    private readonly translations: TranslationsService,
   ) {}
 
+  /** Overrides for the requested locale, or none when it is the fallback. */
+  private localeMap(locale?: Locale) {
+    return this.translations.mapFor(locale ?? FALLBACK_LOCALE);
+  }
+
   @Get()
-  search(@Query() query: HotelSearchDto) {
-    return this.hotels.search(query);
+  async search(@Query() query: HotelSearchDto) {
+    return this.hotels.search(query, await this.localeMap(query.locale));
   }
 
   @Get('cities')
@@ -30,8 +38,8 @@ export class HotelsController {
 
   /** Accepts either a hotel id or its public slug. */
   @Get(':idOrSlug')
-  detail(@Param('idOrSlug') idOrSlug: string, @Query() query: HotelDetailQueryDto) {
-    return this.hotels.findPublicByIdOrSlug(idOrSlug, query);
+  async detail(@Param('idOrSlug') idOrSlug: string, @Query() query: HotelDetailQueryDto) {
+    return this.hotels.findPublicByIdOrSlug(idOrSlug, query, await this.localeMap(query.locale));
   }
 
   /**

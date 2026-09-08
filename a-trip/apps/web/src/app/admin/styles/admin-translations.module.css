@@ -1,0 +1,105 @@
+.intro {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.missingToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.namespaceHint {
+  margin-bottom: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .list {
+    padding: 1.125rem;
+  }
+}
+
+.empty {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-line);
+  padding: 0.875rem;
+}
+
+@media (min-width: 1100px) {
+  .row {
+    grid-template-columns: 18rem minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+  }
+}
+
+.keyCol {
+  min-width: 0;
+}
+
+.key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.context,
+.shipped {
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+
+.localeCol {
+  display: block;
+  min-width: 0;
+}
+
+.localeCol textarea {
+  height: auto;
+  padding-block: 0.5rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.statusCol {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}

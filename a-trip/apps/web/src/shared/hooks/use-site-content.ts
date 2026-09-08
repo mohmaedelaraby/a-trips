@@ -1,6 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { LocaleContext } from '../i18n/locale-context';
 import { apiGet } from '../lib/api-client';
 import type { NavLink, NavLinkGroup, SiteContent } from '../interfaces/site-content';
 
@@ -16,9 +18,11 @@ export const SITE_CONTENT_QUERY_KEY = ['site-content'] as const;
  * pick up an admin's edits within the session.
  */
 export function useSiteContent() {
+  const locale = React.useContext(LocaleContext);
   return useQuery({
-    queryKey: SITE_CONTENT_QUERY_KEY,
-    queryFn: () => apiGet<SiteContent>('/site-content'),
+    // Keyed by locale so switching language does not serve the other one's cache.
+    queryKey: [...SITE_CONTENT_QUERY_KEY, locale],
+    queryFn: () => apiGet<SiteContent>('/site-content', { locale }),
     staleTime: 60 * 60_000,
     gcTime: 24 * 60 * 60_000,
     // Site chrome: a failed fetch should not retry hard or surface an error.

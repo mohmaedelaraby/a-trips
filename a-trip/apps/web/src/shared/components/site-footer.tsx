@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { comingSoonHref } from '../lib/coming-soon';
 import { useNavLinks, useSetting } from '../hooks/use-site-content';
+import { useTranslation } from '../i18n/use-translation';
 import { NAV_GROUP_LABEL, type NavLink as NavLinkModel, type NavLinkGroup } from '../interfaces/site-content';
 import styles from '../styles/site-footer.module.css';
 
@@ -10,9 +11,9 @@ import styles from '../styles/site-footer.module.css';
 const COLUMNS: NavLinkGroup[] = ['FOOTER_COMPANY', 'FOOTER_SUPPORT'];
 
 /** Column headings, which are layout rather than editable copy. */
-const COLUMN_HEADING: Record<string, string> = {
-  FOOTER_COMPANY: 'Company',
-  FOOTER_SUPPORT: 'Support',
+const COLUMN_HEADING_KEY: Record<string, string> = {
+  FOOTER_COMPANY: 'ui.footer.company',
+  FOOTER_SUPPORT: 'ui.footer.support',
 };
 
 const SOCIALS: Array<{ key: string; label: string; name: string }> = [
@@ -26,12 +27,13 @@ function isExternal(href: string) {
 }
 
 export function NavLinkItem({ link, className }: { link: NavLinkModel; className?: string }) {
+  const { t } = useTranslation();
   // No destination yet: still clickable, but visibly a roadmap item.
   if (!link.href) {
     return (
       <Link href={comingSoonHref(link.value)} className={styles.linkSoon}>
         {link.value}
-        <span className={styles.soonTag}>Soon</span>
+        <span className={styles.soonTag}>{t('ui.common.soon')}</span>
       </Link>
     );
   }
@@ -65,10 +67,13 @@ export function NavLinkItem({ link, className }: { link: NavLinkModel; className
 
 function FooterColumn({ group }: { group: NavLinkGroup }) {
   const { links, isLoading } = useNavLinks(group);
+  const { t } = useTranslation();
 
   return (
     <div>
-      <p className={styles.columnHeading}>{COLUMN_HEADING[group] ?? NAV_GROUP_LABEL[group]}</p>
+      <p className={styles.columnHeading}>
+        {COLUMN_HEADING_KEY[group] ? t(COLUMN_HEADING_KEY[group]) : NAV_GROUP_LABEL[group]}
+      </p>
       {isLoading ? (
         // Placeholders hold the column's height so the page does not jump.
         <ul className={styles.linkList} aria-hidden>
@@ -90,6 +95,7 @@ function FooterColumn({ group }: { group: NavLinkGroup }) {
 }
 
 export function SiteFooter() {
+  const { t } = useTranslation();
   // Fallbacks are the copy this page shipped with, so an unreachable API
   // degrades to the original wording rather than blanks.
   const tagline = useSetting(
@@ -148,7 +154,7 @@ export function SiteFooter() {
         ))}
 
         <div>
-          <p className={styles.columnHeading}>Get in touch</p>
+          <p className={styles.columnHeading}>{t('ui.footer.getInTouch')}</p>
           <ul className={styles.contactList}>
             <li className={styles.contactPhone}>{phone}</li>
             <li>{email}</li>
@@ -160,7 +166,9 @@ export function SiteFooter() {
 
       <div className={styles.bottomBar}>
         <div className={`container-page ${styles.bottomBarInner}`}>
-          <p>© {new Date().getFullYear()} ATrips. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} ATrips. {t('ui.footer.rights')}
+          </p>
           <p>{legal}</p>
         </div>
       </div>

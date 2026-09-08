@@ -46,7 +46,7 @@
 }
 
 .required {
-  margin-left: 0.125rem;
+  margin-inline-start: 0.125rem;
   color: var(--color-danger);
 }
 
@@ -67,7 +67,7 @@
 }
 
 input.passwordInput {
-  padding-right: 3.5rem;
+  padding-inline-end: 3.5rem;
 }
 
 .togglePassword {

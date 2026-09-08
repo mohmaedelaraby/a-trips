@@ -7,6 +7,7 @@ import { Button } from '../../../shared/components/button';
 import { StatusChip } from '../../../shared/components/status-chip';
 import { formatPrice, pluralize, cn } from '../../../shared/lib/utils';
 import type { RoomTypeWithAvailability } from '../interfaces/hotel';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/room-type-table.module.css';
 
 const REASON_LABEL: Record<string, string> = {
@@ -37,20 +38,21 @@ export function RoomTypeTable({
   onSelect?: (roomTypeId: string) => void;
   selectedRoomTypeId?: string | null;
 }) {
+  const { t } = useTranslation();
   const hasDates = Boolean(checkIn && checkOut);
 
   if (roomTypes.length === 0) {
-    return <div className={styles.empty}>No room types are on sale for this hotel right now.</div>;
+    return <div className={styles.empty}>{t('ui.rooms.noneOnSale')}</div>;
   }
 
   return (
     <div className={styles.table}>
       <div className={styles.head}>
-        <span>Room type</span>
-        <span>Sleeps</span>
+        <span>{t('ui.rooms.roomType')}</span>
+        <span>{t('ui.rooms.sleeps')}</span>
         <span>Size</span>
         <span>Price / night</span>
-        <span className={styles.headRight}>Available</span>
+        <span className={styles.headRight}>{t('ui.rooms.available')}</span>
       </div>
 
       <div className={styles.body}>

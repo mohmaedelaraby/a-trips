@@ -12,6 +12,7 @@ import { useCancelBooking } from '../hooks/use-bookings';
 import { formatPrice } from '../../../shared/lib/utils';
 import { Button } from '../../../shared/components/button';
 import type { Booking } from '../interfaces/booking';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/payment-step.module.css';
 
 /** Minimal shape of the PayPal JS SDK surface this component uses. */
@@ -60,6 +61,7 @@ function useCountdown(expiresAt: string | null) {
  * this screen only has to collect the money before the hold runs out.
  */
 export function PaymentStep({ booking }: { booking: Booking }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const config = usePaymentConfig();
   const createOrder = useCreatePayPalOrder();
@@ -135,7 +137,7 @@ export function PaymentStep({ booking }: { booking: Booking }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.main}>
-        <h1 className={styles.title}>Pay to confirm your booking</h1>
+        <h1 className={styles.title}>{t('ui.payment.title')}</h1>
         <p className={styles.subtitle}>
           Booking <strong>{booking.bookingReference}</strong> — {booking.hotel.name},{' '}
           {booking.roomTypeName}
@@ -145,13 +147,10 @@ export function PaymentStep({ booking }: { booking: Booking }) {
           <div className={styles.expired} role="alert">
             <AlertCircle className={styles.expiredIcon} aria-hidden />
             <div>
-              <p className={styles.expiredTitle}>Your hold has expired</p>
-              <p className={styles.expiredHint}>
-                We released the room so someone else could book it. Nothing was charged. Search
-                again — it may well still be free.
-              </p>
+              <p className={styles.expiredTitle}>{t('ui.payment.holdExpired')}</p>
+              <p className={styles.expiredHint}>{t('ui.payment.holdExpiredBody')}</p>
               <Button variant="primary" onClick={releaseAndRestart} className={styles.expiredBtn}>
-                Back to the hotel
+                {t('ui.payment.backToHotel')}
               </Button>
             </div>
           </div>
@@ -159,47 +158,40 @@ export function PaymentStep({ booking }: { booking: Booking }) {
           <>
             <div className={countdown.urgent ? styles.timerUrgent : styles.timer} role="status">
               <Clock className={styles.timerIcon} aria-hidden />
-              <span>
-                Room held for <strong>{countdown.label}</strong>
-              </span>
+              <span>{t('ui.payment.roomHeldFor', { time: countdown.label })}</span>
             </div>
 
             {config.isLoading ? (
-              <p className={styles.muted}>Loading payment options…</p>
+              <p className={styles.muted}>{t('ui.payment.loadingOptions')}</p>
             ) : !paymentsReady ? (
               <div className={styles.notice}>
-                <p className={styles.noticeTitle}>Payments are not configured</p>
-                <p className={styles.noticeHint}>
-                  Set <code>PAYPAL_CLIENT_ID</code> and <code>PAYPAL_CLIENT_SECRET</code> on the API
-                  to enable PayPal checkout.
-                </p>
+                <p className={styles.noticeTitle}>{t('ui.payment.notConfigured')}</p>
+                <p className={styles.noticeHint}>{t('ui.payment.notConfiguredBody')}</p>
               </div>
             ) : sdkFailed ? (
               <div className={styles.notice}>
-                <p className={styles.noticeTitle}>PayPal could not be loaded</p>
-                <p className={styles.noticeHint}>
-                  Check your connection and reload the page. Your room is still held.
-                </p>
+                <p className={styles.noticeTitle}>{t('ui.payment.paypalFailed')}</p>
+                <p className={styles.noticeHint}>{t('ui.payment.paypalFailedBody')}</p>
               </div>
             ) : (
               <>
-                {!sdkReady ? <p className={styles.muted}>Loading PayPal…</p> : null}
+                {!sdkReady ? <p className={styles.muted}>{t('ui.payment.loadingPaypal')}</p> : null}
                 <div ref={buttonsRef} className={styles.buttons} />
                 {capturing ? (
-                  <p className={styles.capturing}>Confirming your payment — do not close this page…</p>
+                  <p className={styles.capturing}>{t('ui.payment.confirming')}</p>
                 ) : null}
               </>
             )}
 
             <button type="button" className={styles.cancelLink} onClick={releaseAndRestart}>
-              Cancel and release the room
+              {t('ui.payment.cancelAndRelease')}
             </button>
           </>
         )}
       </div>
 
       <aside className={styles.summary}>
-        <p className={styles.summaryHeading}>Order summary</p>
+        <p className={styles.summaryHeading}>{t('ui.payment.orderSummary')}</p>
         <div className={styles.summaryRow}>
           <span>{booking.hotel.name}</span>
         </div>
@@ -215,12 +207,12 @@ export function PaymentStep({ booking }: { booking: Booking }) {
           </span>
         </div>
         <div className={styles.summaryTotal}>
-          <span>Total</span>
+          <span>{t('ui.common.total')}</span>
           <span>{formatPrice(booking.totalPrice)}</span>
         </div>
         <p className={styles.summaryNote}>
           <ShieldCheck className={styles.summaryNoteIcon} aria-hidden />
-          Charged once by PayPal. Our team confirms within 24 hours.
+          {t('ui.payment.chargedOnce')}
         </p>
       </aside>
     </div>

@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   Length,
@@ -11,6 +12,11 @@ import {
 import { NavLinkGroup } from '../../../generated/prisma/enums';
 
 export class CreateNavLinkDto {
+  /** Per-locale labels, e.g. { AR: 'الفنادق' }. Blank clears the override. */
+  @IsOptional()
+  @IsObject()
+  translations?: Record<string, string>;
+
   @IsEnum(NavLinkGroup)
   group: NavLinkGroup;
 
@@ -45,6 +51,10 @@ export class CreateNavLinkDto {
 
 /** Every field optional: the admin UI patches one thing at a time. */
 export class UpdateNavLinkDto {
+  @IsOptional()
+  @IsObject()
+  translations?: Record<string, string>;
+
   @IsOptional()
   @IsEnum(NavLinkGroup)
   group?: NavLinkGroup;

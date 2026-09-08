@@ -171,7 +171,7 @@
 }
 
 .amenityCount {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 0.75rem;
   color: var(--color-ink-muted);
 }

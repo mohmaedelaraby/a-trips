@@ -9,9 +9,11 @@ import { Skeleton } from '../../../shared/components/skeleton';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { CheckoutStepper } from '../../../modules/bookings/components/checkout-stepper';
 import type { Booking } from '../../../modules/bookings/interfaces/booking';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/checkout.module.css';
 
 export function CheckoutClient() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   // Set once the booking exists and is holding rooms; from then on the page
   // shows payment and must not fall back to the details form.
@@ -50,8 +52,8 @@ export function CheckoutClient() {
         <CheckoutStepper step={1} />
         <div className={`container-page ${styles.stateWrap}`}>
           <EmptyState
-            title="Missing booking details"
-            description="Head back to a hotel page and choose your room and dates again."
+            title={t('ui.checkout.missingDetails')}
+            description={t('ui.checkout.missingDetailsHint')}
           />
         </div>
       </div>
@@ -77,7 +79,10 @@ export function CheckoutClient() {
       <div>
         <CheckoutStepper step={1} />
         <div className={`container-page ${styles.stateWrap}`}>
-          <EmptyState title="We could not find that room" description="Please choose your room again from the hotel page." />
+          <EmptyState
+            title={t('ui.checkout.roomNotFound')}
+            description={t('ui.checkout.roomNotFoundHint')}
+          />
         </div>
       </div>
     );

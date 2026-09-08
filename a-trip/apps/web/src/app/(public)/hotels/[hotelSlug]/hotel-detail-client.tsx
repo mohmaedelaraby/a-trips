@@ -20,10 +20,12 @@ import { RoomTypeTable } from '../../../../modules/hotels/components/room-type-t
 import { Button } from '../../../../shared/components/button';
 import { StatusChip } from '../../../../shared/components/status-chip';
 import { ImageLightbox } from '../../../../shared/components/image-lightbox';
-import { addDaysIso, formatPrice, pluralize, cn, todayIso } from '../../../../shared/lib/utils';
+import { addDaysIso, formatPrice, cn, todayIso } from '../../../../shared/lib/utils';
+import { useTranslation } from '../../../../shared/i18n/use-translation';
 import styles from '../../styles/hotel-detail.module.css';
 
 export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
+  const { t, tn } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -102,8 +104,8 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
     return (
       <div className="container-page py-16">
         <EmptyState
-          title="Hotel not found"
-          description="This hotel may have been unpublished or the link is incorrect."
+          title={t('ui.hotels.notFound')}
+          description={t('ui.hotels.notFoundHint')}
         />
       </div>
     );
@@ -194,7 +196,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
               ) : null}
             </button>
           ) : null}
-          {gallery.length === 0 ? <div className={styles.galleryEmpty}>No photos yet</div> : null}
+          {gallery.length === 0 ? <div className={styles.galleryEmpty}>{t('ui.hotels.noPhotos')}</div> : null}
         </div>
       </div>
 
@@ -219,7 +221,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
             </div>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>About this hotel</h2>
+              <h2 className={styles.sectionTitle}>{t('ui.hotels.aboutHotel')}</h2>
               {hotel.description ? (
                 <p
                   className={cn(
@@ -243,7 +245,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
 
             {hotel.amenities.length > 0 ? (
               <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Amenities</h2>
+                <h2 className={styles.sectionTitle}>{t('ui.hotels.amenities')}</h2>
                 <div className={styles.amenityGrid}>
                   {visibleAmenities.map((amenity) => (
                     <div key={amenity} className={styles.amenityItem}>
@@ -266,11 +268,11 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
 
             <section className={styles.section}>
               <div className={styles.roomSectionHead}>
-                <h2 className={styles.sectionTitle}>Choose your room</h2>
+                <h2 className={styles.sectionTitle}>{t('ui.hotels.chooseRoom')}</h2>
                 {hasDates ? (
                   <p className={styles.roomAvailability}>
                     Availability for {checkIn && checkOut ? `${checkIn} – ${checkOut}` : ''} ·{' '}
-                    {pluralize(adults, 'adult')}
+                    {tn('ui.common.adults', adults)}
                   </p>
                 ) : null}
               </div>
@@ -306,7 +308,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
 
             {hotel.latitude && hotel.longitude ? (
               <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Location</h2>
+                <h2 className={styles.sectionTitle}>{t('ui.hotels.location')}</h2>
                 <div className={styles.mapBox}>
                   <span className={styles.mapPin}>{hotel.name}</span>
                 </div>
@@ -324,7 +326,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                   {formatPrice(nightly)}
                   <span className={styles.priceUnit}> / night</span>
                 </p>
-                {soldOut ? null : <StatusChip tone="success">Free cancellation</StatusChip>}
+                {soldOut ? null : <StatusChip tone="success">{t('ui.hotels.freeCancellation')}</StatusChip>}
               </div>
 
               <div className={styles.datesField}>
@@ -354,9 +356,9 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
               ) : soldOut ? (
                 <>
                   <div className={styles.unavailableNotice} role="status">
-                    <p className={styles.unavailableTitle}>No rooms available for these dates.</p>
+                    <p className={styles.unavailableTitle}>{t('ui.hotels.soldOut')}</p>
                     <p className={styles.unavailableHint}>
-                      Try different dates, or browse other hotels in {hotel.city}.
+                      {t('ui.hotels.soldOutHint', { city: hotel.city })}
                     </p>
                   </div>
 
@@ -374,7 +376,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                           rows add up. Labelling this "nightly × nights" would
                           not: that product is the gross, tax included. */}
                       <div className={styles.breakdownRow}>
-                        <span>Room, {pluralize(nights, 'night')}</span>
+                        <span>{t('ui.hotels.roomNights', { nights: tn('ui.common.nights', nights) })}</span>
                         <span>{formatPrice(subtotal)}</span>
                       </div>
                       <div className={styles.breakdownRow}>
@@ -389,7 +391,7 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                   ) : null}
 
                   <div className={styles.totalRow}>
-                    <span>Total</span>
+                    <span>{t('ui.common.total')}</span>
                     <span>{formatPrice(total)}</span>
                   </div>
 
@@ -402,9 +404,11 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                     className={styles.reserveBtn}
                   >
                     {checkoutHref && hasDates ? (
-                      <Link href={checkoutHref}>Reserve {selectedRoom?.name}</Link>
+                      <Link href={checkoutHref}>
+                        {t('ui.hotels.reserve', { room: selectedRoom?.name ?? '' })}
+                      </Link>
                     ) : (
-                      <span>Pick your dates</span>
+                      <span>{t('ui.hotels.pickDates')}</span>
                     )}
                   </Button>
                   <p className={styles.reserveFootnote}>

@@ -261,3 +261,35 @@ enum PaymentStatus {
   COMPLETED
   FAILED
 }
+
+/// Locales the site is published in. `EN` is the fallback: a key with no row
+/// for the requested locale falls back to English, and then to the shipped
+/// JSON default in the web app, so a missing translation degrades to readable
+/// text rather than to a raw key on screen.
+enum Locale {
+  EN
+  AR
+}
+
+/// Admin-editable text, one row per key per locale.
+///
+/// Layered under the JSON message files that ship with the web app: those are
+/// the defaults, these override them. That means a translator can fix wording
+/// in production without a deploy, while the repo still carries a complete,
+/// reviewable set of strings.
+///
+/// Key conventions, so the admin screen can group them:
+///   ui.*            static interface strings, mirrored from the JSON files
+///   nav.<id>        a navigation link's label
+///   setting.<key>   a site setting's value
+///   hotel.<id>.*    a hotel's name, description, city or address
+model Translation {
+  key       String
+  locale    Locale
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@id([key, locale])
+  @@index([locale])
+  @@index([key])
+}

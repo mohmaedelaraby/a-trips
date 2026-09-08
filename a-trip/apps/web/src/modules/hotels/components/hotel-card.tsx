@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
@@ -8,9 +10,11 @@ import { StatusChip } from '../../../shared/components/status-chip';
 import { formatPrice, pluralize } from '../../../shared/lib/utils';
 import { cn } from '../../../shared/lib/utils';
 import type { HotelListItem } from '../interfaces/hotel';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/hotel-card.module.css';
 
 export function HotelCard({ hotel, searchQuery }: { hotel: HotelListItem; searchQuery: string }) {
+  const { t } = useTranslation();
   const primaryImage = hotel.images.find((i) => i.isPrimary) ?? hotel.images[0];
   const soldOut = hotel.fromPrice === null;
   const href = `/hotels/${hotel.slug}${searchQuery}`;
@@ -28,7 +32,7 @@ export function HotelCard({ hotel, searchQuery }: { hotel: HotelListItem; search
               className={cn(styles.image, soldOut && styles.imageSoldOut)}
             />
           ) : (
-            <div className={styles.noPhoto}>No photo yet</div>
+            <div className={styles.noPhoto}>{t('ui.hotels.noPhoto')}</div>
           )}
         </Link>
 
@@ -61,9 +65,9 @@ export function HotelCard({ hotel, searchQuery }: { hotel: HotelListItem; search
           <div className={styles.priceBlock}>
             {soldOut ? (
               <>
-                <p className={styles.priceLabel}>See other dates for this hotel</p>
+                <p className={styles.priceLabel}>{t('ui.hotels.seeOtherDatesFor')}</p>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={href}>See other dates</Link>
+                  <Link href={href}>{t('ui.hotels.seeOtherDates')}</Link>
                 </Button>
               </>
             ) : (
@@ -71,10 +75,10 @@ export function HotelCard({ hotel, searchQuery }: { hotel: HotelListItem; search
                 <div>
                   <p className={styles.priceLabel}>{hotel.nights > 1 ? `${hotel.nights} nights, from` : 'from'}</p>
                   <p className={styles.price}>{formatPrice(hotel.fromPrice)}</p>
-                  <p className={styles.priceLabel}>per night</p>
+                  <p className={styles.priceLabel}>{t('ui.hotels.perNight')}</p>
                 </div>
                 <Button asChild size="sm">
-                  <Link href={href}>Check availability</Link>
+                  <Link href={href}>{t('ui.hotels.checkAvailability')}</Link>
                 </Button>
               </>
             )}

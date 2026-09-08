@@ -6,6 +6,7 @@ import { DayPicker, type DateRange } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CalendarDays } from 'lucide-react';
 import { addDaysIso, cn, formatDate, nightsBetween, todayIso } from '../lib/utils';
+import { useTranslation } from '../i18n/use-translation';
 import styles from '../styles/date-range-picker.module.css';
 
 export interface DateRangeValue {
@@ -40,7 +41,7 @@ export function DateRangePicker({
   value,
   onChange,
   className,
-  label = 'Dates',
+  label,
   bare = false,
   split = false,
   unavailableDates,
@@ -48,6 +49,7 @@ export function DateRangePicker({
   value: DateRangeValue;
   onChange: (next: DateRangeValue) => void;
   className?: string;
+  /** Defaults to the translated "Dates". */
   label?: string;
   bare?: boolean;
   /** Renders check-in and check-out as two labeled halves instead of one combined summary. */
@@ -59,6 +61,7 @@ export function DateRangePicker({
    */
   unavailableDates?: string[];
 }) {
+  const { t, tn } = useTranslation();
   const [open, setOpen] = React.useState(false);
   // The calendar edits a local draft so a half-picked range never reaches the
   // parent — otherwise every click would push a new URL / refetch the page.
@@ -122,28 +125,28 @@ export function DateRangePicker({
           {split ? (
             <>
               <span className={styles.textWrap}>
-                <span className={styles.eyebrow}>Check in</span>
-                <span className={styles.value}>{shownIn ? formatDate(shownIn) : 'Add date'}</span>
+                <span className={styles.eyebrow}>{t('ui.dates.checkIn')}</span>
+                <span className={styles.value}>{shownIn ? formatDate(shownIn) : t('ui.dates.addDate')}</span>
               </span>
               <span className={styles.divider} aria-hidden />
               <span className={styles.textWrap}>
-                <span className={styles.eyebrow}>Check out</span>
-                <span className={styles.value}>{shownOut ? formatDate(shownOut) : 'Add date'}</span>
+                <span className={styles.eyebrow}>{t('ui.dates.checkOut')}</span>
+                <span className={styles.value}>{shownOut ? formatDate(shownOut) : t('ui.dates.addDate')}</span>
               </span>
             </>
           ) : (
             <>
               <CalendarDays className={styles.icon} aria-hidden />
               <span className={styles.textWrap}>
-                <span className={styles.eyebrow}>{label}</span>
+                <span className={styles.eyebrow}>{label ?? t('ui.common.label.dates')}</span>
                 <span className={styles.value}>
                   {shownIn && shownOut
                     ? `${formatDate(shownIn)} — ${formatDate(shownOut)}${
-                        open ? '' : ` · ${nights} night${nights === 1 ? '' : 's'}`
+                        open ? '' : ` · ${tn('ui.common.nights', nights)}`
                       }`
                     : shownIn
-                      ? `${formatDate(shownIn)} — Add check-out`
-                      : 'Add check-in and check-out'}
+                      ? `${formatDate(shownIn)} — ${t('ui.dates.addCheckOut')}`
+                      : t('ui.dates.addBoth')}
                 </span>
               </span>
             </>
@@ -173,7 +176,7 @@ export function DateRangePicker({
           {soldOutSet.size > 0 ? (
             <p className={styles.legend}>
               <span className={styles.legendSwatch} aria-hidden />
-              Crossed-out dates are fully booked at this hotel.
+              {t('ui.dates.soldOutLegend')}
             </p>
           ) : null}
           <div className={styles.footer}>
@@ -185,7 +188,7 @@ export function DateRangePicker({
                 if (value.checkIn || value.checkOut) onChange({ checkIn: null, checkOut: null });
               }}
             >
-              Clear
+              {t('ui.common.clear')}
             </button>
             <button
               type="button"
@@ -195,7 +198,7 @@ export function DateRangePicker({
                 setOpen(false);
               }}
             >
-              Done
+              {t('ui.common.done')}
             </button>
           </div>
         </Popover.Content>

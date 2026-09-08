@@ -56,7 +56,7 @@
 }
 
 .rowValue {
-  text-align: right;
+  text-align: end;
   font-weight: 500;
   color: var(--color-ink);
 }

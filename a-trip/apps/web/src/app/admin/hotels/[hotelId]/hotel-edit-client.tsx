@@ -43,6 +43,12 @@ export function HotelEditClient({ hotelId }: { hotelId: string }) {
       initialValues={{
         name: hotel.name,
         slug: hotel.slug,
+        ar: {
+          name: hotel.translations?.AR?.name ?? '',
+          city: hotel.translations?.AR?.city ?? '',
+          address: hotel.translations?.AR?.address ?? '',
+          description: hotel.translations?.AR?.description ?? '',
+        },
         city: hotel.city,
         country: hotel.country,
         address: hotel.address,

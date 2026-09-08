@@ -4,6 +4,7 @@ import * as React from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { Minus, Plus, Users } from 'lucide-react';
 import { cn, pluralize } from '../lib/utils';
+import { useTranslation } from '../i18n/use-translation';
 import styles from '../styles/guest-stepper.module.css';
 
 export interface GuestValue {
@@ -68,6 +69,7 @@ export function GuestStepper({
   className?: string;
   bare?: boolean;
 }) {
+  const { t } = useTranslation();
   const summary = [
     pluralize(value.adults, 'adult'),
     value.children > 0 ? pluralize(value.children, 'child', 'children') : null,
@@ -85,7 +87,7 @@ export function GuestStepper({
         >
           <Users className={styles.icon} aria-hidden />
           <span className={styles.textWrap}>
-            <span className={styles.eyebrow}>Guests &amp; rooms</span>
+            <span className={styles.eyebrow}>{t('ui.guests.title')}</span>
             <span className={styles.value}>{summary}</span>
           </span>
         </button>
@@ -94,7 +96,7 @@ export function GuestStepper({
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={8} className={styles.popover}>
           <Stepper
-            label="Adults"
+            label={t('ui.guests.adults')}
             hint="Age 13 or above"
             value={value.adults}
             min={1}
@@ -103,7 +105,7 @@ export function GuestStepper({
           />
           <div className={styles.divider} />
           <Stepper
-            label="Children"
+            label={t('ui.guests.children')}
             hint="Age 0 to 12"
             value={value.children}
             min={0}

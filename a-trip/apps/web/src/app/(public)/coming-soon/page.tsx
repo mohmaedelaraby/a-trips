@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CalendarCheck, Compass, Hotel, MapPin } from 'lucide-react';
+import { cookies } from 'next/headers';
 import { COMING_SOON_COPY } from '../../../shared/lib/coming-soon';
+import { LOCALE_COOKIE, normalizeLocale, translate } from '../../../shared/i18n/config';
 import styles from '../styles/coming-soon.module.css';
 
 interface PageProps {
@@ -49,12 +51,18 @@ const LIVE_NOW = [
 export default async function ComingSoonPage({ searchParams }: PageProps) {
   const { title, description } = copyFor((await searchParams).feature);
 
+  // A server component, so there is no hook: the locale comes from the same
+  // cookie the layout reads, and translate() is the shared resolver.
+  const store = await cookies();
+  const locale = normalizeLocale(store.get(LOCALE_COOKIE)?.value);
+  const t = (key: string) => translate(key, locale, undefined);
+
   return (
     <div className={`container-page ${styles.page}`}>
       <section className={styles.hero}>
         <span className={styles.badge}>
           <Compass className={styles.badgeIcon} aria-hidden />
-          Coming soon
+          {t('ui.comingSoon.badge')}
         </span>
 
         <h1 className={styles.title}>{title}</h1>
@@ -62,10 +70,10 @@ export default async function ComingSoonPage({ searchParams }: PageProps) {
 
         <div className={styles.actions}>
           <Link href="/hotels" className={styles.primaryAction}>
-            Browse hotels
+            {t('ui.comingSoon.browseHotels')}
           </Link>
           <Link href="/" className={styles.secondaryAction}>
-            Back to home
+            {t('ui.comingSoon.backHome')}
           </Link>
         </div>
 
@@ -76,7 +84,7 @@ export default async function ComingSoonPage({ searchParams }: PageProps) {
 
       <section className={styles.liveNow} aria-labelledby="live-now-heading">
         <h2 id="live-now-heading" className={styles.liveNowHeading}>
-          What you can do today
+          {t('ui.comingSoon.liveToday')}
         </h2>
         <ul className={styles.liveNowList}>
           {LIVE_NOW.map((item) => (

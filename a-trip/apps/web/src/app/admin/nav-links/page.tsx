@@ -52,23 +52,34 @@ function LinkRow({
   const remove = useDeleteNavLink();
 
   const [value, setValue] = React.useState(link.value);
+  const [ar, setAr] = React.useState(link.translations?.AR ?? '');
   const [href, setHref] = React.useState(link.href ?? '');
   const [error, setError] = React.useState<string | null>(null);
 
   // Re-sync when the row is reordered or refetched underneath us.
   React.useEffect(() => {
     setValue(link.value);
+    setAr(link.translations?.AR ?? '');
     setHref(link.href ?? '');
-  }, [link.value, link.href]);
+  }, [link.value, link.href, link.translations]);
 
-  const dirty = value.trim() !== link.value || href.trim() !== (link.href ?? '');
+  const dirty =
+    value.trim() !== link.value ||
+    href.trim() !== (link.href ?? '') ||
+    ar.trim() !== (link.translations?.AR ?? '');
 
   const save = () => {
     const problem = hrefError(href);
     if (problem) return setError(problem);
     if (value.trim().length < 1) return setError('Text is required');
     setError(null);
-    update.mutate({ id: link.id, value: value.trim(), href: href.trim() || null });
+    update.mutate({
+      id: link.id,
+      value: value.trim(),
+      href: href.trim() || null,
+      // Sent even when blank: clearing it is how the Arabic override is removed.
+      translations: { AR: ar.trim() },
+    });
   };
 
   return (
@@ -103,6 +114,19 @@ function LinkRow({
             maxLength={60}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Help centre"
+          />
+        </label>
+
+        <label className={styles.field}>
+          <span className={ui.fieldLabel}>العربية</span>
+          <input
+            className={ui.input}
+            dir="rtl"
+            lang="ar"
+            value={ar}
+            maxLength={60}
+            onChange={(e) => setAr(e.target.value)}
+            placeholder={value}
           />
         </label>
 
@@ -166,6 +190,7 @@ function LinkRow({
 function AddLinkForm({ group }: { group: NavLinkGroup }) {
   const create = useCreateNavLink();
   const [value, setValue] = React.useState('');
+  const [ar, setAr] = React.useState('');
   const [href, setHref] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
 
@@ -176,10 +201,11 @@ function AddLinkForm({ group }: { group: NavLinkGroup }) {
     if (problem) return setError(problem);
     setError(null);
     create.mutate(
-      { group, value: value.trim(), href: href.trim() || null },
+      { group, value: value.trim(), href: href.trim() || null, translations: { AR: ar.trim() } },
       {
         onSuccess: () => {
           setValue('');
+          setAr('');
           setHref('');
         },
       },
@@ -195,6 +221,16 @@ function AddLinkForm({ group }: { group: NavLinkGroup }) {
         placeholder="Text on screen"
         onChange={(e) => setValue(e.target.value)}
         aria-label={`New ${NAV_GROUP_LABEL[group]} link text`}
+      />
+      <input
+        className={ui.input}
+        dir="rtl"
+        lang="ar"
+        value={ar}
+        maxLength={60}
+        placeholder="العربية — اختياري"
+        onChange={(e) => setAr(e.target.value)}
+        aria-label={`New ${NAV_GROUP_LABEL[group]} link text in Arabic`}
       />
       <input
         className={ui.input}

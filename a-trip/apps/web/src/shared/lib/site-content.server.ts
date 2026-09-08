@@ -12,6 +12,8 @@ import type { ApiResponse } from '../interfaces/api';
  * On the server the API is reached over the internal network, which inside
  * Docker is a different host from the browser-facing NEXT_PUBLIC_API_URL.
  */
+import { DEFAULT_LOCALE, LOCALE_META, type Locale } from '../i18n/config';
+
 const REVALIDATE_SECONDS = 300;
 
 function serverApiBase(): string {
@@ -22,10 +24,20 @@ function serverApiBase(): string {
   );
 }
 
-export async function fetchSiteContent(): Promise<SiteContent> {
-  const empty: SiteContent = { groups: [], settings: {} };
+export async function fetchSiteContent(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<SiteContent> {
+  const empty: SiteContent = {
+    groups: [],
+    settings: {},
+    translations: {},
+    locale,
+    dir: LOCALE_META[locale].dir,
+  };
   try {
-    const res = await fetch(`${serverApiBase()}/site-content`, {
+    const res = await fetch(`${serverApiBase()}/site-content?locale=${locale}`, {
+      // Tagged without the locale so one revalidation clears every language —
+      // an admin editing Arabic should not leave English stale, and vice versa.
       next: { revalidate: REVALIDATE_SECONDS, tags: ['site-content'] },
     });
     if (!res.ok) return empty;

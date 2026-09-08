@@ -262,7 +262,7 @@
   height: 2rem;
   width: 2rem;
   flex-shrink: 0;
-  margin-left: auto;
+  margin-inline-start: auto;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;

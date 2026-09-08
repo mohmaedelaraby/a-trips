@@ -11,6 +11,7 @@ import { EmptyState } from '../../../../shared/components/empty-state';
 import { Button } from '../../../../shared/components/button';
 import { cn } from '../../../../shared/lib/utils';
 import type { BookingStatus } from '../../../../shared/interfaces/api';
+import { useTranslation } from '../../../../shared/i18n/use-translation';
 import styles from '../../styles/account.module.css';
 
 type Tab = 'ALL' | BookingStatus;
@@ -23,6 +24,7 @@ const TABS: Array<{ value: Tab; label: string }> = [
 ];
 
 export default function MyBookingsPage() {
+  const { t } = useTranslation();
   const query = useMyBookings();
   const [tab, setTab] = React.useState<Tab>('ALL');
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -41,7 +43,7 @@ export default function MyBookingsPage() {
     <div>
       <div className={styles.headerRow}>
         <div>
-          <h1 className={styles.title}>My bookings</h1>
+          <h1 className={styles.title}>{t('ui.account.myBookings')}</h1>
           <p className={styles.subtitle}>{pluralizeCount(items.length)}</p>
         </div>
 
@@ -79,7 +81,7 @@ export default function MyBookingsPage() {
               description="Once you request a room, it will show up here with its confirmation status."
               action={
                 <Button asChild>
-                  <Link href="/hotels">Browse hotels</Link>
+                  <Link href="/hotels">{t('ui.comingSoon.browseHotels')}</Link>
                 </Button>
               }
             />

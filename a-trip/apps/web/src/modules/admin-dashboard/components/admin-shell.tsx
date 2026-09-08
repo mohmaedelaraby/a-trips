@@ -33,6 +33,7 @@ const SETTINGS: NavItem[] = [
   { href: '/admin/amenities', label: 'Amenities' },
   { href: '/admin/nav-links', label: 'Navigation links' },
   { href: '/admin/site-settings', label: 'Site content' },
+  { href: '/admin/translations', label: 'Translations' },
 ];
 
 function isActive(item: NavItem, pathname: string) {

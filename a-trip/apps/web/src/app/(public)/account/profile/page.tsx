@@ -8,6 +8,7 @@ import { useProfile, useUpdateProfile } from '../../../../modules/auth/hooks/use
 import { Field, Input } from '../../../../shared/components/form-controls';
 import { Button } from '../../../../shared/components/button';
 import { Skeleton } from '../../../../shared/components/skeleton';
+import { useTranslation } from '../../../../shared/i18n/use-translation';
 import styles from '../../styles/account.module.css';
 
 const schema = z.object({
@@ -19,6 +20,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const profile = useProfile();
   const updateProfile = useUpdateProfile();
 
@@ -45,7 +47,7 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.profileCard}>
-      <h2 className={styles.profileTitle}>Profile &amp; settings</h2>
+      <h2 className={styles.profileTitle}>{t('ui.account.profileSettings')}</h2>
 
       <form
         onSubmit={handleSubmit((values) =>
@@ -58,20 +60,20 @@ export default function ProfilePage() {
         className={styles.profileForm}
       >
         <div className={styles.profileGrid}>
-          <Field label="Name" htmlFor="name" required error={errors.name?.message}>
+          <Field label={t('ui.account.name')} htmlFor="name" required error={errors.name?.message}>
             <Input id="name" {...register('name')} />
           </Field>
-          <Field label="Phone" htmlFor="phone">
+          <Field label={t('ui.checkout.phone')} htmlFor="phone">
             <Input id="phone" type="tel" {...register('phone')} />
           </Field>
         </div>
-        <Field label="Email">
+        <Field label={t('ui.checkout.email')}>
           <Input value={profile.data?.email ?? ''} disabled />
         </Field>
-        <Field label="Date of birth" htmlFor="dateOfBirth">
+        <Field label={t('ui.account.dateOfBirth')} htmlFor="dateOfBirth">
           <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
         </Field>
-        <Field label="Password">
+        <Field label={t('ui.account.password')}>
           <div className={styles.passwordRow}>
             <Input value="••••••••" disabled className={styles.passwordInput} />
             <a href="/account/profile" className={styles.changeLink}>

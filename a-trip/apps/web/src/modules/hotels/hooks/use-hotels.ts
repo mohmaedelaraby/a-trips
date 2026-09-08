@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '../../../shared/lib/api-client';
+import { useLocale } from '../../../shared/i18n/use-translation';
 import type {
   HotelDetail,
   HotelDetailParams,
@@ -28,18 +29,23 @@ function toQueryParams(params: HotelSearchParams): Record<string, unknown> {
 }
 
 export function useHotelSearch(params: HotelSearchParams) {
+  // Locale is part of the key: hotel names and descriptions are translated
+  // server-side, so the Arabic and English results are different payloads.
+  const locale = useLocale();
   return useQuery({
-    queryKey: ['hotels', 'search', params],
-    queryFn: () => apiGet<HotelSearchResult>('/hotels', toQueryParams(params)),
+    queryKey: ['hotels', 'search', params, locale],
+    queryFn: () => apiGet<HotelSearchResult>('/hotels', { ...toQueryParams(params), locale }),
     placeholderData: (previous) => previous,
   });
 }
 
 export function useHotelDetail(idOrSlug: string, params: HotelDetailParams) {
+  const locale = useLocale();
   return useQuery({
-    queryKey: ['hotels', 'detail', idOrSlug, params],
+    queryKey: ['hotels', 'detail', idOrSlug, params, locale],
     queryFn: () =>
       apiGet<HotelDetail>(`/hotels/${idOrSlug}`, {
+        locale,
         checkIn: params.checkIn || undefined,
         checkOut: params.checkOut || undefined,
         adults: params.adults,

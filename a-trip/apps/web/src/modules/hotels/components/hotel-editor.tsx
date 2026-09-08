@@ -35,6 +35,8 @@ const DESCRIPTION_LIMIT = 1200;
 
 export interface HotelEditorValues {
   name: string;
+  /** Arabic overrides for the translatable fields; blank means "use English". */
+  ar: { name: string; city: string; address: string; description: string };
   /** Public URL key. Blank on create, where the server derives it. */
   slug: string;
   city: string;
@@ -50,6 +52,7 @@ export interface HotelEditorValues {
 
 const EMPTY: HotelEditorValues = {
   name: '',
+  ar: { name: '', city: '', address: '', description: '' },
   slug: '',
   city: 'Cairo',
   country: 'Egypt',
@@ -155,6 +158,9 @@ export function HotelEditor({
       // Only sent when the editor actually has one, so creating a hotel still
       // lets the server derive the slug from the name and city.
       ...(values.slug.trim() ? { slug: values.slug.trim() } : {}),
+      // Sent every time, including blanks: clearing a field is how an admin
+      // removes a translation and falls back to the English.
+      translations: { AR: values.ar },
     });
   };
 
@@ -330,6 +336,77 @@ export function HotelEditor({
                     <p className={styles.counter}>
                       {values.description.length} / {DESCRIPTION_LIMIT} characters
                     </p>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+
+            {/* Arabic sits beside the English rather than on a separate
+                translations screen: whoever writes the hotel copy is the
+                person best placed to translate it, and they are already here. */}
+            <Panel>
+              <div className={styles.panelBody}>
+                <h2 className={styles.panelTitle}>Arabic (العربية)</h2>
+                <p className={styles.arabicHint}>
+                  Leave a field blank and Arabic visitors see the English above it.
+                </p>
+
+                <div className={styles.fields} dir="rtl" lang="ar">
+                  <div>
+                    <label htmlFor="hotel-ar-name" className={ui.fieldLabel}>
+                      اسم الفندق
+                    </label>
+                    <input
+                      id="hotel-ar-name"
+                      className={ui.input}
+                      value={values.ar.name}
+                      placeholder={values.name}
+                      onChange={(event) => set('ar', { ...values.ar, name: event.target.value })}
+                    />
+                  </div>
+
+                  <div className={styles.arabicRow}>
+                    <div>
+                      <label htmlFor="hotel-ar-city" className={ui.fieldLabel}>
+                        المدينة
+                      </label>
+                      <input
+                        id="hotel-ar-city"
+                        className={ui.input}
+                        value={values.ar.city}
+                        placeholder={values.city}
+                        onChange={(event) => set('ar', { ...values.ar, city: event.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="hotel-ar-address" className={ui.fieldLabel}>
+                        العنوان
+                      </label>
+                      <input
+                        id="hotel-ar-address"
+                        className={ui.input}
+                        value={values.ar.address}
+                        placeholder={values.address}
+                        onChange={(event) => set('ar', { ...values.ar, address: event.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="hotel-ar-description" className={ui.fieldLabel}>
+                      الوصف
+                    </label>
+                    <textarea
+                      id="hotel-ar-description"
+                      className={ui.input}
+                      rows={4}
+                      maxLength={DESCRIPTION_LIMIT}
+                      value={values.ar.description}
+                      placeholder={values.description}
+                      onChange={(event) =>
+                        set('ar', { ...values.ar, description: event.target.value })
+                      }
+                    />
                   </div>
                 </div>
               </div>

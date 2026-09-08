@@ -124,7 +124,14 @@
 
 @media (min-width: 600px) {
   .fields {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1400px) {
+  .fields {
+    /* English, Arabic, destination — the destination gets the extra room. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr);
   }
 }
 
@@ -170,8 +177,14 @@
 
 @media (min-width: 600px) {
   .addForm {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
+  }
+}
+
+@media (min-width: 1400px) {
+  .addForm {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr) auto;
   }
 }
 

@@ -36,7 +36,7 @@
 }
 
 .headRight {
-  text-align: right;
+  text-align: end;
 }
 
 .body {
@@ -142,7 +142,7 @@
 }
 
 .priceTotal {
-  margin-left: 0.25rem;
+  margin-inline-start: 0.25rem;
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--color-ink-muted);

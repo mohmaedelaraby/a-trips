@@ -81,3 +81,11 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const Locale = {
+  EN: 'EN',
+  AR: 'AR'
+} as const
+
+export type Locale = (typeof Locale)[keyof typeof Locale]

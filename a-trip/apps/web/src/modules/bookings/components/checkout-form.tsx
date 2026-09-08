@@ -11,6 +11,7 @@ import { useSession } from '../../auth/hooks/use-auth';
 import { useCreateBooking } from '../hooks/use-bookings';
 import type { HotelDetail, RoomTypeWithAvailability } from '../../hotels/interfaces/hotel';
 import type { Booking } from '../interfaces/booking';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/checkout-form.module.css';
 
 export function CheckoutForm({
@@ -31,6 +32,7 @@ export function CheckoutForm({
   /** Called once the rooms are held; the parent then shows the payment step. */
   onBookingHeld: (booking: Booking) => void;
 }) {
+  const { t, tn } = useTranslation();
   const { user, isAuthenticated, hydrated } = useSession();
   const createBooking = useCreateBooking();
   const [error, setError] = React.useState<string | null>(null);
@@ -75,19 +77,17 @@ export function CheckoutForm({
   if (hydrated && !isAuthenticated) {
     return (
       <div className={styles.gate}>
-        <p className={styles.gateTitle}>Sign in to complete this booking</p>
-        <p className={styles.gateBody}>
-          Your reservation details are saved — just sign in or create an account to continue.
-        </p>
+        <p className={styles.gateTitle}>{t('ui.checkout.signInPrompt')}</p>
+        <p className={styles.gateBody}>{t('ui.checkout.signInBody')}</p>
         <div className={styles.gateActions}>
           <Button asChild variant="outline">
             <a href={`/sign-in?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-              Sign in
+              {t('ui.common.signIn')}
             </a>
           </Button>
           <Button asChild>
             <a href={`/register?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-              Create account
+              {t('ui.common.createAccount')}
             </a>
           </Button>
         </div>
@@ -98,40 +98,39 @@ export function CheckoutForm({
   return (
     <div className={styles.layout}>
       <div>
-        <h1 className={styles.heading}>Almost there</h1>
-        <p className={styles.subheading}>Your details first, then payment.</p>
+        <h1 className={styles.heading}>{t('ui.checkout.title')}</h1>
+        <p className={styles.subheading}>{t('ui.checkout.subtitle')}</p>
 
         <div className={styles.infoBanner}>
           <Info className={styles.infoIcon} />
           <p>
-            <strong>We hold your room for 15 minutes while you pay.</strong> Payment is taken by
-            PayPal on the next step, and our team confirms with the hotel within 24 hours.
+            <strong>{t('ui.checkout.holdNotice')}</strong> {t('ui.checkout.holdNoticeBody')}
           </p>
         </div>
 
         <form id="checkout-form" onSubmit={handleSubmit} className={styles.form}>
-          <h2 className={styles.formTitle}>Lead guest</h2>
+          <h2 className={styles.formTitle}>{t('ui.checkout.leadGuest')}</h2>
           <div className={styles.fieldGrid}>
-            <Field label="First name" htmlFor="firstName" required>
+            <Field label={t('ui.checkout.firstName')} htmlFor="firstName" required>
               <Input id="firstName" defaultValue={firstName} required />
             </Field>
-            <Field label="Last name" htmlFor="lastName" required>
+            <Field label={t('ui.checkout.lastName')} htmlFor="lastName" required>
               <Input id="lastName" defaultValue={lastName} required />
             </Field>
-            <Field label="Email" htmlFor="email" required>
+            <Field label={t('ui.checkout.email')} htmlFor="email" required>
               <Input id="email" type="email" defaultValue={user?.email ?? ''} required />
             </Field>
-            <Field label="Phone" htmlFor="phone">
+            <Field label={t('ui.checkout.phone')} htmlFor="phone">
               <Input id="phone" type="tel" defaultValue={user?.phone ?? ''} />
             </Field>
           </div>
 
           <div className={styles.requestsField}>
-            <Field label="Special requests" htmlFor="specialRequests" hint="Optional">
+            <Field label={t('ui.checkout.specialRequests')} htmlFor="specialRequests" hint={t('ui.checkout.optional')}>
               <Textarea
                 id="specialRequests"
                 rows={3}
-                placeholder="Late check-in, high floor, twin beds…"
+                placeholder={t('ui.checkout.specialRequestsPlaceholder')}
                 value={specialRequests}
                 onChange={(e) => setSpecialRequests(e.target.value)}
               />
@@ -145,11 +144,7 @@ export function CheckoutForm({
               className={styles.agreeCheckbox}
               required
             />
-            I agree to the{' '}
-            <a href="#" className={styles.termsLink}>
-              booking terms
-            </a>{' '}
-            and understand my booking is confirmed by ATrips after payment.
+            {t('ui.checkout.agree')}
           </label>
 
           {error ? <p className={styles.errorMsg}>{error}</p> : null}
@@ -163,7 +158,7 @@ export function CheckoutForm({
             loading={createBooking.isPending}
             disabled={!availability?.bookable || !agreed}
           >
-            Continue to payment
+            {t('ui.checkout.continueToPayment')}
           </Button>
         </form>
       </div>
@@ -188,15 +183,15 @@ export function CheckoutForm({
 
         <div className={styles.summarySection}>
           <div className={styles.summaryRow}>
-            <span className={styles.summaryRowLabel}>Room</span>
+            <span className={styles.summaryRowLabel}>{t('ui.common.room')}</span>
             <span className={styles.summaryRowValue}>{roomType.name}</span>
           </div>
           <div className={styles.summaryRow}>
-            <span className={styles.summaryRowLabel}>Check-in</span>
+            <span className={styles.summaryRowLabel}>{t('ui.common.checkIn')}</span>
             <span className={styles.summaryRowValue}>{formatDate(checkIn)}, 14:00</span>
           </div>
           <div className={styles.summaryRow}>
-            <span className={styles.summaryRowLabel}>Check-out</span>
+            <span className={styles.summaryRowLabel}>{t('ui.common.checkOut')}</span>
             <span className={styles.summaryRowValue}>{formatDate(checkOut)}, 12:00</span>
           </div>
           <div className={styles.summaryRow}>
@@ -204,21 +199,21 @@ export function CheckoutForm({
             <span className={styles.summaryRowValue}>{nights}</span>
           </div>
           <div className={styles.summaryRow}>
-            <span className={styles.summaryRowLabel}>Guests</span>
+            <span className={styles.summaryRowLabel}>{t('ui.common.guests')}</span>
             <span className={styles.summaryRowValue}>
-              {pluralize(adults, 'adult')}
-              {children > 0 ? `, ${pluralize(children, 'child', 'children')}` : ''}
+              {tn('ui.common.adults', adults)}
+              {children > 0 ? `, ${tn('ui.common.children', children)}` : ''}
             </span>
           </div>
         </div>
 
         <div className={`${styles.summarySection} ${styles.summarySectionMuted}`}>
           <div className={styles.summaryRow}>
-            <span>Room, {pluralize(nights, 'night')}</span>
+            <span>{t('ui.hotels.roomNights', { nights: tn('ui.common.nights', nights) })}</span>
             <span>{formatPrice(roomSubtotal)}</span>
           </div>
           <div className={styles.summaryRow}>
-            <span>Taxes &amp; city fee</span>
+            <span>{t('ui.hotels.taxes')}</span>
             <span>{formatPrice(taxesAndFees)}</span>
           </div>
         </div>
@@ -226,7 +221,7 @@ export function CheckoutForm({
         <div className={styles.summaryTotal}>
           {/* Was "Total due at hotel" — payment is taken by PayPal on the next
               step now, so that label promised the wrong thing. */}
-          <span>Total</span>
+          <span>{t('ui.common.total')}</span>
           <span>{formatPrice(total)}</span>
         </div>
 

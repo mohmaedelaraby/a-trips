@@ -443,6 +443,23 @@ export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonNullableFilter<$PrismaModel>
 }
 
+export type EnumLocaleFilter<$PrismaModel = never> = {
+  equals?: $Enums.Locale | Prisma.EnumLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocaleFilter<$PrismaModel> | $Enums.Locale
+}
+
+export type EnumLocaleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Locale | Prisma.EnumLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocaleWithAggregatesFilter<$PrismaModel> | $Enums.Locale
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLocaleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLocaleFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -856,6 +873,23 @@ export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumLocaleFilter<$PrismaModel = never> = {
+  equals?: $Enums.Locale | Prisma.EnumLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocaleFilter<$PrismaModel> | $Enums.Locale
+}
+
+export type NestedEnumLocaleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Locale | Prisma.EnumLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Locale[] | Prisma.ListEnumLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLocaleWithAggregatesFilter<$PrismaModel> | $Enums.Locale
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLocaleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLocaleFilter<$PrismaModel>
 }
 
 

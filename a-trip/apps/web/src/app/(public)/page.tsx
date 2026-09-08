@@ -1,9 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { CalendarCheck, Headset, ShieldCheck, Wallet } from 'lucide-react';
 import { HotelSearchWidget } from '../../modules/hotels/components/hotel-search-widget';
 import { FeaturedHotels } from '../../modules/hotels/components/featured-hotels';
 import { BrowseByCity } from '../../modules/hotels/components/browse-by-city';
 import { NewsletterBanner } from '../../modules/hotels/components/newsletter-banner';
+import { useTranslation } from '../../shared/i18n/use-translation';
 import styles from './styles/home.module.css';
 
 const TRUST_SIGNALS = [
@@ -14,12 +17,14 @@ const TRUST_SIGNALS = [
 ];
 
 export default function HomePage() {
+  const { t } = useTranslation();
+
   return (
     <div>
       <section className={styles.hero}>
         <div className={styles.heroBg} />
         <div className={`${styles.heroContent} container-page`}>
-          <h1 className={styles.heroTitle}>Where to next.</h1>
+          <h1 className={styles.heroTitle}>{t('ui.home.heroTitle')}</h1>
           <p className={styles.heroSubtitle}>340 hand-checked hotels across Egypt. Local rates, no booking fees.</p>
           <div className={styles.heroSearch}>
             <HotelSearchWidget />
@@ -46,8 +51,8 @@ export default function HomePage() {
       <section className={`container-page ${styles.section}`}>
         <div className={styles.sectionHead}>
           <div>
-            <h2 className={styles.sectionTitle}>Popular hotels this month</h2>
-            <p className={styles.sectionSubtitle}>Most booked by our guests over the last 30 days</p>
+            <h2 className={styles.sectionTitle}>{t('ui.home.popularTitle')}</h2>
+            <p className={styles.sectionSubtitle}>{t('ui.home.popularSubtitle')}</p>
           </div>
           <Link href="/hotels" className={styles.seeAllLink}>
             See all hotels →
@@ -59,8 +64,8 @@ export default function HomePage() {
       </section>
 
       <section className={`container-page ${styles.sectionTight}`}>
-        <h2 className={styles.sectionTitle}>Browse by city</h2>
-        <p className={styles.sectionSubtitle}>Five cities live at launch, more added weekly</p>
+        <h2 className={styles.sectionTitle}>{t('ui.home.citiesTitle')}</h2>
+        <p className={styles.sectionSubtitle}>{t('ui.home.citiesSubtitle')}</p>
         <div className={styles.sectionBody}>
           <BrowseByCity />
         </div>

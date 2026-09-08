@@ -7,6 +7,7 @@ import {
   IsInt,
   IsLatitude,
   IsLongitude,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -89,6 +90,15 @@ export class CreateHotelDto {
 }
 
 export class UpdateHotelDto {
+  /**
+   * Per-locale overrides for the translatable fields, shaped
+   * { AR: { name, description, city, address } }. An empty value clears the
+   * override so the English shows through again.
+   */
+  @IsOptional()
+  @IsObject()
+  translations?: Record<string, Record<string, string>>;
+
   /**
    * Public URL key. Changing it retires the old one into previousSlugs, which
    * still resolves, so links already shared or indexed keep working.

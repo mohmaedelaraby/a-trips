@@ -32,10 +32,16 @@ export interface NavLinkGroupPayload {
 export interface SiteContent {
   groups: NavLinkGroupPayload[];
   settings: Record<string, string>;
+  /** ui.* overrides from the admin, layered over the shipped JSON. */
+  translations: Record<string, string>;
+  locale: string;
+  dir: 'ltr' | 'rtl';
 }
 
 /** Admin rows carry the editing fields the public feed omits. */
 export interface AdminNavLink extends NavLink {
+  /** Per-locale labels, e.g. { AR: 'الفنادق' }. */
+  translations?: Record<string, string>;
   group: NavLinkGroup;
   sortOrder: number;
   isActive: boolean;
@@ -44,6 +50,7 @@ export interface AdminNavLink extends NavLink {
 }
 
 export interface NavLinkPayload {
+  translations?: Record<string, string>;
   group: NavLinkGroup;
   value: string;
   href?: string | null;
@@ -58,5 +65,15 @@ export interface AdminSiteSetting {
   label: string;
   value: string;
   /** True while no override is stored and the shipped copy is showing. */
+  isDefault: boolean;
+}
+
+/** One key with its value in every locale, for the translation editor. */
+export interface AdminTranslation {
+  key: string;
+  namespace: string;
+  context: string | null;
+  values: Record<'EN' | 'AR', string>;
+  /** True when nothing is stored for any locale — the shipped copy applies. */
   isDefault: boolean;
 }

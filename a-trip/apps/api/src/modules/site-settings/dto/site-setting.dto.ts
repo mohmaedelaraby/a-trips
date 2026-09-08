@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsString, Length, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
+import { Locale } from '../../../generated/prisma/enums';
 
 export class SiteSettingEntryDto {
   @IsString()
@@ -18,4 +27,11 @@ export class UpdateSiteSettingsDto {
   @ValidateNested({ each: true })
   @Type(() => SiteSettingEntryDto)
   settings: SiteSettingEntryDto[];
+}
+
+export class SiteContentQueryDto {
+  /** Defaults to EN when absent or unrecognised. */
+  @IsOptional()
+  @IsEnum(Locale)
+  locale?: Locale;
 }

@@ -3,9 +3,11 @@
 import * as React from 'react';
 import { Button } from '../../../shared/components/button';
 import { Input } from '../../../shared/components/form-controls';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/newsletter-banner.module.css';
 
 export function NewsletterBanner() {
+  const { t } = useTranslation();
   const [email, setEmail] = React.useState('');
   const [sent, setSent] = React.useState(false);
 
@@ -13,12 +15,12 @@ export function NewsletterBanner() {
     <div className={styles.banner}>
       <div className={styles.inner}>
         <div>
-          <h2 className={styles.heading}>Get local rates before they go public</h2>
-          <p className={styles.subheading}>One email a week. Egypt hotel deals, nothing else.</p>
+          <h2 className={styles.heading}>{t('ui.newsletter.title')}</h2>
+          <p className={styles.subheading}>{t('ui.newsletter.subtitle')}</p>
         </div>
 
         {sent ? (
-          <p className={styles.confirmed}>You&apos;re subscribed — thanks!</p>
+          <p className={styles.confirmed}>{t('ui.newsletter.subscribed')}</p>
         ) : (
           <form
             onSubmit={(e) => {
@@ -30,7 +32,7 @@ export function NewsletterBanner() {
             <Input
               type="email"
               required
-              placeholder="your@email.com"
+              placeholder={t('ui.newsletter.placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.emailInput}

@@ -12,6 +12,7 @@ import { Skeleton } from '../../../shared/components/skeleton';
 import { Button } from '../../../shared/components/button';
 import { formatDate, nightsBetween, pluralize } from '../../../shared/lib/utils';
 import type { HotelSortKey } from '../../../modules/hotels/interfaces/hotel';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/hotels.module.css';
 
 function useSyncedParam(name: string) {
@@ -20,6 +21,7 @@ function useSyncedParam(name: string) {
 }
 
 export function HotelsPageClient() {
+  const { t, tn } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -115,7 +117,9 @@ export function HotelsPageClient() {
       </div>
 
       <div className={`container-page ${styles.pageWrap}`}>
-        <h1 className={styles.title}>Hotels{city ? ` in ${city}` : ''}</h1>
+        <h1 className={styles.title}>
+          {city ? t('ui.hotels.titleInCity', { city }) : t('ui.hotels.title')}
+        </h1>
         {subtitleParts.length > 0 ? <p className={styles.subtitle}>{subtitleParts.join(' · ')}</p> : null}
 
         <div className={styles.layout}>
@@ -136,7 +140,7 @@ export function HotelsPageClient() {
             <div className={styles.toolbar}>
               {appliedChips.length > 0 ? (
                 <div className={styles.appliedChips}>
-                  <span className={styles.appliedLabel}>Applied:</span>
+                  <span className={styles.appliedLabel}>{t('ui.hotels.applied')}</span>
                   {appliedChips.map((chip) => (
                     <button key={chip.key} type="button" onClick={chip.onRemove} className={styles.chip}>
                       {chip.label}
@@ -163,13 +167,13 @@ export function HotelsPageClient() {
                   <div className={styles.emptyIcon}>
                     <SearchX className="h-6 w-6" aria-hidden />
                   </div>
-                  <p className={styles.emptyTitle}>No hotels match all your filters</p>
+                  <p className={styles.emptyTitle}>{t('ui.hotels.noResults')}</p>
                   <p className={styles.emptyBody}>
                     Try widening your price range or removing an amenity. There are more hotels
                     {city ? ` in ${city}` : ''} for these dates without filters.
                   </p>
                   <div className={styles.emptyActions}>
-                    <Button onClick={clearFilters}>Clear all filters</Button>
+                    <Button onClick={clearFilters}>{t('ui.hotels.clearFilters')}</Button>
                     <Button variant="outline" onClick={() => router.push('/hotels')}>
                       Change dates
                     </Button>

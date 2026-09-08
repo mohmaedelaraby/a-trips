@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
-import { HotelStatus, RoomTypeStatus } from '../../generated/prisma/enums';
+import { HotelStatus, Locale, RoomTypeStatus } from '../../generated/prisma/enums';
 import { AvailabilityService } from '../availability/availability.service';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
@@ -31,7 +31,7 @@ export class HotelsService {
 
   // ---------------------------------------------------------------- public
 
-  async search(query: HotelSearchDto) {
+  async search(query: HotelSearchDto, t?: Record<string, string>) {
     const { page, pageSize, skip, take } = resolvePagination(query);
     this.assertDateRange(query.checkIn, query.checkOut);
 
@@ -96,7 +96,7 @@ export class HotelsService {
       }
 
       return {
-        ...this.toHotelDto(hotel),
+        ...this.toHotelDto(hotel, t),
         fromPrice: fromPrice === null ? null : Math.round(fromPrice * 100) / 100,
         roomTypeCount: hotel.roomTypes.length,
         nights,
@@ -143,7 +143,11 @@ export class HotelsService {
     return hotel.id;
   }
 
-  async findPublicByIdOrSlug(idOrSlug: string, query: HotelDetailQueryDto) {
+  async findPublicByIdOrSlug(
+    idOrSlug: string,
+    query: HotelDetailQueryDto,
+    t?: Record<string, string>,
+  ) {
     this.assertDateRange(query.checkIn, query.checkOut);
 
     const hotel = await this.prisma.hotel.findFirst({
@@ -173,9 +177,9 @@ export class HotelsService {
       : null;
 
     return {
-      ...this.toHotelDto(hotel),
+      ...this.toHotelDto(hotel, t),
       roomTypes: hotel.roomTypes.map((roomType) => {
-        const dto = this.toRoomTypeDto(roomType);
+        const dto = this.toRoomTypeDto(roomType, t);
         if (!assessments) return dto;
 
         const assessment = assessments.get(roomType.id);
@@ -255,13 +259,74 @@ export class HotelsService {
     };
   }
 
+  /**
+   * Admin view of a hotel: the stored English alongside its translations, so
+   * the editor can show both languages side by side.
+   *
+   * Translations live in the Translation table keyed `hotel.<id>.<field>`
+   * rather than as columns, so adding a locale needs no migration. They are
+   * folded into a nested `translations` object here purely so the form has a
+   * shape it can bind to.
+   */
   async adminFindOne(id: string) {
     const hotel = await this.prisma.hotel.findUnique({ where: { id }, include: hotelInclude });
     if (!hotel) throw new NotFoundException('Hotel not found');
+
+    const roomTypeIds = hotel.roomTypes.map((rt) => rt.id);
+    const rows = await this.prisma.translation.findMany({
+      where: {
+        OR: [
+          { key: { startsWith: `hotel.${id}.` } },
+          ...roomTypeIds.map((rtId) => ({ key: { startsWith: `roomType.${rtId}.` } })),
+        ],
+      },
+      select: { key: true, locale: true, value: true },
+    });
+
+    const nest = (prefix: string) => {
+      const out: Record<string, Record<string, string>> = {};
+      for (const row of rows) {
+        if (!row.key.startsWith(prefix)) continue;
+        const field = row.key.slice(prefix.length);
+        (out[row.locale] ??= {})[field] = row.value;
+      }
+      return out;
+    };
+
     return {
       ...this.toHotelDto(hotel),
-      roomTypes: hotel.roomTypes.map((rt) => this.toRoomTypeDto(rt)),
+      translations: nest(`hotel.${id}.`),
+      roomTypes: hotel.roomTypes.map((rt) => ({
+        ...this.toRoomTypeDto(rt),
+        translations: nest(`roomType.${rt.id}.`),
+      })),
     };
+  }
+
+  /**
+   * Replaces the translations for one entity. An empty value deletes the row so
+   * the English falls through again, which is how a translation is "removed".
+   */
+  private async saveTranslations(
+    keyPrefix: string,
+    translations: Record<string, Record<string, string>> | undefined,
+  ) {
+    if (!translations) return;
+    for (const [locale, fields] of Object.entries(translations)) {
+      for (const [field, raw] of Object.entries(fields)) {
+        const key = `${keyPrefix}${field}`;
+        const value = (raw ?? '').trim();
+        if (!value) {
+          await this.prisma.translation.deleteMany({ where: { key, locale: locale as Locale } });
+          continue;
+        }
+        await this.prisma.translation.upsert({
+          where: { key_locale: { key, locale: locale as Locale } },
+          create: { key, locale: locale as Locale, value },
+          update: { value },
+        });
+      }
+    }
   }
 
   async create(dto: CreateHotelDto, adminId: string) {
@@ -324,6 +389,10 @@ export class HotelsService {
       },
       include: hotelInclude,
     });
+
+    // After the row, so a rejected hotel update never leaves orphaned copy.
+    await this.saveTranslations(`hotel.${id}.`, dto.translations);
+
     return this.toHotelDto(hotel);
   }
 
@@ -451,15 +520,22 @@ export class HotelsService {
     };
   }
 
-  private toHotelDto(hotel: HotelWithImages) {
+  /**
+   *  carries the translation overrides for the requested locale. Admin
+   * responses pass nothing and get the stored wording, which is what an editor
+   * needs to see; public responses pass a map and get localised text.
+   */
+  private toHotelDto(hotel: HotelWithImages, t?: Record<string, string>) {
+    const tr = (field: string, fallback: string) =>
+      t ? t[`hotel.${hotel.id}.${field}`] || fallback : fallback;
     return {
       id: hotel.id,
       slug: hotel.slug,
-      name: hotel.name,
-      city: hotel.city,
-      address: hotel.address,
-      country: hotel.country,
-      description: hotel.description,
+      name: tr('name', hotel.name),
+      city: tr('city', hotel.city),
+      address: tr('address', hotel.address),
+      country: tr('country', hotel.country),
+      description: tr('description', hotel.description ?? '') || null,
       stars: hotel.stars,
       latitude: hotel.latitude,
       longitude: hotel.longitude,
@@ -479,12 +555,14 @@ export class HotelsService {
     };
   }
 
-  private toRoomTypeDto(roomType: Prisma.RoomTypeGetPayload<object>) {
+  private toRoomTypeDto(roomType: Prisma.RoomTypeGetPayload<object>, t?: Record<string, string>) {
+    const tr = (field: string, fallback: string) =>
+      t ? t[`roomType.${roomType.id}.${field}`] || fallback : fallback;
     return {
       id: roomType.id,
       hotelId: roomType.hotelId,
-      name: roomType.name,
-      description: roomType.description,
+      name: tr('name', roomType.name),
+      description: tr('description', roomType.description ?? '') || null,
       capacityAdults: roomType.capacityAdults,
       capacityChildren: roomType.capacityChildren,
       numOfBeds: roomType.numOfBeds,

@@ -60,7 +60,8 @@ export const ModelName = {
   RoomType: 'RoomType',
   RoomAvailability: 'RoomAvailability',
   Booking: 'Booking',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Translation: 'Translation'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -237,6 +238,16 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const TranslationScalarFieldEnum = {
+  key: 'key',
+  locale: 'locale',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TranslationScalarFieldEnum = (typeof TranslationScalarFieldEnum)[keyof typeof TranslationScalarFieldEnum]
 
 
 export const SortOrder = {

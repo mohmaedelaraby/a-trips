@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NavLinkGroup } from '../../generated/prisma/enums';
+import { Locale, NavLinkGroup } from '../../generated/prisma/enums';
 import type {
   CreateNavLinkDto,
   ReorderNavLinksDto,
@@ -60,13 +60,51 @@ export class NavLinksService {
 
   // ----------------------------------------------------------------- admin
 
-  /** Admin list includes inactive rows; the public feed does not. */
-  list() {
-    return this.prisma.navLink.findMany({ orderBy: [{ group: 'asc' }, ...ORDER] });
+  /**
+   * Admin list, each row carrying its translations.
+   *
+   * Without these the portal could create a link but never translate it: the
+   * label lives on the row while its Arabic lives in the Translation table
+   * under `nav.<id>`, and nothing joined the two for the editor.
+   */
+  async list() {
+    const rows = await this.prisma.navLink.findMany({ orderBy: [{ group: 'asc' }, ...ORDER] });
+    if (rows.length === 0) return [];
+
+    const translations = await this.prisma.translation.findMany({
+      where: { key: { in: rows.map((row) => `nav.${row.id}`) } },
+      select: { key: true, locale: true, value: true },
+    });
+
+    const byId = new Map<string, Record<string, string>>();
+    for (const row of translations) {
+      const id = row.key.slice('nav.'.length);
+      (byId.get(id) ?? byId.set(id, {}).get(id)!)[row.locale] = row.value;
+    }
+
+    return rows.map((row) => ({ ...row, translations: byId.get(row.id) ?? {} }));
+  }
+
+  /** Writes one link's per-locale labels; a blank value clears the override. */
+  private async saveTranslations(id: string, translations?: Record<string, string>) {
+    if (!translations) return;
+    const key = `nav.${id}`;
+    for (const [locale, raw] of Object.entries(translations)) {
+      const value = (raw ?? '').trim();
+      if (!value) {
+        await this.prisma.translation.deleteMany({ where: { key, locale: locale as Locale } });
+        continue;
+      }
+      await this.prisma.translation.upsert({
+        where: { key_locale: { key, locale: locale as Locale } },
+        create: { key, locale: locale as Locale, value },
+        update: { value },
+      });
+    }
   }
 
   async create(dto: CreateNavLinkDto) {
-    return this.prisma.navLink.create({
+    const created = await this.prisma.navLink.create({
       data: {
         group: dto.group,
         value: dto.value.trim(),
@@ -78,10 +116,13 @@ export class NavLinksService {
         isActive: dto.isActive ?? true,
       },
     });
+    await this.saveTranslations(created.id, dto.translations);
+    return created;
   }
 
   async update(id: string, dto: UpdateNavLinkDto) {
     await this.assertExists(id);
+    await this.saveTranslations(id, dto.translations);
     return this.prisma.navLink.update({
       where: { id },
       data: {
@@ -97,6 +138,8 @@ export class NavLinksService {
 
   async remove(id: string) {
     await this.assertExists(id);
+    // Drop the label's translations too, or they linger as orphans forever.
+    await this.prisma.translation.deleteMany({ where: { key: `nav.${id}` } });
     await this.prisma.navLink.delete({ where: { id } });
     return { id, deleted: true };
   }

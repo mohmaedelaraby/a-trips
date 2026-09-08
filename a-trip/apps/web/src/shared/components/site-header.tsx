@@ -8,6 +8,8 @@ import { LogOut, Menu, User as UserIcon, X } from 'lucide-react';
 import { useSession, useLogout } from '../../modules/auth/hooks/use-auth';
 import { comingSoonHref } from '../lib/coming-soon';
 import { useNavLinks, useSetting } from '../hooks/use-site-content';
+import { useTranslation } from '../i18n/use-translation';
+import { LocaleSwitcher } from './locale-switcher';
 import type { NavLink as NavLinkModel } from '../interfaces/site-content';
 import { cn, initials } from '../lib/utils';
 import { Logo } from './logo';
@@ -32,6 +34,7 @@ export function SiteHeader() {
   const logout = useLogout();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const { t } = useTranslation();
   const { links: navLinks } = useNavLinks('HEADER');
   const currencyLabel = useSetting('site.currencyLabel', 'USD $');
 
@@ -63,7 +66,7 @@ export function SiteHeader() {
           <button
             type="button"
             className={styles.menuButton}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuOpen ? t('ui.common.closeMenu') : t('ui.common.openMenu')}
             aria-expanded={menuOpen}
             aria-controls="site-mobile-menu"
             onClick={() => setMenuOpen((open) => !open)}
@@ -91,6 +94,7 @@ export function SiteHeader() {
         </div>
 
         <div className={styles.actions}>
+          <LocaleSwitcher className={styles.localeSwitcher} />
           <span className={styles.currency}>{currencyLabel}</span>
 
           {isAuthenticated && user ? (
@@ -105,24 +109,24 @@ export function SiteHeader() {
                 <DropdownMenu.Content align="end" sideOffset={8} className={styles.menuContent}>
                   <DropdownMenu.Item asChild>
                     <Link href="/account/bookings" className={styles.menuItem}>
-                      <UserIcon className="h-4 w-4" /> My bookings
+                      <UserIcon className="h-4 w-4" /> {t('ui.common.myBookings')}
                     </Link>
                   </DropdownMenu.Item>
                   <DropdownMenu.Item asChild>
                     <Link href="/account/profile" className={styles.menuItem}>
-                      <UserIcon className="h-4 w-4" /> Profile
+                      <UserIcon className="h-4 w-4" /> {t('ui.common.profile')}
                     </Link>
                   </DropdownMenu.Item>
                   {isAdmin ? (
                     <DropdownMenu.Item asChild>
                       <Link href="/admin" className={styles.menuItem}>
-                        <Menu className="h-4 w-4" /> Admin portal
+                        <Menu className="h-4 w-4" /> {t('ui.common.adminPortal')}
                       </Link>
                     </DropdownMenu.Item>
                   ) : null}
                   <DropdownMenu.Separator className={styles.menuSeparator} />
                   <DropdownMenu.Item onSelect={() => logout()} className={styles.menuItemDanger}>
-                    <LogOut className="h-4 w-4" /> Sign out
+                    <LogOut className="h-4 w-4" /> {t('ui.common.signOut')}
                   </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
@@ -130,10 +134,10 @@ export function SiteHeader() {
           ) : (
             <>
               <Link href="/sign-in" className={styles.signIn}>
-                Sign in
+                {t('ui.common.signIn')}
               </Link>
               <Link href="/register" className={styles.register}>
-                Register
+                {t('ui.common.register')}
               </Link>
             </>
           )}
@@ -160,36 +164,40 @@ export function SiteHeader() {
                 )}
               >
                 {link.value}
-                {!link.href ? <span className={styles.mobileSoonTag}>Soon</span> : null}
+                {!link.href ? <span className={styles.mobileSoonTag}>{t('ui.common.soon')}</span> : null}
               </Link>
             ))}
 
             <div className={styles.mobileDivider} />
 
+            <div className={styles.mobileLocale}>
+              <LocaleSwitcher />
+            </div>
+
             {isAuthenticated ? (
               <>
                 <Link href="/account/bookings" className={styles.mobileLink}>
-                  My bookings
+                  {t('ui.common.myBookings')}
                 </Link>
                 <Link href="/account/profile" className={styles.mobileLink}>
-                  Profile
+                  {t('ui.common.profile')}
                 </Link>
                 {isAdmin ? (
                   <Link href="/admin" className={styles.mobileLink}>
-                    Admin portal
+                    {t('ui.common.adminPortal')}
                   </Link>
                 ) : null}
                 <button type="button" className={styles.mobileSignOut} onClick={() => logout()}>
-                  <LogOut className="h-4 w-4" /> Sign out
+                  <LogOut className="h-4 w-4" /> {t('ui.common.signOut')}
                 </button>
               </>
             ) : (
               <div className={styles.mobileAuthRow}>
                 <Link href="/sign-in" className={styles.mobileSignIn}>
-                  Sign in
+                  {t('ui.common.signIn')}
                 </Link>
                 <Link href="/register" className={styles.mobileRegister}>
-                  Register
+                  {t('ui.common.register')}
                 </Link>
               </div>
             )}

@@ -31,7 +31,7 @@
 
 @media (min-width: 1024px) {
   .formLight > * + * {
-    border-left: 1px solid var(--color-line);
+    border-inline-start: 1px solid var(--color-line);
   }
 }
 
@@ -150,7 +150,7 @@ input.destinationInput:focus {
 
 @media (min-width: 1024px) {
   .submitWrap {
-    padding-left: 0.5rem;
+    padding-inline-start: 0.5rem;
   }
 }
 

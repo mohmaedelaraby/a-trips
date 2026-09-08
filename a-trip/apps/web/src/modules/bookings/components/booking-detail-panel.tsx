@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '../../../shared/components/button';
-import { formatDate, formatPrice, pluralize } from '../../../shared/lib/utils';
+import { formatDate, formatPrice } from '../../../shared/lib/utils';
 import { useCancelBooking } from '../hooks/use-bookings';
 import type { Booking } from '../interfaces/booking';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/booking-detail-panel.module.css';
 
 const STATUS_BLURB: Record<Booking['status'], string> = {
@@ -16,6 +17,7 @@ const STATUS_BLURB: Record<Booking['status'], string> = {
 };
 
 export function BookingDetailPanel({ booking }: { booking: Booking }) {
+  const { t, tn } = useTranslation();
   const cancel = useCancelBooking();
   // An unpaid hold is cancellable too, so a guest can release it deliberately
   // instead of waiting out the timer.
@@ -27,7 +29,7 @@ export function BookingDetailPanel({ booking }: { booking: Booking }) {
   return (
     <div className={styles.panel}>
       <div className={styles.headerRow}>
-        <h2 className={styles.title}>Booking detail</h2>
+        <h2 className={styles.title}>{t('ui.booking.detail')}</h2>
         <span className={styles.reference}>{booking.bookingReference}</span>
       </div>
 
@@ -37,21 +39,21 @@ export function BookingDetailPanel({ booking }: { booking: Booking }) {
       </div>
 
       <dl className={styles.rows}>
-        <Row label="Hotel" value={booking.hotel.name} />
-        <Row label="Room" value={booking.roomTypeName} />
-        <Row label="Check-in" value={formatDate(booking.checkInDate)} />
-        <Row label="Check-out" value={formatDate(booking.checkOutDate)} />
+        <Row label={t('ui.booking.hotel')} value={booking.hotel.name} />
+        <Row label={t('ui.common.room')} value={booking.roomTypeName} />
+        <Row label={t('ui.common.checkIn')} value={formatDate(booking.checkInDate)} />
+        <Row label={t('ui.common.checkOut')} value={formatDate(booking.checkOutDate)} />
         <Row
-          label="Guests"
-          value={`${pluralize(booking.numAdults, 'adult')}${
-            booking.numChildren > 0 ? `, ${pluralize(booking.numChildren, 'child', 'children')}` : ''
+          label={t('ui.common.guests')}
+          value={`${tn('ui.common.adults', booking.numAdults)}${
+            booking.numChildren > 0 ? `, ${tn('ui.common.children', booking.numChildren)}` : ''
           }`}
         />
-        {booking.specialRequests ? <Row label="Requests" value={booking.specialRequests} /> : null}
+        {booking.specialRequests ? <Row label={t('ui.booking.requests')} value={booking.specialRequests} /> : null}
       </dl>
 
       <div className={styles.totalRow}>
-        <span>Total</span>
+        <span>{t('ui.common.total')}</span>
         <span>{formatPrice(booking.totalPrice, true)}</span>
       </div>
 

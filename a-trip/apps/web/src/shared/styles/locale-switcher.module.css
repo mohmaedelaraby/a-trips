@@ -1,0 +1,43 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+}
+
+.icon {
+  height: 0.875rem;
+  width: 0.875rem;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.7);
+  /* Logical margin so the gap flips with the document direction. */
+  margin-inline-end: 0.25rem;
+}
+
+.option {
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  padding: 0.1875rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.option:hover:not(:disabled) {
+  color: #ffffff;
+}
+
+.option:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.optionActive {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}

@@ -5,6 +5,7 @@ import { Minus, Plus } from 'lucide-react';
 import { Checkbox, Label } from '../../../shared/components/form-controls';
 import { cn } from '../../../shared/lib/utils';
 import type { HotelFacets } from '../interfaces/hotel';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/hotel-filter-sidebar.module.css';
 
 export interface HotelFilterState {
@@ -68,6 +69,7 @@ export function HotelFilterSidebar({
   onChange: (next: Partial<HotelFilterState>) => void;
   onClear: () => void;
 }) {
+  const { t } = useTranslation();
   const [showAllAmenities, setShowAllAmenities] = React.useState(false);
   const hasFilters =
     value.minPrice !== null || value.maxPrice !== null || value.stars.length > 0 || value.amenities.length > 0;
@@ -82,16 +84,16 @@ export function HotelFilterSidebar({
   return (
     <aside className={styles.sidebar}>
       <div className={styles.headerRow}>
-        <h2 className={styles.title}>Filters</h2>
+        <h2 className={styles.title}>{t('ui.filters.title')}</h2>
         {hasFilters ? (
           <button type="button" onClick={onClear} className={styles.clearAll}>
-            Clear all
+            {t('ui.hotels.clearFilters')}
           </button>
         ) : null}
       </div>
 
       <div>
-        <Label className={styles.sectionLabel}>Price per night</Label>
+        <Label className={styles.sectionLabel}>{t('ui.filters.pricePerNight')}</Label>
         <PriceRangeSlider
           bounds={bounds}
           min={min}
@@ -101,7 +103,7 @@ export function HotelFilterSidebar({
       </div>
 
       <div>
-        <Label className={styles.sectionLabel}>Star rating</Label>
+        <Label className={styles.sectionLabel}>{t('ui.filters.starRating')}</Label>
         <div className={styles.starRow}>
           {[2, 3, 4, 5].map((star) => {
             const active = value.stars.includes(star);
@@ -124,7 +126,7 @@ export function HotelFilterSidebar({
 
       {facets && facets.amenities.length > 0 ? (
         <div>
-          <Label className={styles.sectionLabel}>Amenities</Label>
+          <Label className={styles.sectionLabel}>{t('ui.filters.amenities')}</Label>
           <div className={styles.amenityList}>
             {visibleAmenities.map((amenity) => (
               <label key={amenity.value} className={styles.amenityRow}>
@@ -151,13 +153,13 @@ export function HotelFilterSidebar({
       ) : null}
 
       <div>
-        <Label className={styles.sectionLabel}>Guest capacity</Label>
+        <Label className={styles.sectionLabel}>{t('ui.filters.guestCapacity')}</Label>
         <div className={styles.capacityRow}>
-          <span className={styles.capacityLabel}>Sleeps at least</span>
+          <span className={styles.capacityLabel}>{t('ui.filters.sleepsAtLeast')}</span>
           <div className={styles.capacityControls}>
             <button
               type="button"
-              aria-label="Decrease guests"
+              aria-label={t('ui.filters.decreaseGuests')}
               disabled={value.sleeps <= 1}
               onClick={() => onChange({ sleeps: Math.max(1, value.sleeps - 1) })}
               className={styles.capacityBtn}
@@ -167,7 +169,7 @@ export function HotelFilterSidebar({
             <span className={styles.capacityValue}>{value.sleeps}</span>
             <button
               type="button"
-              aria-label="Increase guests"
+              aria-label={t('ui.filters.increaseGuests')}
               onClick={() => onChange({ sleeps: Math.min(12, value.sleeps + 1) })}
               className={cn(styles.capacityBtn, styles.capacityBtnPrimary)}
             >

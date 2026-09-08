@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCities } from '../hooks/use-hotels';
 import { Skeleton } from '../../../shared/components/skeleton';
 import { pluralize, cn } from '../../../shared/lib/utils';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/hotel-grids.module.css';
 
 const CITY_IMAGES: Record<string, string> = {
@@ -16,6 +17,7 @@ const CITY_IMAGES: Record<string, string> = {
 };
 
 export function BrowseByCity() {
+  const { t } = useTranslation();
   const query = useCities();
 
   if (query.isLoading) {
@@ -42,8 +44,8 @@ export function BrowseByCity() {
       ))}
       {rest.length < 5 ? (
         <div className={styles.morePlaceholder}>
-          <p className={styles.morePlaceholderTitle}>More cities</p>
-          <p className={styles.morePlaceholderSub}>Coming soon</p>
+          <p className={styles.morePlaceholderTitle}>{t('ui.home.moreCities')}</p>
+          <p className={styles.morePlaceholderSub}>{t('ui.comingSoon.badge')}</p>
         </div>
       ) : null}
     </div>

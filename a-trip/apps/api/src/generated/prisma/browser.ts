@@ -75,3 +75,19 @@ export type Booking = Prisma.BookingModel
  * identifiers and raw payloads never mix into the reservation record.
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model Translation
+ * Admin-editable text, one row per key per locale.
+ * 
+ * Layered under the JSON message files that ship with the web app: those are
+ * the defaults, these override them. That means a translator can fix wording
+ * in production without a deploy, while the repo still carries a complete,
+ * reviewable set of strings.
+ * 
+ * Key conventions, so the admin screen can group them:
+ * ui.*            static interface strings, mirrored from the JSON files
+ * nav.<id>        a navigation link's label
+ * setting.<key>   a site setting's value
+ * hotel.<id>.*    a hotel's name, description, city or address
+ */
+export type Translation = Prisma.TranslationModel

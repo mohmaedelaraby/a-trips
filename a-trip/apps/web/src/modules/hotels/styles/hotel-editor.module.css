@@ -410,7 +410,7 @@
   align-items: center;
   flex-shrink: 0;
   border: 1px solid var(--color-line);
-  border-right: 0;
+  border-inline-end: 0;
   border-radius: 0.5rem 0 0 0.5rem;
   background-color: var(--color-canvas);
   padding-inline: 0.625rem;
@@ -429,4 +429,33 @@
   margin-top: 0.3125rem;
   font-size: 0.75rem;
   color: var(--color-ink-muted);
+}
+
+/* ---- arabic panel ---- */
+
+.arabicHint {
+  margin-top: 0.3125rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.arabicRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .arabicRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* The shared .input is a single-line height; the description needs room. */
+.arabicRow + div textarea,
+.fields textarea {
+  height: auto;
+  padding-block: 0.5rem;
+  line-height: 1.6;
+  resize: vertical;
 }

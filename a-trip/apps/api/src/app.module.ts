@@ -13,6 +13,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NavLinksModule } from './modules/nav-links/nav-links.module';
 import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
+import { TranslationsModule } from './modules/translations/translations.module';
 import { HealthController } from './health.controller';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -35,6 +36,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     PaymentsModule,
     NavLinksModule,
     SiteSettingsModule,
+    TranslationsModule,
   ],
   controllers: [HealthController],
   providers: [

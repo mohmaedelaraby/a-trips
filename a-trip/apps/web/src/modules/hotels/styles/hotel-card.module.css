@@ -136,14 +136,14 @@
   gap: 0.5rem;
   border-top: 1px solid var(--color-line);
   padding-top: 0.75rem;
-  text-align: right;
+  text-align: end;
 }
 
 @media (min-width: 640px) {
   .priceBlock {
     border-top: none;
     padding-top: 0;
-    padding-left: 1rem;
+    padding-inline-start: 1rem;
   }
 }
 

@@ -78,6 +78,8 @@ export interface HotelListItem extends Hotel {
 }
 
 export interface HotelDetail extends Hotel {
+  /** Admin responses only: per-locale overrides for the translatable fields. */
+  translations?: Record<string, Record<string, string>>;
   roomTypes: RoomTypeWithAvailability[];
 }
 

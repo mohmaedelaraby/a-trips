@@ -2,6 +2,7 @@ import type { HotelStatus, PaginatedResult } from '../../../shared/interfaces/ap
 import type { Hotel } from './hotel';
 
 export interface AdminHotelListItem extends Hotel {
+  translations?: Record<string, Record<string, string>>;
   roomTypeCount: number;
   fromPrice: number | null;
 }
@@ -23,6 +24,12 @@ export interface HotelImageInput {
 }
 
 export interface CreateHotelPayload {
+  /**
+   * Per-locale overrides for translatable fields, shaped
+   * { AR: { name, city, address, description } }. A blank value clears the
+   * override so the English shows through.
+   */
+  translations?: Record<string, Record<string, string>>;
   name: string;
   city: string;
   address: string;

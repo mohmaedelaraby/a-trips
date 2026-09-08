@@ -9,6 +9,7 @@ import { DateRangePicker } from '../../../shared/components/date-range-picker';
 import { GuestStepper } from '../../../shared/components/guest-stepper';
 import { useSearchFiltersStore } from '../stores/search-filters.store';
 import { cn } from '../../../shared/lib/utils';
+import { useTranslation } from '../../../shared/i18n/use-translation';
 import styles from '../styles/hotel-search-widget.module.css';
 
 const POPULAR_CITIES = ['Hurghada', 'Sharm El Sheikh', 'Luxor', 'Alexandria'];
@@ -21,6 +22,7 @@ export function HotelSearchWidget({
   /** 'dark' renders the condensed on-brand bar used under the sticky header on results pages. */
   tone?: 'light' | 'dark';
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const { city, dates, guests, setCity, setDates, setGuests } = useSearchFiltersStore();
 
@@ -52,7 +54,7 @@ export function HotelSearchWidget({
               </label>
               <Input
                 id="search-city"
-                placeholder="City, e.g. Cairo"
+                placeholder={t('ui.search.cityPlaceholder')}
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className={styles.destinationInput}
@@ -89,7 +91,7 @@ export function HotelSearchWidget({
 
       {!compact && !dark ? (
         <div className={styles.popularRow}>
-          <span className={styles.popularLabel}>Popular:</span>
+          <span className={styles.popularLabel}>{t('ui.search.popular')}</span>
           {POPULAR_CITIES.map((c) => (
             <button key={c} type="button" onClick={() => setCity(c)} className={styles.popularChip}>
               {c}

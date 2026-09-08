@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
   IsIn,
   IsInt,
   IsISO8601,
@@ -10,6 +11,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { Locale } from '../../../generated/prisma/enums';
 
 const HOTEL_SORTS = ['recommended', 'price_asc', 'price_desc', 'stars_desc', 'name_asc'] as const;
 export type HotelSortKey = (typeof HOTEL_SORTS)[number];
@@ -22,6 +24,11 @@ const toArray = ({ value }: { value: unknown }): unknown[] => {
 };
 
 export class HotelSearchDto {
+  /** Locale for translatable hotel text. Defaults to EN. */
+  @IsOptional()
+  @IsEnum(Locale)
+  locale?: Locale;
+
   @IsOptional()
   @IsString()
   city?: string;
@@ -98,6 +105,11 @@ export class HotelSearchDto {
 }
 
 export class HotelDetailQueryDto {
+  /** Locale for translatable hotel text. Defaults to EN. */
+  @IsOptional()
+  @IsEnum(Locale)
+  locale?: Locale;
+
   @IsOptional()
   @IsISO8601({ strict: true })
   checkIn?: string;
