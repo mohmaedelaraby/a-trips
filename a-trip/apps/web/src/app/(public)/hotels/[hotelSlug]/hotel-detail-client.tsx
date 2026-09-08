@@ -250,7 +250,9 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                   {visibleAmenities.map((amenity) => (
                     <div key={amenity} className={styles.amenityItem}>
                       <Wifi className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden />
-                      {amenity}
+                      {/* The array holds the stored English, which is also the
+                          search filter's key; this map carries what to show. */}
+                      {hotel.amenityLabels?.[amenity] ?? amenity}
                     </div>
                   ))}
                 </div>

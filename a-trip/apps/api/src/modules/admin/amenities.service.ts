@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Locale } from '../../generated/prisma/enums';
 import type { AmenityDto } from './dto/amenity.dto';
 
 @Injectable()
@@ -20,11 +21,25 @@ export class AmenitiesService {
       }
     }
 
+    // One query for every amenity's translations rather than one per row.
+    const rows = await this.prisma.translation.findMany({
+      where: { key: { in: amenities.map((a) => `amenity.${a.name}`) } },
+      select: { key: true, locale: true, value: true },
+    });
+    const byName = new Map<string, Record<string, string>>();
+    for (const row of rows) {
+      const name = row.key.slice('amenity.'.length);
+      const entry = byName.get(name) ?? {};
+      entry[row.locale] = row.value;
+      byName.set(name, entry);
+    }
+
     return amenities.map((amenity) => ({
       id: amenity.id,
       name: amenity.name,
       category: amenity.category,
       hotelCount: usage.get(amenity.name) ?? 0,
+      translations: byName.get(amenity.name) ?? {},
     }));
   }
 
@@ -32,9 +47,33 @@ export class AmenitiesService {
     const name = dto.name.trim();
     const existing = await this.prisma.amenity.findUnique({ where: { name } });
     if (existing) throw new BadRequestException('That amenity already exists');
-    return this.prisma.amenity.create({
+    const amenity = await this.prisma.amenity.create({
       data: { name, category: dto.category?.trim() || null },
     });
+    await this.saveTranslations(name, dto.translations);
+    return amenity;
+  }
+
+  /**
+   * Writes an amenity's per-locale display text. Keyed by name rather than id
+   * so rendering a hotel — which stores amenity names, not ids — needs no extra
+   * lookup. A blank value clears the override and the English shows through.
+   */
+  private async saveTranslations(name: string, translations?: Record<string, string>) {
+    if (!translations) return;
+    const key = `amenity.${name}`;
+    for (const [locale, raw] of Object.entries(translations)) {
+      const value = (raw ?? '').trim();
+      if (!value) {
+        await this.prisma.translation.deleteMany({ where: { key, locale: locale as Locale } });
+        continue;
+      }
+      await this.prisma.translation.upsert({
+        where: { key_locale: { key, locale: locale as Locale } },
+        create: { key, locale: locale as Locale, value },
+        update: { value },
+      });
+    }
   }
 
   /**
@@ -69,9 +108,20 @@ export class AmenitiesService {
               SET "amenities" = array_replace("amenities", ${current.name}, ${name})
               WHERE ${current.name} = ANY("amenities")
             `,
+            // Translations are keyed `amenity.<name>`, so the key moves with the
+            // rename. Without this the Arabic would silently detach and every
+            // hotel listing the amenity would fall back to English.
+            this.prisma.$executeRaw`
+              UPDATE "Translation"
+              SET "key" = ${`amenity.${name}`}
+              WHERE "key" = ${`amenity.${current.name}`}
+            `,
           ]
         : []),
     ]);
+
+    // After the rename, so this writes to the new key rather than the old one.
+    await this.saveTranslations(name, dto.translations);
 
     return amenity;
   }
@@ -86,6 +136,8 @@ export class AmenitiesService {
         SET "amenities" = array_remove("amenities", ${current.name})
         WHERE ${current.name} = ANY("amenities")
       `,
+      // Otherwise the translations outlive the amenity as unreachable rows.
+      this.prisma.translation.deleteMany({ where: { key: `amenity.${current.name}` } }),
       this.prisma.amenity.delete({ where: { id } }),
     ]);
 

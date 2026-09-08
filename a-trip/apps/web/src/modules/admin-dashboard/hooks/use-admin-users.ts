@@ -6,6 +6,7 @@ import { toast } from '../../../shared/stores/toast.store';
 import type {
   AdminUser,
   Amenity,
+  AmenityPayload,
   InviteAdminUserPayload,
   UpdateAdminUserPayload,
 } from '../interfaces/admin-users';
@@ -71,7 +72,7 @@ export function useAmenities() {
 export function useCreateAmenity() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name: string; category?: string }) =>
+    mutationFn: (payload: AmenityPayload) =>
       apiPost<Amenity>('/admin/amenities', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: AMENITIES_KEY });
@@ -84,7 +85,7 @@ export function useCreateAmenity() {
 export function useUpdateAmenity() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...payload }: { id: string; name: string; category?: string }) =>
+    mutationFn: ({ id, ...payload }: AmenityPayload & { id: string }) =>
       apiPatch<Amenity>(`/admin/amenities/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: AMENITIES_KEY });

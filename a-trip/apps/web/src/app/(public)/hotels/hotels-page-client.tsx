@@ -85,7 +85,12 @@ export function HotelsPageClient() {
 
   const appliedChips: Array<{ key: string; label: string; onRemove: () => void }> = [
     ...(stars.length ? stars.map((s) => ({ key: `star-${s}`, label: `${s} stars`, onRemove: () => setStars(stars.filter((v) => v !== s)) })) : []),
-    ...amenities.map((a) => ({ key: `amenity-${a}`, label: a, onRemove: () => setAmenities(amenities.filter((v) => v !== a)) })),
+    // Chips read the label off the facets; the stored English stays the value.
+    ...amenities.map((a) => ({
+      key: `amenity-${a}`,
+      label: query.data?.facets.amenities.find((facet) => facet.value === a)?.label ?? a,
+      onRemove: () => setAmenities(amenities.filter((v) => v !== a)),
+    })),
     ...(minPrice !== null || maxPrice !== null
       ? [
           {

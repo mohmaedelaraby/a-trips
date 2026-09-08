@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { AdminTopbar, Panel, Toggle, adminUi as ui } from '../../admin-dashboard/components/admin-ui';
+import { useAmenities } from '../../admin-dashboard/hooks/use-admin-users';
 import { cn } from '../../../shared/lib/utils';
 import type { CreateHotelPayload } from '../interfaces/admin-hotel';
 import type { HotelImage } from '../interfaces/hotel';
@@ -20,16 +21,6 @@ const CITIES = [
   'Sharm El Sheikh',
   'Dahab',
   'Marsa Alam',
-];
-const AMENITY_SUGGESTIONS = [
-  'Gym',
-  'Parking',
-  'Bar',
-  'Beach access',
-  'Spa',
-  'Airport shuttle',
-  'Family rooms',
-  'Nile view',
 ];
 const DESCRIPTION_LIMIT = 1200;
 
@@ -114,6 +105,19 @@ export function HotelEditor({
 
   const set = <K extends keyof HotelEditorValues>(key: K, value: HotelEditorValues[K]) =>
     setValues((previous) => ({ ...previous, [key]: value }));
+
+  /**
+   * Suggestions come from the admin amenity catalogue, not a list in this file.
+   * The names double as the search filter's key and as the key their Arabic is
+   * stored under, so an off-catalogue name gets no translation and its own
+   * facet. The hover title shows the Arabic so it is obvious which names carry
+   * one.
+   */
+  const catalogue = useAmenities();
+  const suggestions = React.useMemo(
+    () => (catalogue.data ?? []).filter((item) => !values.amenities.includes(item.name)),
+    [catalogue.data, values.amenities],
+  );
 
   const addAmenity = (amenity: string) => {
     const clean = amenity.trim();
@@ -566,14 +570,15 @@ export function HotelEditor({
                 </div>
 
                 <div className={styles.suggestions}>
-                  {AMENITY_SUGGESTIONS.filter((option) => !values.amenities.includes(option)).map((option) => (
+                  {suggestions.map((option) => (
                     <button
-                      key={option}
+                      key={option.name}
                       type="button"
                       className={styles.suggestion}
-                      onClick={() => addAmenity(option)}
+                      onClick={() => addAmenity(option.name)}
+                      title={option.translations?.AR ? `${option.name} — ${option.translations.AR}` : option.name}
                     >
-                      + {option}
+                      + {option.name}
                     </button>
                   ))}
                 </div>

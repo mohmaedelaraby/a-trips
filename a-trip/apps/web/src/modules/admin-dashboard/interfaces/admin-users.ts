@@ -29,6 +29,14 @@ export interface Amenity {
   name: string;
   category: string | null;
   hotelCount: number;
+  /** Per-locale display text, e.g. { AR: 'واي فاي مجاني' }. */
+  translations?: Record<string, string>;
+}
+
+export interface AmenityPayload {
+  name: string;
+  category?: string;
+  translations?: Record<string, string>;
 }
 
 export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {

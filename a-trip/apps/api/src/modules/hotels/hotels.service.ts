@@ -106,7 +106,7 @@ export class HotelsService {
     // A hotel with no bookable room type for the requested dates is not a result.
     if (assessments) items = items.filter((item) => item.fromPrice !== null);
 
-    const facets = this.buildFacets(items);
+    const facets = this.buildFacets(items, t);
 
     if (query.minPrice !== undefined) {
       items = items.filter((i) => i.fromPrice === null || i.fromPrice >= (query.minPrice as number));
@@ -486,7 +486,10 @@ export class HotelsService {
     }
   }
 
-  private buildFacets(items: Array<{ city: string; amenities: string[]; stars: number; fromPrice: number | null }>) {
+  private buildFacets(
+    items: Array<{ city: string; amenities: string[]; stars: number; fromPrice: number | null }>,
+    t?: Record<string, string>,
+  ) {
     const cities = new Map<string, number>();
     const amenities = new Map<string, number>();
     const stars = new Map<number, number>();
@@ -510,9 +513,16 @@ export class HotelsService {
         .map(([value, count]) => ({ value, count }))
         .sort((a, b) => b.count - a.count || String(a.value).localeCompare(String(b.value)));
 
+    // Amenity facets carry a separate label: the checkbox shows the label but
+    // submits the value, so filtering keeps working in any language.
+    const amenityFacets = toSorted(amenities).map((facet) => ({
+      ...facet,
+      label: amenityLabel(facet.value, t),
+    }));
+
     return {
       cities: toSorted(cities),
-      amenities: toSorted(amenities),
+      amenities: amenityFacets,
       stars: [...stars.entries()]
         .map(([value, count]) => ({ value, count }))
         .sort((a, b) => b.value - a.value),
@@ -539,7 +549,14 @@ export class HotelsService {
       stars: hotel.stars,
       latitude: hotel.latitude,
       longitude: hotel.longitude,
+      // Stays the stored English: this array is the filter key, and
+      // `?amenities=` is matched against it with hasEvery. Translating in place
+      // would make the Arabic site send Arabic back and match nothing.
       amenities: hotel.amenities,
+      /** Display text for each amenity above — value stays the key. */
+      amenityLabels: Object.fromEntries(
+        hotel.amenities.map((name) => [name, amenityLabel(name, t)]),
+      ),
       status: hotel.status,
       images: hotel.images.map((image) => ({
         id: image.id,
@@ -663,4 +680,16 @@ export class HotelsService {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function isUuid(value: string): boolean {
   return UUID_RE.test(value);
+}
+
+/**
+ * Localised display text for an amenity.
+ *
+ * Keyed by the amenity's own name rather than its catalogue id, so rendering a
+ * hotel needs no extra query — the name is already in `Hotel.amenities`, and
+ * search loads the whole catalogue, where one lookup per hotel would add up.
+ * AmenitiesService keeps these keys in step when an amenity is renamed.
+ */
+export function amenityLabel(name: string, t?: Record<string, string>): string {
+  return t?.[`amenity.${name}`] || name;
 }

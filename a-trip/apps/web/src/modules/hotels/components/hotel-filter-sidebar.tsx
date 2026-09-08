@@ -139,7 +139,8 @@ export function HotelFilterSidebar({
                     onChange({ amenities: next });
                   }}
                 />
-                <span className={styles.amenityLabel}>{amenity.value}</span>
+                {/* Label for the eye, value for the filter — they differ in Arabic. */}
+                <span className={styles.amenityLabel}>{amenity.label ?? amenity.value}</span>
                 <span className={styles.amenityCount}>{amenity.count}</span>
               </label>
             ))}

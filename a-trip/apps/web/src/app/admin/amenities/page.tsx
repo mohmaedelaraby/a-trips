@@ -13,9 +13,53 @@ import {
   Pill,
   adminUi as ui,
 } from '../../../modules/admin-dashboard/components/admin-ui';
+import type { Amenity } from '../../../modules/admin-dashboard/interfaces/admin-users';
 import { Skeleton } from '../../../shared/components/skeleton';
 import { cn } from '../../../shared/lib/utils';
 import styles from '../styles/admin-users.module.css';
+
+/**
+ * Inline Arabic label for one amenity.
+ *
+ * Edited in place rather than behind the rename prompt: the catalogue is a long
+ * list, and translating it is a pass down the column, not one row at a time.
+ * Saves on blur or Enter, and only when the value actually changed.
+ */
+function ArabicCell({ amenity }: { amenity: Amenity }) {
+  const update = useUpdateAmenity();
+  const stored = amenity.translations?.AR ?? '';
+  const [draft, setDraft] = React.useState(stored);
+
+  React.useEffect(() => setDraft(stored), [stored]);
+
+  const commit = () => {
+    if (draft.trim() === stored) return;
+    update.mutate({
+      id: amenity.id,
+      name: amenity.name,
+      category: amenity.category ?? undefined,
+      translations: { AR: draft.trim() },
+    });
+  };
+
+  return (
+    <input
+      className={ui.input}
+      dir="rtl"
+      lang="ar"
+      value={draft}
+      maxLength={80}
+      placeholder={amenity.name}
+      aria-label={`Arabic for ${amenity.name}`}
+      disabled={update.isPending}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+      }}
+    />
+  );
+}
 
 export default function AdminAmenitiesPage() {
   const query = useAmenities();
@@ -25,6 +69,7 @@ export default function AdminAmenitiesPage() {
 
   const [name, setName] = React.useState('');
   const [category, setCategory] = React.useState('');
+  const [arabic, setArabic] = React.useState('');
   const [search, setSearch] = React.useState('');
 
   const amenities = React.useMemo(() => {
@@ -43,11 +88,17 @@ export default function AdminAmenitiesPage() {
     event.preventDefault();
     if (name.trim().length < 2) return;
     create.mutate(
-      { name: name.trim(), category: category.trim() || undefined },
+      {
+        name: name.trim(),
+        category: category.trim() || undefined,
+        // Omitted when blank so the row is created without an empty override.
+        translations: arabic.trim() ? { AR: arabic.trim() } : undefined,
+      },
       {
         onSuccess: () => {
           setName('');
           setCategory('');
+          setArabic('');
         },
       },
     );
@@ -74,6 +125,7 @@ export default function AdminAmenitiesPage() {
                 <thead>
                   <tr>
                     <th>Amenity</th>
+                    <th>العربية</th>
                     <th>Category</th>
                     <th>Hotels using it</th>
                     <th className={ui.numeric}>Actions</th>
@@ -83,14 +135,14 @@ export default function AdminAmenitiesPage() {
                   {query.isLoading ? (
                     Array.from({ length: 6 }, (_, i) => (
                       <tr key={i}>
-                        <td colSpan={4}>
+                        <td colSpan={5}>
                           <Skeleton className="h-8 w-full" />
                         </td>
                       </tr>
                     ))
                   ) : amenities.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className={ui.emptyRow}>
+                      <td colSpan={5} className={ui.emptyRow}>
                         No amenities match this search.
                       </td>
                     </tr>
@@ -98,6 +150,9 @@ export default function AdminAmenitiesPage() {
                     amenities.map((amenity) => (
                       <tr key={amenity.id}>
                         <td className={ui.cellStrong}>{amenity.name}</td>
+                        <td>
+                          <ArabicCell amenity={amenity} />
+                        </td>
                         <td>{amenity.category ?? '—'}</td>
                         <td>
                           {amenity.hotelCount > 0 ? (
@@ -161,6 +216,21 @@ export default function AdminAmenitiesPage() {
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     placeholder="Rooftop pool"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="amenity-arabic" className={ui.fieldLabel}>
+                    Arabic name
+                  </label>
+                  <input
+                    id="amenity-arabic"
+                    className={ui.input}
+                    dir="rtl"
+                    lang="ar"
+                    maxLength={80}
+                    value={arabic}
+                    onChange={(event) => setArabic(event.target.value)}
+                    placeholder="مسبح علوي"
                   />
                 </div>
                 <div>

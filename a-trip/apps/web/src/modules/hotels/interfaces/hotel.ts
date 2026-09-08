@@ -54,6 +54,12 @@ export interface RoomTypeWithAvailability extends RoomType {
 }
 
 export interface Hotel {
+  /**
+   * Display text per amenity, keyed by the stored English value. The
+   * `amenities` array stays English because it doubles as the search filter's
+   * key; render from this map instead.
+   */
+  amenityLabels?: Record<string, string>;
   id: string;
   slug: string;
   name: string;
@@ -103,7 +109,8 @@ export interface HotelSearchParams {
 
 export interface HotelFacets {
   cities: Array<{ value: string; count: number }>;
-  amenities: Array<{ value: string; count: number }>;
+  /** `value` is the filter key (English); `label` is what to display. */
+  amenities: Array<{ value: string; label?: string; count: number }>;
   stars: Array<{ value: number; count: number }>;
   priceRange: { min: number; max: number } | null;
 }

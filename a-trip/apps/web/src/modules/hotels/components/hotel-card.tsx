@@ -50,7 +50,13 @@ export function HotelCard({ hotel, searchQuery }: { hotel: HotelListItem; search
             {hotel.description ? <p className={styles.description}>{hotel.description}</p> : null}
 
             {hotel.amenities.length > 0 ? (
-              <p className={styles.amenities}>{hotel.amenities.slice(0, 5).join('   ')}</p>
+              <p className={styles.amenities}>
+                {hotel.amenities
+                  .slice(0, 5)
+                  // The array is the English filter key; this map is the display text.
+                  .map((amenity) => hotel.amenityLabels?.[amenity] ?? amenity)
+                  .join('   ')}
+              </p>
             ) : null}
 
             {soldOut ? (
