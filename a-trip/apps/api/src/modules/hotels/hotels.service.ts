@@ -1,12 +1,26 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '../../generated/prisma/client';
-import { HotelStatus, Locale, RoomTypeStatus } from '../../generated/prisma/enums';
+import { HotelStatus, Locale } from '../../generated/prisma/enums';
 import { AvailabilityService } from '../availability/availability.service';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
-import { toNullableNumber, toNumber } from '../../common/utils/decimal.util';
+import { toNumber } from '../../common/utils/decimal.util';
 import { countNights, parseDateOnly } from '../../common/utils/date.util';
+import { HotelsRepository } from './repositories/hotels.repository';
+import {
+  hotelKeyPrefix,
+  nestTranslations,
+  roomTypeKeyPrefix,
+  toHotelDto,
+  toRoomTypeDto,
+} from './utils/hotel-mapper.util';
+import {
+  assertDateRange,
+  buildAdminHotelWhere,
+  buildFacets,
+  buildGuestFilter,
+  buildSearchWhere,
+  sortHotels,
+} from './utils/hotel-search.util';
 import type { HotelDetailQueryDto, HotelSearchDto } from './dto/hotel-search.dto';
 import type {
   AddHotelImagesDto,
@@ -15,17 +29,12 @@ import type {
   UpdateHotelDto,
 } from './dto/hotel.dto';
 
-const hotelInclude = {
-  images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
-  roomTypes: { orderBy: { basePrice: 'asc' } },
-} satisfies Prisma.HotelInclude;
-
-type HotelWithImages = Prisma.HotelGetPayload<{ include: { images: true } }>;
+export { amenityLabel } from './utils/hotel-mapper.util';
 
 @Injectable()
 export class HotelsService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: HotelsRepository,
     private readonly availability: AvailabilityService,
   ) {}
 
@@ -33,35 +42,13 @@ export class HotelsService {
 
   async search(query: HotelSearchDto, t?: Record<string, string>) {
     const { page, pageSize, skip, take } = resolvePagination(query);
-    this.assertDateRange(query.checkIn, query.checkOut);
+    assertDateRange(query.checkIn, query.checkOut);
 
-    const where: Prisma.HotelWhereInput = { status: HotelStatus.PUBLISHED };
-    if (query.city) where.city = { equals: query.city, mode: 'insensitive' };
-    if (query.q) {
-      where.OR = [
-        { name: { contains: query.q, mode: 'insensitive' } },
-        { city: { contains: query.q, mode: 'insensitive' } },
-        { country: { contains: query.q, mode: 'insensitive' } },
-        { address: { contains: query.q, mode: 'insensitive' } },
-      ];
-    }
-    if (query.stars?.length) where.stars = { in: query.stars };
-    if (query.amenities?.length) where.amenities = { hasEvery: query.amenities };
-
-    // Capacity is a room-level constraint: keep hotels that have at least one
-    // room type big enough for the party.
-    const guestFilter: Prisma.RoomTypeWhereInput = { status: RoomTypeStatus.ACTIVE };
-    if (query.adults) guestFilter.capacityAdults = { gte: query.adults };
-    if (query.children) guestFilter.capacityChildren = { gte: query.children };
-    where.roomTypes = { some: guestFilter };
-
-    const candidates = await this.prisma.hotel.findMany({
-      where,
-      include: {
-        images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
-        roomTypes: { where: guestFilter, orderBy: { basePrice: 'asc' } },
-      },
-    });
+    const guestFilter = buildGuestFilter(query);
+    const candidates = await this.repository.findSearchCandidates(
+      buildSearchWhere(query, guestFilter),
+      guestFilter,
+    );
 
     const hasDates = Boolean(query.checkIn && query.checkOut);
     const assessments = hasDates
@@ -96,7 +83,7 @@ export class HotelsService {
       }
 
       return {
-        ...this.toHotelDto(hotel, t),
+        ...toHotelDto(hotel, t),
         fromPrice: fromPrice === null ? null : Math.round(fromPrice * 100) / 100,
         roomTypeCount: hotel.roomTypes.length,
         nights,
@@ -106,7 +93,9 @@ export class HotelsService {
     // A hotel with no bookable room type for the requested dates is not a result.
     if (assessments) items = items.filter((item) => item.fromPrice !== null);
 
-    const facets = this.buildFacets(items, t);
+    // Before the price filter, so narrowing the slider does not empty out the
+    // other facets and strand the user with no way back.
+    const facets = buildFacets(items, t);
 
     if (query.minPrice !== undefined) {
       items = items.filter((i) => i.fromPrice === null || i.fromPrice >= (query.minPrice as number));
@@ -115,7 +104,7 @@ export class HotelsService {
       items = items.filter((i) => i.fromPrice === null || i.fromPrice <= (query.maxPrice as number));
     }
 
-    items = this.sortHotels(items, query.sort ?? 'recommended');
+    items = sortHotels(items, query.sort ?? 'recommended');
     const total = items.length;
 
     return {
@@ -127,18 +116,7 @@ export class HotelsService {
 
   /** Resolves a public id-or-slug to the hotel id, or 404s. */
   async resolvePublishedId(idOrSlug: string): Promise<string> {
-    const hotel = await this.prisma.hotel.findFirst({
-      where: {
-        status: HotelStatus.PUBLISHED,
-        OR: [
-          { slug: idOrSlug },
-          // Renamed hotels keep answering to their old links.
-          { previousSlugs: { has: idOrSlug } },
-          ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : []),
-        ],
-      },
-      select: { id: true },
-    });
+    const hotel = await this.repository.findPublishedId(idOrSlug);
     if (!hotel) throw new NotFoundException('Hotel not found');
     return hotel.id;
   }
@@ -148,23 +126,9 @@ export class HotelsService {
     query: HotelDetailQueryDto,
     t?: Record<string, string>,
   ) {
-    this.assertDateRange(query.checkIn, query.checkOut);
+    assertDateRange(query.checkIn, query.checkOut);
 
-    const hotel = await this.prisma.hotel.findFirst({
-      where: {
-        status: HotelStatus.PUBLISHED,
-        OR: [
-          { slug: idOrSlug },
-          // Renamed hotels keep answering to their old links.
-          { previousSlugs: { has: idOrSlug } },
-          ...(isUuid(idOrSlug) ? [{ id: idOrSlug }] : []),
-        ],
-      },
-      include: {
-        images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
-        roomTypes: { where: { status: RoomTypeStatus.ACTIVE }, orderBy: { basePrice: 'asc' } },
-      },
-    });
+    const hotel = await this.repository.findPublicDetail(idOrSlug);
     if (!hotel) throw new NotFoundException('Hotel not found');
 
     const hasDates = Boolean(query.checkIn && query.checkOut);
@@ -177,9 +141,9 @@ export class HotelsService {
       : null;
 
     return {
-      ...this.toHotelDto(hotel, t),
+      ...toHotelDto(hotel, t),
       roomTypes: hotel.roomTypes.map((roomType) => {
-        const dto = this.toRoomTypeDto(roomType, t);
+        const dto = toRoomTypeDto(roomType, t);
         if (!assessments) return dto;
 
         const assessment = assessments.get(roomType.id);
@@ -200,6 +164,8 @@ export class HotelsService {
               assessment && assessment.totalPrice !== null && assessment.nights > 0
                 ? Math.round((assessment.totalPrice / assessment.nights) * 100) / 100
                 : null,
+            // Too small for the party is a different answer from sold out, and
+            // the guest can act on it by changing the party size.
             ...(!fitsParty
               ? { reason: 'CAPACITY' as const }
               : assessment?.bookable
@@ -212,12 +178,7 @@ export class HotelsService {
   }
 
   async listCities() {
-    const rows = await this.prisma.hotel.groupBy({
-      by: ['city'],
-      where: { status: HotelStatus.PUBLISHED },
-      _count: { _all: true },
-      orderBy: { _count: { id: 'desc' } },
-    });
+    const rows = await this.repository.groupCities();
     return rows.map((row) => ({ value: row.city, count: row._count._all }));
   }
 
@@ -225,33 +186,15 @@ export class HotelsService {
 
   async adminList(query: AdminHotelListDto) {
     const { page, pageSize, skip, take } = resolvePagination(query);
-    const where: Prisma.HotelWhereInput = {};
-    if (query.status) where.status = query.status;
-    if (query.city) where.city = { equals: query.city, mode: 'insensitive' };
-    if (query.q) {
-      where.OR = [
-        { name: { contains: query.q, mode: 'insensitive' } },
-        { city: { contains: query.q, mode: 'insensitive' } },
-      ];
-    }
-
-    const [rows, total] = await Promise.all([
-      this.prisma.hotel.findMany({
-        where,
-        include: {
-          images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
-          roomTypes: { orderBy: { basePrice: 'asc' } },
-        },
-        orderBy: { updatedAt: 'desc' },
-        skip,
-        take,
-      }),
-      this.prisma.hotel.count({ where }),
-    ]);
+    const [rows, total] = await this.repository.findAdminPage(
+      buildAdminHotelWhere(query),
+      skip,
+      take,
+    );
 
     return {
       items: rows.map((hotel) => ({
-        ...this.toHotelDto(hotel),
+        ...toHotelDto(hotel),
         roomTypeCount: hotel.roomTypes.length,
         fromPrice: hotel.roomTypes.length ? toNumber(hotel.roomTypes[0].basePrice) : null,
       })),
@@ -262,46 +205,148 @@ export class HotelsService {
   /**
    * Admin view of a hotel: the stored English alongside its translations, so
    * the editor can show both languages side by side.
-   *
-   * Translations live in the Translation table keyed `hotel.<id>.<field>`
-   * rather than as columns, so adding a locale needs no migration. They are
-   * folded into a nested `translations` object here purely so the form has a
-   * shape it can bind to.
    */
   async adminFindOne(id: string) {
-    const hotel = await this.prisma.hotel.findUnique({ where: { id }, include: hotelInclude });
+    const hotel = await this.repository.findByIdWithRelations(id);
     if (!hotel) throw new NotFoundException('Hotel not found');
 
-    const roomTypeIds = hotel.roomTypes.map((rt) => rt.id);
-    const rows = await this.prisma.translation.findMany({
-      where: {
-        OR: [
-          { key: { startsWith: `hotel.${id}.` } },
-          ...roomTypeIds.map((rtId) => ({ key: { startsWith: `roomType.${rtId}.` } })),
-        ],
-      },
-      select: { key: true, locale: true, value: true },
-    });
-
-    const nest = (prefix: string) => {
-      const out: Record<string, Record<string, string>> = {};
-      for (const row of rows) {
-        if (!row.key.startsWith(prefix)) continue;
-        const field = row.key.slice(prefix.length);
-        (out[row.locale] ??= {})[field] = row.value;
-      }
-      return out;
-    };
+    const rows = await this.repository.findTranslations(
+      id,
+      hotel.roomTypes.map((rt) => rt.id),
+    );
 
     return {
-      ...this.toHotelDto(hotel),
-      translations: nest(`hotel.${id}.`),
+      ...toHotelDto(hotel),
+      translations: nestTranslations(rows, hotelKeyPrefix(id)),
       roomTypes: hotel.roomTypes.map((rt) => ({
-        ...this.toRoomTypeDto(rt),
-        translations: nest(`roomType.${rt.id}.`),
+        ...toRoomTypeDto(rt),
+        translations: nestTranslations(rows, roomTypeKeyPrefix(rt.id)),
       })),
     };
   }
+
+  async create(dto: CreateHotelDto, adminId: string) {
+    const slug = await this.uniqueSlug(`${dto.name} ${dto.city}`);
+    const hotel = await this.repository.create({
+      slug,
+      name: dto.name.trim(),
+      city: dto.city.trim(),
+      address: dto.address.trim(),
+      country: dto.country.trim(),
+      description: dto.description?.trim() || null,
+      stars: dto.stars,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
+      amenities: dto.amenities ?? [],
+      status: dto.status ?? HotelStatus.DRAFT,
+      createdBy: adminId,
+      images: dto.images?.length
+        ? {
+            create: dto.images.map((image, index) => ({
+              url: image.url,
+              sortOrder: image.sortOrder ?? index,
+              isPrimary: image.isPrimary ?? index === 0,
+            })),
+          }
+        : undefined,
+    });
+    return toHotelDto(hotel);
+  }
+
+  async update(id: string, dto: UpdateHotelDto) {
+    const current = await this.assertExists(id);
+
+    // A slug is a public URL. Changing it keeps the old one working: it moves
+    // into previousSlugs, which the lookup also matches, so links already
+    // shared or indexed still resolve instead of 404ing.
+    let slugChange: { slug: string; previousSlugs: string[] } | null = null;
+    if (dto.slug !== undefined) {
+      const next = await this.resolveSlugChange(current, dto.slug);
+      if (next) slugChange = next;
+    }
+
+    const hotel = await this.repository.update(id, {
+      ...(slugChange ?? {}),
+      ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+      ...(dto.city !== undefined ? { city: dto.city.trim() } : {}),
+      ...(dto.address !== undefined ? { address: dto.address.trim() } : {}),
+      ...(dto.country !== undefined ? { country: dto.country.trim() } : {}),
+      ...(dto.description !== undefined ? { description: dto.description.trim() || null } : {}),
+      ...(dto.stars !== undefined ? { stars: dto.stars } : {}),
+      ...(dto.latitude !== undefined ? { latitude: dto.latitude } : {}),
+      ...(dto.longitude !== undefined ? { longitude: dto.longitude } : {}),
+      ...(dto.amenities !== undefined ? { amenities: dto.amenities } : {}),
+      ...(dto.status !== undefined ? { status: dto.status } : {}),
+    });
+
+    // After the row, so a rejected hotel update never leaves orphaned copy.
+    await this.saveTranslations(hotelKeyPrefix(id), dto.translations);
+
+    return toHotelDto(hotel);
+  }
+
+  async addImages(hotelId: string, dto: AddHotelImagesDto) {
+    await this.assertExists(hotelId);
+    const existing = await this.repository.countImages(hotelId);
+    await this.repository.createImages(
+      dto.images.map((image, index) => ({
+        hotelId,
+        url: image.url,
+        sortOrder: image.sortOrder ?? existing + index,
+        isPrimary: image.isPrimary ?? (existing === 0 && index === 0),
+      })),
+    );
+    return this.adminFindOne(hotelId);
+  }
+
+  /** Persists gallery order; the first id becomes the card thumbnail. */
+  async reorderImages(hotelId: string, imageIds: string[]) {
+    await this.assertExists(hotelId);
+    const existing = await this.repository.findImageIds(hotelId);
+    const known = new Set(existing.map((image) => image.id));
+    if (imageIds.length !== known.size || imageIds.some((id) => !known.has(id))) {
+      throw new BadRequestException('Image order must list every image of this hotel exactly once');
+    }
+
+    await this.repository.applyImageOrder(imageIds);
+    return this.adminFindOne(hotelId);
+  }
+
+  /** Used before deletion so the stored object can be cleaned up too. */
+  async findImageUrl(hotelId: string, imageId: string): Promise<string | null> {
+    const image = await this.repository.findImageUrl(hotelId, imageId);
+    return image?.url ?? null;
+  }
+
+  async removeImage(hotelId: string, imageId: string) {
+    const image = await this.repository.findImage(hotelId, imageId);
+    if (!image) throw new NotFoundException('Image not found');
+    await this.repository.deleteImage(imageId);
+    return this.adminFindOne(hotelId);
+  }
+
+  /**
+   * Retires a hotel.
+   *
+   * Deleted outright only when nothing references it. A hotel with bookings is
+   * archived instead — hidden from the site but kept on record, because those
+   * reservations belong to real guests and cascading them away would erase
+   * their history. Mirrors how room types deactivate rather than delete.
+   */
+  async remove(id: string) {
+    await this.assertExists(id);
+
+    const bookings = await this.repository.countBookings(id);
+    if (bookings > 0) {
+      const hotel = await this.repository.update(id, { status: HotelStatus.ARCHIVED });
+      return { id, deleted: false, archived: true, bookings, hotel: toHotelDto(hotel) };
+    }
+
+    await this.repository.delete(id);
+    return { id, deleted: true, archived: false, bookings: 0 };
+  }
+
+  // --------------------------------------------------------------- helpers
 
   /**
    * Replaces the translations for one entity. An empty value deletes the row so
@@ -317,283 +362,16 @@ export class HotelsService {
         const key = `${keyPrefix}${field}`;
         const value = (raw ?? '').trim();
         if (!value) {
-          await this.prisma.translation.deleteMany({ where: { key, locale: locale as Locale } });
+          await this.repository.deleteTranslation(key, locale as Locale);
           continue;
         }
-        await this.prisma.translation.upsert({
-          where: { key_locale: { key, locale: locale as Locale } },
-          create: { key, locale: locale as Locale, value },
-          update: { value },
-        });
+        await this.repository.upsertTranslation(key, locale as Locale, value);
       }
     }
-  }
-
-  async create(dto: CreateHotelDto, adminId: string) {
-    const slug = await this.uniqueSlug(`${dto.name} ${dto.city}`);
-    const hotel = await this.prisma.hotel.create({
-      data: {
-        slug,
-        name: dto.name.trim(),
-        city: dto.city.trim(),
-        address: dto.address.trim(),
-        country: dto.country.trim(),
-        description: dto.description?.trim() || null,
-        stars: dto.stars,
-        latitude: dto.latitude ?? null,
-        longitude: dto.longitude ?? null,
-        amenities: dto.amenities ?? [],
-        status: dto.status ?? HotelStatus.DRAFT,
-        createdBy: adminId,
-        images: dto.images?.length
-          ? {
-              create: dto.images.map((image, index) => ({
-                url: image.url,
-                sortOrder: image.sortOrder ?? index,
-                isPrimary: image.isPrimary ?? index === 0,
-              })),
-            }
-          : undefined,
-      },
-      include: hotelInclude,
-    });
-    return this.toHotelDto(hotel);
-  }
-
-  async update(id: string, dto: UpdateHotelDto) {
-    const current = await this.assertExists(id);
-
-    // A slug is a public URL. Changing it keeps the old one working: it moves
-    // into previousSlugs, which the lookup also matches, so links already
-    // shared or indexed still resolve instead of 404ing.
-    let slugChange: { slug: string; previousSlugs: string[] } | null = null;
-    if (dto.slug !== undefined) {
-      const next = await this.resolveSlugChange(current, dto.slug);
-      if (next) slugChange = next;
-    }
-
-    const hotel = await this.prisma.hotel.update({
-      where: { id },
-      data: {
-        ...(slugChange ?? {}),
-        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
-        ...(dto.city !== undefined ? { city: dto.city.trim() } : {}),
-        ...(dto.address !== undefined ? { address: dto.address.trim() } : {}),
-        ...(dto.country !== undefined ? { country: dto.country.trim() } : {}),
-        ...(dto.description !== undefined ? { description: dto.description.trim() || null } : {}),
-        ...(dto.stars !== undefined ? { stars: dto.stars } : {}),
-        ...(dto.latitude !== undefined ? { latitude: dto.latitude } : {}),
-        ...(dto.longitude !== undefined ? { longitude: dto.longitude } : {}),
-        ...(dto.amenities !== undefined ? { amenities: dto.amenities } : {}),
-        ...(dto.status !== undefined ? { status: dto.status } : {}),
-      },
-      include: hotelInclude,
-    });
-
-    // After the row, so a rejected hotel update never leaves orphaned copy.
-    await this.saveTranslations(`hotel.${id}.`, dto.translations);
-
-    return this.toHotelDto(hotel);
-  }
-
-  async addImages(hotelId: string, dto: AddHotelImagesDto) {
-    await this.assertExists(hotelId);
-    const existing = await this.prisma.hotelImage.count({ where: { hotelId } });
-    await this.prisma.hotelImage.createMany({
-      data: dto.images.map((image, index) => ({
-        hotelId,
-        url: image.url,
-        sortOrder: image.sortOrder ?? existing + index,
-        isPrimary: image.isPrimary ?? (existing === 0 && index === 0),
-      })),
-    });
-    return this.adminFindOne(hotelId);
-  }
-
-  /** Persists gallery order; the first id becomes the card thumbnail. */
-  async reorderImages(hotelId: string, imageIds: string[]) {
-    await this.assertExists(hotelId);
-    const existing = await this.prisma.hotelImage.findMany({
-      where: { hotelId },
-      select: { id: true },
-    });
-    const known = new Set(existing.map((image) => image.id));
-    if (imageIds.length !== known.size || imageIds.some((id) => !known.has(id))) {
-      throw new BadRequestException('Image order must list every image of this hotel exactly once');
-    }
-
-    await this.prisma.$transaction(
-      imageIds.map((id, index) =>
-        this.prisma.hotelImage.update({
-          where: { id },
-          data: { sortOrder: index, isPrimary: index === 0 },
-        }),
-      ),
-    );
-    return this.adminFindOne(hotelId);
-  }
-
-  /** Used before deletion so the stored object can be cleaned up too. */
-  async findImageUrl(hotelId: string, imageId: string): Promise<string | null> {
-    const image = await this.prisma.hotelImage.findFirst({
-      where: { id: imageId, hotelId },
-      select: { url: true },
-    });
-    return image?.url ?? null;
-  }
-
-  async removeImage(hotelId: string, imageId: string) {
-    const image = await this.prisma.hotelImage.findFirst({ where: { id: imageId, hotelId } });
-    if (!image) throw new NotFoundException('Image not found');
-    await this.prisma.hotelImage.delete({ where: { id: imageId } });
-    return this.adminFindOne(hotelId);
-  }
-
-  // --------------------------------------------------------------- helpers
-
-  private assertDateRange(checkIn?: string, checkOut?: string) {
-    if (!checkIn && !checkOut) return;
-    if (!checkIn || !checkOut) {
-      throw new BadRequestException('Provide both checkIn and checkOut, or neither');
-    }
-    if (countNights(parseDateOnly(checkIn), parseDateOnly(checkOut)) < 1) {
-      throw new BadRequestException('Check-out must be at least one night after check-in');
-    }
-  }
-
-  private sortHotels<T extends { fromPrice: number | null; stars: number; name: string }>(
-    items: T[],
-    sort: string,
-  ): T[] {
-    const byPrice = (a: T, b: T, dir: number) => {
-      if (a.fromPrice === null) return 1;
-      if (b.fromPrice === null) return -1;
-      return (a.fromPrice - b.fromPrice) * dir;
-    };
-    const sorted = [...items];
-    switch (sort) {
-      case 'price_asc':
-        return sorted.sort((a, b) => byPrice(a, b, 1));
-      case 'price_desc':
-        return sorted.sort((a, b) => byPrice(a, b, -1));
-      case 'stars_desc':
-        return sorted.sort((a, b) => b.stars - a.stars || byPrice(a, b, 1));
-      case 'name_asc':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      default:
-        // Recommended: highest rated first, cheapest as the tie-break.
-        return sorted.sort((a, b) => b.stars - a.stars || byPrice(a, b, 1));
-    }
-  }
-
-  private buildFacets(
-    items: Array<{ city: string; amenities: string[]; stars: number; fromPrice: number | null }>,
-    t?: Record<string, string>,
-  ) {
-    const cities = new Map<string, number>();
-    const amenities = new Map<string, number>();
-    const stars = new Map<number, number>();
-    let min: number | null = null;
-    let max: number | null = null;
-
-    for (const item of items) {
-      cities.set(item.city, (cities.get(item.city) ?? 0) + 1);
-      stars.set(item.stars, (stars.get(item.stars) ?? 0) + 1);
-      for (const amenity of item.amenities) {
-        amenities.set(amenity, (amenities.get(amenity) ?? 0) + 1);
-      }
-      if (item.fromPrice !== null) {
-        min = min === null ? item.fromPrice : Math.min(min, item.fromPrice);
-        max = max === null ? item.fromPrice : Math.max(max, item.fromPrice);
-      }
-    }
-
-    const toSorted = <K extends string | number>(map: Map<K, number>) =>
-      [...map.entries()]
-        .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => b.count - a.count || String(a.value).localeCompare(String(b.value)));
-
-    // Amenity facets carry a separate label: the checkbox shows the label but
-    // submits the value, so filtering keeps working in any language.
-    const amenityFacets = toSorted(amenities).map((facet) => ({
-      ...facet,
-      label: amenityLabel(facet.value, t),
-    }));
-
-    return {
-      cities: toSorted(cities),
-      amenities: amenityFacets,
-      stars: [...stars.entries()]
-        .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => b.value - a.value),
-      priceRange: min === null || max === null ? null : { min, max },
-    };
-  }
-
-  /**
-   *  carries the translation overrides for the requested locale. Admin
-   * responses pass nothing and get the stored wording, which is what an editor
-   * needs to see; public responses pass a map and get localised text.
-   */
-  private toHotelDto(hotel: HotelWithImages, t?: Record<string, string>) {
-    const tr = (field: string, fallback: string) =>
-      t ? t[`hotel.${hotel.id}.${field}`] || fallback : fallback;
-    return {
-      id: hotel.id,
-      slug: hotel.slug,
-      name: tr('name', hotel.name),
-      city: tr('city', hotel.city),
-      address: tr('address', hotel.address),
-      country: tr('country', hotel.country),
-      description: tr('description', hotel.description ?? '') || null,
-      stars: hotel.stars,
-      latitude: hotel.latitude,
-      longitude: hotel.longitude,
-      // Stays the stored English: this array is the filter key, and
-      // `?amenities=` is matched against it with hasEvery. Translating in place
-      // would make the Arabic site send Arabic back and match nothing.
-      amenities: hotel.amenities,
-      /** Display text for each amenity above — value stays the key. */
-      amenityLabels: Object.fromEntries(
-        hotel.amenities.map((name) => [name, amenityLabel(name, t)]),
-      ),
-      status: hotel.status,
-      images: hotel.images.map((image) => ({
-        id: image.id,
-        url: image.url,
-        sortOrder: image.sortOrder,
-        isPrimary: image.isPrimary,
-      })),
-      /** Links this hotel still answers to after a slug change. */
-      previousSlugs: hotel.previousSlugs,
-      createdBy: hotel.createdBy,
-      createdAt: hotel.createdAt,
-      updatedAt: hotel.updatedAt,
-    };
-  }
-
-  private toRoomTypeDto(roomType: Prisma.RoomTypeGetPayload<object>, t?: Record<string, string>) {
-    const tr = (field: string, fallback: string) =>
-      t ? t[`roomType.${roomType.id}.${field}`] || fallback : fallback;
-    return {
-      id: roomType.id,
-      hotelId: roomType.hotelId,
-      name: tr('name', roomType.name),
-      description: tr('description', roomType.description ?? '') || null,
-      capacityAdults: roomType.capacityAdults,
-      capacityChildren: roomType.capacityChildren,
-      numOfBeds: roomType.numOfBeds,
-      sizeSqm: toNullableNumber(roomType.sizeSqm),
-      basePrice: toNumber(roomType.basePrice),
-      status: roomType.status,
-    };
   }
 
   private async assertExists(id: string) {
-    const hotel = await this.prisma.hotel.findUnique({
-      where: { id },
-      select: { id: true, slug: true, previousSlugs: true },
-    });
+    const hotel = await this.repository.findIdentity(id);
     if (!hotel) throw new NotFoundException('Hotel not found');
     return hotel;
   }
@@ -603,7 +381,7 @@ export class HotelsService {
     let candidate = base;
     let suffix = 2;
     // Slugs are the public URL key, so collisions get a numeric suffix.
-    while (await this.prisma.hotel.findUnique({ where: { slug: candidate }, select: { id: true } })) {
+    while (await this.repository.slugTaken(candidate)) {
       candidate = `${base}-${suffix}`;
       suffix += 1;
     }
@@ -624,13 +402,7 @@ export class HotelsService {
     }
     if (next === current.slug) return null;
 
-    const clash = await this.prisma.hotel.findFirst({
-      where: {
-        id: { not: current.id },
-        OR: [{ slug: next }, { previousSlugs: { has: next } }],
-      },
-      select: { id: true },
-    });
+    const clash = await this.repository.findSlugClash(current.id, next);
     if (clash) {
       throw new BadRequestException('Another hotel already uses that link, including its old links');
     }
@@ -638,58 +410,6 @@ export class HotelsService {
     // The outgoing slug joins the history; the incoming one leaves it, so a
     // slug reverted to an earlier value is not both current and historical.
     const history = current.previousSlugs.filter((slug) => slug !== next);
-    return {
-      slug: next,
-      previousSlugs: [...new Set([...history, current.slug])],
-    };
+    return { slug: next, previousSlugs: [...new Set([...history, current.slug])] };
   }
-
-  /**
-   * Retires a hotel.
-   *
-   * Deleted outright only when nothing references it. A hotel with bookings is
-   * archived instead — hidden from the site but kept on record, because those
-   * reservations belong to real guests and cascading them away would erase
-   * their history. Mirrors how room types deactivate rather than delete.
-   */
-  async remove(id: string) {
-    await this.assertExists(id);
-
-    const bookings = await this.prisma.booking.count({ where: { hotelId: id } });
-    if (bookings > 0) {
-      const hotel = await this.prisma.hotel.update({
-        where: { id },
-        data: { status: HotelStatus.ARCHIVED },
-        include: hotelInclude,
-      });
-      return {
-        id,
-        deleted: false,
-        archived: true,
-        bookings,
-        hotel: this.toHotelDto(hotel),
-      };
-    }
-
-    // Room types, availability and images cascade from the schema.
-    await this.prisma.hotel.delete({ where: { id } });
-    return { id, deleted: true, archived: false, bookings: 0 };
-  }
-}
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function isUuid(value: string): boolean {
-  return UUID_RE.test(value);
-}
-
-/**
- * Localised display text for an amenity.
- *
- * Keyed by the amenity's own name rather than its catalogue id, so rendering a
- * hotel needs no extra query — the name is already in `Hotel.amenities`, and
- * search loads the whole catalogue, where one lookup per hotel would add up.
- * AmenitiesService keeps these keys in step when an amenity is renamed.
- */
-export function amenityLabel(name: string, t?: Record<string, string>): string {
-  return t?.[`amenity.${name}`] || name;
 }

@@ -6,37 +6,28 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 import { BookingStatus, RoomTypeStatus } from '../../generated/prisma/enums';
 import { AvailabilityService, HOLD_MINUTES } from '../availability/availability.service';
 import { generateBookingReference } from '../../common/utils/booking-reference.util';
 import { buildMeta, resolvePagination } from '../../common/utils/pagination.util';
-import { toNumber } from '../../common/utils/decimal.util';
-import { buildPriceBreakdown } from '../../common/utils/pricing.util';
 import { countNights, parseDateOnly, startOfTodayUtc } from '../../common/utils/date.util';
+import { BookingsRepository } from './repositories/bookings.repository';
+import {
+  MAX_ATTEMPTS,
+  buildAdminBookingWhere,
+  isRetryable,
+  toBookingDto,
+  unavailableMessage,
+} from './utils/booking.util';
 import type { AdminBookingQueryDto, BookingDecisionDto, CreateBookingDto } from './dto/booking.dto';
-
-const bookingInclude = {
-  hotel: { include: { images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1 } } },
-  roomType: true,
-  user: { select: { id: true, name: true, email: true, phone: true } },
-  // Status only — gateway ids and raw payloads never reach a booking response.
-  payment: { select: { status: true } },
-} satisfies Prisma.BookingInclude;
-
-type BookingRow = Prisma.BookingGetPayload<{ include: typeof bookingInclude }>;
-
-/** Postgres serialization / deadlock codes worth one retry. */
-const RETRYABLE_PG_CODES = new Set(['40001', '40P01']);
-const MAX_ATTEMPTS = 3;
 
 @Injectable()
 export class BookingsService {
   private readonly logger = new Logger(BookingsService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: BookingsRepository,
     private readonly availability: AvailabilityService,
   ) {}
 
@@ -71,7 +62,7 @@ export class BookingsService {
       try {
         return await this.createOnce(userId, dto, checkIn, checkOut);
       } catch (error) {
-        if (attempt < MAX_ATTEMPTS && this.isRetryable(error)) {
+        if (attempt < MAX_ATTEMPTS && isRetryable(error)) {
           this.logger.warn(`Retrying booking create (attempt ${attempt + 1})`);
           continue;
         }
@@ -86,88 +77,73 @@ export class BookingsService {
     dto: CreateBookingDto,
     checkIn: Date,
     checkOut: Date,
-  ): Promise<ReturnType<BookingsService['toDto']>> {
-    const booking = await this.prisma.$transaction(
-      async (tx) => {
-        const roomType = await tx.roomType.findUnique({
-          where: { id: dto.roomTypeId },
-          include: { hotel: { select: { id: true, status: true } } },
-        });
-        if (!roomType) throw new NotFoundException('Room type not found');
-        if (roomType.status === RoomTypeStatus.INACTIVE) {
-          throw new ConflictException('This room type is not currently on sale');
-        }
-        if (roomType.hotel.status !== 'PUBLISHED') {
-          throw new ConflictException('This hotel is not currently bookable');
-        }
+  ) {
+    const booking = await this.repository.transaction(async (tx) => {
+      const roomType = await this.repository.findRoomTypeForBooking(tx, dto.roomTypeId);
+      if (!roomType) throw new NotFoundException('Room type not found');
+      if (roomType.status === RoomTypeStatus.INACTIVE) {
+        throw new ConflictException('This room type is not currently on sale');
+      }
+      if (roomType.hotel.status !== 'PUBLISHED') {
+        throw new ConflictException('This hotel is not currently bookable');
+      }
 
-        const numChildren = dto.numChildren ?? 0;
-        if (dto.numAdults > roomType.capacityAdults) {
-          throw new BadRequestException(
-            `This room takes at most ${roomType.capacityAdults} adult(s)`,
-          );
-        }
-        if (numChildren > roomType.capacityChildren) {
-          throw new BadRequestException(
-            `This room takes at most ${roomType.capacityChildren} child(ren)`,
-          );
-        }
-
-        // Lock first, then read: any competing transaction blocks here until we commit.
-        await this.availability.lockNightsForUpdate(tx, dto.roomTypeId, checkIn, checkOut);
-
-        const assessment = await this.availability.assessRange(
-          tx,
-          dto.roomTypeId,
-          dto.checkInDate,
-          dto.checkOutDate,
+      const numChildren = dto.numChildren ?? 0;
+      if (dto.numAdults > roomType.capacityAdults) {
+        throw new BadRequestException(`This room takes at most ${roomType.capacityAdults} adult(s)`);
+      }
+      if (numChildren > roomType.capacityChildren) {
+        throw new BadRequestException(
+          `This room takes at most ${roomType.capacityChildren} child(ren)`,
         );
-        if (!assessment.bookable || assessment.totalPrice === null) {
-          throw new ConflictException(this.unavailableMessage(assessment.reason));
-        }
+      }
 
-        return tx.booking.create({
-          data: {
-            bookingReference: generateBookingReference(),
-            userId,
-            hotelId: roomType.hotelId,
-            roomTypeId: roomType.id,
-            checkInDate: checkIn,
-            checkOutDate: checkOut,
-            numAdults: dto.numAdults,
-            numChildren,
-            // Price is snapshotted here and never recalculated from live rates,
-            // so the amount charged is exactly the amount quoted.
-            totalPrice: new Prisma.Decimal(assessment.totalPrice),
-            status: BookingStatus.PENDING_PAYMENT,
-            holdExpiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
-            specialRequests: dto.specialRequests?.trim() || null,
-          },
-          include: bookingInclude,
-        });
-      },
-      { timeout: 15_000, maxWait: 10_000 },
-    );
+      // Lock first, then read: any competing transaction blocks here until we commit.
+      await this.availability.lockNightsForUpdate(tx, dto.roomTypeId, checkIn, checkOut);
 
-    return this.toDto(booking, true);
+      const assessment = await this.availability.assessRange(
+        tx,
+        dto.roomTypeId,
+        dto.checkInDate,
+        dto.checkOutDate,
+      );
+      if (!assessment.bookable || assessment.totalPrice === null) {
+        throw new ConflictException(unavailableMessage(assessment.reason));
+      }
+
+      return this.repository.create(tx, {
+        bookingReference: generateBookingReference(),
+        userId,
+        hotelId: roomType.hotelId,
+        roomTypeId: roomType.id,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        numAdults: dto.numAdults,
+        numChildren,
+        // Price is snapshotted here and never recalculated from live rates,
+        // so the amount charged is exactly the amount quoted.
+        totalPrice: new Prisma.Decimal(assessment.totalPrice),
+        status: BookingStatus.PENDING_PAYMENT,
+        holdExpiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
+        specialRequests: dto.specialRequests?.trim() || null,
+      });
+    });
+
+    return toBookingDto(booking, true);
   }
 
   // ------------------------------------------------------------------ user
 
   async listMine(userId: string, page?: number, pageSize?: number) {
     const pagination = resolvePagination({ page, pageSize });
-    const [rows, total] = await Promise.all([
-      this.prisma.booking.findMany({
-        where: { userId },
-        include: bookingInclude,
-        orderBy: { createdAt: 'desc' },
-        skip: pagination.skip,
-        take: pagination.take,
-      }),
-      this.prisma.booking.count({ where: { userId } }),
-    ]);
+    const [rows, total] = await this.repository.findPage(
+      { userId },
+      [{ createdAt: 'desc' }],
+      pagination.skip,
+      pagination.take,
+    );
     return {
-      items: rows.map((row) => this.toDto(row, true)),
+      items: rows.map((row) => toBookingDto(row, true)),
       meta: buildMeta(pagination.page, pagination.pageSize, total),
     };
   }
@@ -177,20 +153,14 @@ export class BookingsService {
    * the owner and admins get the full record.
    */
   async findByReference(reference: string, viewer?: { id: string; role: string }) {
-    const booking = await this.prisma.booking.findUnique({
-      where: { bookingReference: reference.trim().toUpperCase() },
-      include: bookingInclude,
-    });
+    const booking = await this.repository.findByReference(reference.trim().toUpperCase());
     if (!booking) throw new NotFoundException('Booking not found');
     const privileged = Boolean(viewer && (viewer.role === 'ADMIN' || viewer.id === booking.userId));
-    return this.toDto(booking, privileged);
+    return toBookingDto(booking, privileged);
   }
 
   async cancelOwn(userId: string, bookingId: string) {
-    const booking = await this.prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: bookingInclude,
-    });
+    const booking = await this.repository.findByIdWithRelations(bookingId);
     if (!booking) throw new NotFoundException('Booking not found');
     if (booking.userId !== userId) throw new ForbiddenException('This is not your booking');
     // PENDING_PAYMENT is included so abandoning checkout releases the hold at
@@ -204,56 +174,27 @@ export class BookingsService {
     }
 
     // Cancelling frees the room implicitly - see CONSUMES_INVENTORY.
-    const updated = await this.prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: BookingStatus.CANCELLED },
-      include: bookingInclude,
+    const updated = await this.repository.update(bookingId, {
+      status: BookingStatus.CANCELLED,
     });
-    return this.toDto(updated, true);
+    return toBookingDto(updated, true);
   }
 
   // ----------------------------------------------------------------- admin
 
   async adminList(query: AdminBookingQueryDto) {
     const { page, pageSize, skip, take } = resolvePagination(query);
-    const where: Prisma.BookingWhereInput = {};
+    const where = buildAdminBookingWhere(query);
 
-    if (query.status) where.status = query.status;
-    if (query.hotelId) where.hotelId = query.hotelId;
-    if (query.reference) {
-      where.bookingReference = { contains: query.reference.trim(), mode: 'insensitive' };
-    }
-    if (query.guest) {
-      where.user = {
-        OR: [
-          { name: { contains: query.guest, mode: 'insensitive' } },
-          { email: { contains: query.guest, mode: 'insensitive' } },
-        ],
-      };
-    }
-    if (query.submittedWithinDays) {
-      where.createdAt = { gte: new Date(Date.now() - query.submittedWithinDays * 86_400_000) };
-    }
-    if (query.checkInFrom || query.checkInTo) {
-      where.checkInDate = {
-        ...(query.checkInFrom ? { gte: parseDateOnly(query.checkInFrom) } : {}),
-        ...(query.checkInTo ? { lte: parseDateOnly(query.checkInTo) } : {}),
-      };
-    }
-
-    const [rows, total] = await Promise.all([
-      this.prisma.booking.findMany({
-        where,
-        include: bookingInclude,
-        orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
-        skip,
-        take,
-      }),
-      this.prisma.booking.count({ where }),
-    ]);
+    const [rows, total] = await this.repository.findPage(
+      where,
+      [{ status: 'asc' }, { createdAt: 'desc' }],
+      skip,
+      take,
+    );
 
     return {
-      items: rows.map((row) => this.toDto(row, true)),
+      items: rows.map((row) => toBookingDto(row, true)),
       meta: buildMeta(page, pageSize, total),
     };
   }
@@ -272,18 +213,16 @@ export class BookingsService {
 
   /** Internal note, editable at any status and never shown to the guest. */
   async setAdminNote(id: string, adminNote: string) {
-    const booking = await this.prisma.booking.findUnique({ where: { id } });
+    const booking = await this.repository.findById(id);
     if (!booking) throw new NotFoundException('Booking not found');
-    const updated = await this.prisma.booking.update({
-      where: { id },
-      data: { adminNote: adminNote.trim() || null },
-      include: bookingInclude,
+    const updated = await this.repository.update(id, {
+      adminNote: adminNote.trim() || null,
     });
-    return this.toDto(updated, true);
+    return toBookingDto(updated, true);
   }
 
   private async decide(id: string, next: BookingStatus, dto: BookingDecisionDto) {
-    const booking = await this.prisma.booking.findUnique({ where: { id } });
+    const booking = await this.repository.findById(id);
     if (!booking) throw new NotFoundException('Booking not found');
     if (booking.status !== BookingStatus.PENDING_CONFIRMATION) {
       throw new ConflictException(
@@ -291,71 +230,10 @@ export class BookingsService {
       );
     }
 
-    const updated = await this.prisma.booking.update({
-      where: { id },
-      data: { status: next, adminNote: dto.adminNote?.trim() || booking.adminNote },
-      include: bookingInclude,
+    const updated = await this.repository.update(id, {
+      status: next,
+      adminNote: dto.adminNote?.trim() || booking.adminNote,
     });
-    return this.toDto(updated, true);
-  }
-
-  // --------------------------------------------------------------- helpers
-
-  private unavailableMessage(reason?: string) {
-    switch (reason) {
-      case 'STOP_SELL':
-        return 'These dates are closed for sale';
-      case 'NO_INVENTORY':
-        return 'This room is not on sale for the selected dates';
-      case 'INACTIVE':
-        return 'This room type is not currently on sale';
-      default:
-        return 'This room was just booked and is no longer available for those dates';
-    }
-  }
-
-  private isRetryable(error: unknown): boolean {
-    const code = (error as { code?: string } | null)?.code;
-    return typeof code === 'string' && RETRYABLE_PG_CODES.has(code);
-  }
-
-  private toDto(booking: BookingRow, includeGuest: boolean) {
-    const primaryImage = booking.hotel.images[0];
-    return {
-      id: booking.id,
-      bookingReference: booking.bookingReference,
-      hotelId: booking.hotelId,
-      roomTypeId: booking.roomTypeId,
-      roomTypeName: booking.roomType.name,
-      checkInDate: booking.checkInDate.toISOString().slice(0, 10),
-      checkOutDate: booking.checkOutDate.toISOString().slice(0, 10),
-      nights: countNights(booking.checkInDate, booking.checkOutDate),
-      numAdults: booking.numAdults,
-      numChildren: booking.numChildren,
-      totalPrice: toNumber(booking.totalPrice),
-      // Same split the availability assessment returns, so the confirmation page
-      // shows the identical figures the guest saw before paying.
-      priceBreakdown: buildPriceBreakdown(toNumber(booking.totalPrice)),
-      status: booking.status,
-      // Lets the checkout show a live countdown and stop offering to pay once
-      // the hold has gone.
-      holdExpiresAt: booking.holdExpiresAt?.toISOString() ?? null,
-      paymentStatus: booking.payment?.status ?? null,
-      adminNote: booking.adminNote,
-      specialRequests: booking.specialRequests,
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt,
-      hotel: {
-        id: booking.hotel.id,
-        slug: booking.hotel.slug,
-        name: booking.hotel.name,
-        city: booking.hotel.city,
-        country: booking.hotel.country,
-        address: booking.hotel.address,
-        stars: booking.hotel.stars,
-        imageUrl: primaryImage ? primaryImage.url : null,
-      },
-      ...(includeGuest ? { guest: booking.user } : {}),
-    };
+    return toBookingDto(updated, true);
   }
 }

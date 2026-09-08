@@ -4,10 +4,11 @@ import {
   AdminNavLinksController,
   NavLinksController,
 } from './nav-links.controller';
+import { NavLinksRepository } from './repositories/nav-links.repository';
 
 @Module({
-  providers: [NavLinksService],
+  providers: [NavLinksService, NavLinksRepository],
   controllers: [NavLinksController, AdminNavLinksController],
-  exports: [NavLinksService],
+  exports: [NavLinksService, NavLinksRepository],
 })
 export class NavLinksModule {}

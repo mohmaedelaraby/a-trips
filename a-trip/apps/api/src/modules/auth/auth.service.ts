@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService, type PublicUserDto } from '../users/users.service';
+import { UsersService } from '../users/users.service';
+import { toPublicUser, type PublicUserDto } from '../users/utils/user.util';
+import { verifyPassword } from '../users/utils/password.util';
 import { UserStatus } from '../../generated/prisma/enums';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
@@ -26,7 +28,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthSessionDto> {
     const user = await this.users.findByEmail(dto.email);
     // Compare against a dummy hash shape only if user exists; message stays generic either way.
-    if (!user || !(await this.users.verifyPassword(dto.password, user.passwordHash))) {
+    if (!user || !(await verifyPassword(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Incorrect email or password');
     }
     if (user.status === UserStatus.BANNED || user.status === UserStatus.DISABLED) {
@@ -40,6 +42,6 @@ export class AuthService {
 
   private buildSession(user: User): AuthSessionDto {
     const accessToken = this.jwt.sign({ sub: user.id, email: user.email, role: user.role });
-    return { accessToken, user: UsersService.toPublic(user) };
+    return { accessToken, user: toPublicUser(user) };
   }
 }
