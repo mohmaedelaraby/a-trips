@@ -101,7 +101,12 @@ export function useLogin() {
       // A guest must never be sent onward into the admin portal.
       const target = next && (isAdminUser || !next.startsWith('/admin')) ? next : null;
 
-      router.push(target ?? (isAdminUser ? '/admin' : '/account/bookings'));
+      // Guests land on the home page, not their bookings list: signing in is
+      // usually the step before searching for a stay, not before reviewing
+      // past ones. `next` still wins when it is set — that only happens when
+      // the visitor was bounced off a page they deliberately asked for, and
+      // dropping them at home instead would lose where they were headed.
+      router.push(target ?? (isAdminUser ? '/admin' : '/'));
     },
     onError: (error) => {
       toast.error(error instanceof ApiError ? error.message : 'Could not sign in');
@@ -119,7 +124,9 @@ export function useRegister() {
     onSuccess: (session) => {
       useUserSessionStore.getState().setUser(session.user);
       toast.success('Account created', `Welcome to A Trip, ${session.user.name.split(' ')[0]}`);
-      router.push('/account/bookings');
+      // Straight to the home page — a brand-new account has no bookings to
+      // show, so the old destination was always an empty list.
+      router.push('/');
     },
     onError: (error) => {
       toast.error(error instanceof ApiError ? error.message : 'Could not create your account');

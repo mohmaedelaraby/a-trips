@@ -11,6 +11,7 @@ import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { NavLinksModule } from './modules/nav-links/nav-links.module';
 import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
 import { TranslationsModule } from './modules/translations/translations.module';
@@ -34,6 +35,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     BookingsModule,
     AdminModule,
     PaymentsModule,
+    ChatModule,
     NavLinksModule,
     SiteSettingsModule,
     TranslationsModule,

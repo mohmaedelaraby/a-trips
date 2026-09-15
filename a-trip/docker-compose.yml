@@ -167,6 +167,13 @@ services:
       PAYPAL_CURRENCY: ${PAYPAL_CURRENCY:-USD}
       # Tax rate used to split a tax-inclusive total for display.
       PRICING_TAX_RATE: ${PRICING_TAX_RATE:-0.1}
+      # Guest-facing chat assistant, on Groq by default — a Groq key
+      # (console.groq.com/keys) is the only thing to set. Left empty the API
+      # still boots: /api/chat/config reports configured:false and the widget
+      # stays hidden rather than erroring on click. The key is server-side only.
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      LLM_MODEL: ${LLM_MODEL:-qwen/qwen3.8-27b}
       # Same reason as on postgres: hold expiry is compared in UTC, so the API
       # must not be reasoning about "now" in a different zone from the database.
       TZ: UTC
