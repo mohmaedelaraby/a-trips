@@ -57,7 +57,10 @@ export class AdminService {
       totalRoomTypes,
       pendingBookings,
       pendingOlderThan12h,
+      pendingPayments,
       confirmedBookings,
+      totalBookings,
+      lifetimeRevenueAgg,
       bookingsThisWeek,
       bookingsPreviousWeek,
       revenueAgg,
@@ -91,7 +94,13 @@ export class AdminService {
       totalRoomTypes,
       pendingBookings,
       pendingOlderThan12h,
+      pendingPayments,
       confirmedBookings,
+      // Lifetime headline numbers for the homepage stat cards — every other
+      // count on this page is scoped to a window (this week, next 30 days);
+      // these two are deliberately the exception.
+      totalBookings,
+      totalRevenue: toNumber(lifetimeRevenueAgg._sum.totalPrice),
       bookingsThisWeek,
       bookingsWeekChangePercent: percentChange(bookingsThisWeek, bookingsPreviousWeek),
       revenueThisWeek: toNumber(revenueAgg._sum.totalPrice),

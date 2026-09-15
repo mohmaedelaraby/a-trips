@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
@@ -12,6 +13,9 @@ async function bootstrap(): Promise<void> {
     origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(','),
     credentials: true,
   });
+  // Session cookies are httpOnly, so the browser attaches them itself — this
+  // is what makes req.cookies readable in the auth guard below.
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({

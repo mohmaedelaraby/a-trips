@@ -100,7 +100,20 @@ export class AdminRepository {
       this.prisma.booking.count({
         where: { status: BookingStatus.PENDING_CONFIRMATION, createdAt: { lt: halfDayAgo } },
       }),
+      // Held rooms waiting on a guest's payment — never rejectable/confirmable,
+      // but previously invisible outside "All", which is where the crash on
+      // opening one was actually found.
+      this.prisma.booking.count({ where: { status: BookingStatus.PENDING_PAYMENT } }),
       this.prisma.booking.count({ where: { status: BookingStatus.CONFIRMED } }),
+      // Lifetime totals for the homepage's headline numbers. EXPIRED holds are
+      // excluded — a lapsed payment attempt was never a booking anyone made.
+      this.prisma.booking.count({
+        where: { status: { not: BookingStatus.EXPIRED } },
+      }),
+      this.prisma.booking.aggregate({
+        _sum: { totalPrice: true },
+        where: { status: { in: [BookingStatus.PENDING_CONFIRMATION, BookingStatus.CONFIRMED] } },
+      }),
       this.prisma.booking.count({ where: { createdAt: { gte: weekAgo } } }),
       this.prisma.booking.count({ where: { createdAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
       this.prisma.booking.aggregate({

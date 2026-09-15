@@ -78,6 +78,13 @@
   overflow-wrap: anywhere;
 }
 
+/* The default, human-readable stand-in for the raw key above. */
+.keyLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
 .context,
 .shipped {
   margin-top: 0.25rem;

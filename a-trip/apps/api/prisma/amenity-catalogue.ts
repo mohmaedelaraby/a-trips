@@ -85,7 +85,8 @@ export async function seedAmenityCatalogue(prisma: {
     upsert(args: {
       where: { key_locale: { key: string; locale: 'AR' } };
       create: { key: string; locale: 'AR'; value: string };
-      update: { value: string };
+      /** Optional: an empty update means "create if missing, otherwise leave". */
+      update: { value?: string };
     }): Promise<unknown>;
   };
 }): Promise<number> {
@@ -95,10 +96,13 @@ export async function seedAmenityCatalogue(prisma: {
       create: { name: item.name, category: item.category },
       update: { category: item.category },
     });
+    // Empty `update` on purpose: the shipped Arabic fills a gap, but an
+    // admin who has retyped it in the portal should not find their wording
+    // reset the next time someone runs the seed.
     await prisma.translation.upsert({
       where: { key_locale: { key: `amenity.${item.name}`, locale: 'AR' } },
       create: { key: `amenity.${item.name}`, locale: 'AR', value: item.ar },
-      update: { value: item.ar },
+      update: {},
     });
   }
   return AMENITY_CATALOGUE.length;

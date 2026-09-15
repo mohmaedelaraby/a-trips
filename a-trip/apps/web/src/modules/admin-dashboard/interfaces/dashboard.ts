@@ -35,7 +35,12 @@ export interface AdminDashboardStats {
   totalRoomTypes: number;
   pendingBookings: number;
   pendingOlderThan12h: number;
+  /** Rooms held while a guest pays — awaiting the guest, not admin action. */
+  pendingPayments: number;
   confirmedBookings: number;
+  /** Lifetime counts, unlike the this-week figures below. */
+  totalBookings: number;
+  totalRevenue: number;
   bookingsThisWeek: number;
   bookingsWeekChangePercent: number | null;
   revenueThisWeek: number;

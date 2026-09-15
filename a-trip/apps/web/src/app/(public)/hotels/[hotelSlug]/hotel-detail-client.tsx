@@ -17,10 +17,11 @@ import {
 } from '../../../../shared/components/date-range-picker';
 import { GuestStepper, type GuestValue } from '../../../../shared/components/guest-stepper';
 import { RoomTypeTable } from '../../../../modules/hotels/components/room-type-table';
+import { HotelMap } from '../../../../modules/hotels/components/hotel-map';
 import { Button } from '../../../../shared/components/button';
 import { StatusChip } from '../../../../shared/components/status-chip';
 import { ImageLightbox } from '../../../../shared/components/image-lightbox';
-import { addDaysIso, formatPrice, cn, todayIso } from '../../../../shared/lib/utils';
+import { addDaysIso, formatPrice, cn, nightsBetween, todayIso } from '../../../../shared/lib/utils';
 import { useTranslation } from '../../../../shared/i18n/use-translation';
 import styles from '../../styles/hotel-detail.module.css';
 
@@ -132,6 +133,9 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
   const hasRooms = hotel.roomTypes.length > 0;
 
   const nights = selectedRoom?.availability?.nights ?? 0;
+  // Sold-out dates carry no availability block, so fall back to the raw span —
+  // the card still has to tell the guest how long the stay they picked is.
+  const stayNights = nights || (checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0);
   // Sold-out dates carry no nightly rate, so fall back to the room's base price
   // to keep the card showing what this room normally costs.
   const nightly = hasDates
@@ -308,14 +312,19 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
               </div>
             </section>
 
-            {hotel.latitude && hotel.longitude ? (
-              <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>{t('ui.hotels.location')}</h2>
-                <div className={styles.mapBox}>
-                  <span className={styles.mapPin}>{hotel.name}</span>
-                </div>
-              </section>
-            ) : null}
+            {/* Always rendered: a hotel with no stored coordinates still has a
+                city, and the map falls back to it rather than disappearing. */}
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>{t('ui.hotels.location')}</h2>
+              <HotelMap
+                name={hotel.name}
+                city={hotel.city}
+                address={hotel.address}
+                latitude={hotel.latitude}
+                longitude={hotel.longitude}
+                seed={hotel.slug}
+              />
+            </section>
           </div>
 
           <aside className={styles.aside}>
@@ -331,24 +340,47 @@ export function HotelDetailClient({ hotelSlug }: { hotelSlug: string }) {
                 {soldOut ? null : <StatusChip tone="success">{t('ui.hotels.freeCancellation')}</StatusChip>}
               </div>
 
-              <div className={styles.datesField}>
-                <DateRangePicker
-                  value={dates}
-                  onChange={(next) => updateParams(next)}
-                  className={styles.cardPicker}
-                  unavailableDates={unavailableDates}
-                  bare
-                  split
-                />
+              {/* Numbered, because the card's job is to get two dates and a
+                  headcount out of the guest before the price below it means
+                  anything. Without the steps, the pickers read as a summary of
+                  a choice already made somewhere else. */}
+              <div className={styles.step}>
+                <p className={styles.stepLabel}>
+                  <span className={styles.stepIndex}>1</span>
+                  {t('ui.hotels.stepDates')}
+                </p>
+                <div className={cn(styles.datesField, !hasDates && styles.datesFieldEmpty)}>
+                  <DateRangePicker
+                    value={dates}
+                    onChange={(next) => updateParams(next)}
+                    className={styles.cardPicker}
+                    unavailableDates={unavailableDates}
+                    bare
+                    split
+                  />
+                </div>
+                {hasDates ? (
+                  <p className={styles.stepDone}>
+                    {t('ui.hotels.datesPicked', { nights: tn('ui.common.nights', stayNights) })}
+                  </p>
+                ) : (
+                  <p className={styles.stepHint}>{t('ui.hotels.pickDatesHint')}</p>
+                )}
               </div>
 
-              <div className={styles.guestsField}>
-                <GuestStepper
-                  value={guests}
-                  onChange={(next) => updateParams(next)}
-                  className={styles.cardPicker}
-                  bare
-                />
+              <div className={styles.step}>
+                <p className={styles.stepLabel}>
+                  <span className={styles.stepIndex}>2</span>
+                  {t('ui.hotels.stepGuests')}
+                </p>
+                <div className={styles.guestsField}>
+                  <GuestStepper
+                    value={guests}
+                    onChange={(next) => updateParams(next)}
+                    className={styles.cardPicker}
+                    bare
+                  />
+                </div>
               </div>
 
               {!hasRooms ? (

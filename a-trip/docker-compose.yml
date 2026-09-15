@@ -91,13 +91,17 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-atrip}:${POSTGRES_PASSWORD:-atrip}@postgres:5432/${POSTGRES_DB:-atrip}
     restart: 'no'
 
-  # Optional: demo hotels plus the admin-portal fixtures (staff, the amenity
-  # catalogue in English and Arabic, units, 90 days of availability). Not part
-  # of `up` — run it explicitly.
+  # Optional: demo hotels plus the admin-portal fixtures — staff accounts, the
+  # amenity catalogue and header/footer navigation (both in English and Arabic),
+  # room units, and 90 days of availability. Not part of `up` — run it
+  # explicitly, or start the whole stack seeded with:
   #
-  # Re-runnable. Hotels and bookings are rebuilt from scratch, but the amenity
-  # catalogue, nav links and site settings are upserted, so anything added or
-  # translated through the admin portal survives a re-seed.
+  #   docker compose --profile seed up -d --wait
+  #
+  # Re-runnable. Hotels and bookings are rebuilt from scratch, while the amenity
+  # catalogue, nav links and site settings are upserted and their translations
+  # are only ever filled in, never overwritten — so wording edited in the admin
+  # portal survives a re-seed.
   seed:
     profiles: ['seed']
     build:
@@ -136,6 +140,12 @@ services:
       PORT: 4000
       # Browser origin, so it must be the host-visible URL of the web app.
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      # Marks the two session cookies (see session-cookie.ts) Secure, which
+      # only HTTPS will actually deliver to the browser. Stays false for this
+      # default localhost-over-http stack; flip to true once the API sits
+      # behind HTTPS (a reverse proxy, a load balancer) or logins will silently
+      # fail to persist.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
       # Internal address the API writes through...
       S3_ENDPOINT: http://minio:9000
       # ...and the host address baked into the returned image URLs, which the

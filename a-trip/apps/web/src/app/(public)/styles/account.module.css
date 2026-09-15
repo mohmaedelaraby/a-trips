@@ -28,38 +28,69 @@
   color: var(--color-ink-muted);
 }
 
+/* Scrolls rather than wraps on a phone, so the row never stacks into the
+   heading above it. */
 .tabs {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   gap: 0.25rem;
-  border-radius: 0.5rem;
+  overflow-x: auto;
+  border-radius: 0.625rem;
   border: 1px solid var(--color-line);
   background-color: var(--color-canvas);
   padding: 0.25rem;
 }
 
 .tab {
-  border-radius: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4375rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
   color: var(--color-ink-muted);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.tab:hover {
+/* Explicit rather than implied by the absence of .tabActive, so the two states
+   are read from the markup instead of inferred. */
+.tabInactive:hover {
+  background-color: var(--color-surface);
   color: var(--color-ink);
 }
 
 .tabActive {
-  background-color: var(--color-surface);
-  color: var(--color-ink);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  outline: 1px solid var(--color-line);
-  outline-offset: -1px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 1px 2px 0 rgba(7, 146, 91, 0.35);
+}
+
+.tabActive:hover {
+  background-color: var(--color-primary-600);
+}
+
+/* How many bookings sit behind each tab, so the row answers "is there anything
+   in here?" before it is clicked. */
+.tabCount {
+  border-radius: 9999px;
+  padding: 0.0625rem 0.4375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.5;
+  background-color: var(--color-line);
+  color: var(--color-ink-muted);
+}
+
+.tabActive .tabCount {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
 .layout {
@@ -91,8 +122,150 @@
   }
 }
 
-/* profile page */
+/* ---- profile page ---- */
+
+.profileWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profileLoading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profileHeader {
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 1.25rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .profileHeader {
+    grid-template-columns: auto minmax(0, 1fr) 16rem;
+  }
+}
+
+.profileAvatar {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-primary-100);
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+}
+
+.profileIdentity {
+  min-width: 0;
+}
+
+.profileName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.profileEmail {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.profileEmailIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+  flex-shrink: 0;
+}
+
+.profileMeta {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+/* How complete the traveller's details are — the one thing on this page that
+   says why filling it in is worth the minute it costs. */
+.completeness {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .completeness {
+    grid-column: auto;
+  }
+}
+
+.completenessHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.meter {
+  margin-top: 0.375rem;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: var(--color-canvas);
+}
+
+.meterFill {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.checklist {
+  margin-top: 0.625rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  list-style: none;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.checklistDone,
+.checklistTodo {
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+}
+
+.checklistDone {
+  background-color: var(--color-success-bg);
+  color: var(--color-success-fg);
+}
+
+.checklistTodo {
+  background-color: var(--color-canvas);
+  color: var(--color-ink-muted);
+  border: 1px dashed var(--color-line);
+}
+
 .profileCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   border-radius: var(--radius-card);
   border: 1px solid var(--color-line);
   background-color: var(--color-surface);
@@ -105,8 +278,14 @@
   color: var(--color-ink);
 }
 
+.profileSubtitle {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
 .profileForm {
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -123,29 +302,56 @@
   }
 }
 
-.passwordRow {
+.formActions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.passwordInput {
+.unsaved {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-warning-fg);
+}
+
+/* ---- preference / security rows ---- */
+
+.settingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.875rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 1rem;
+}
+
+.settingText {
+  min-width: 12rem;
   flex: 1 1 0%;
 }
 
-.changeLink {
-  flex-shrink: 0;
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.settingIcon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
   color: var(--color-primary);
-  text-decoration: none;
 }
 
-.changeLink:hover {
-  text-decoration: underline;
-}
-
-.saveBtn {
+.settingHint {
   margin-top: 0.25rem;
-  align-self: flex-start;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
 }

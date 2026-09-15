@@ -26,20 +26,34 @@ import styles from '../styles/admin-bookings.module.css';
 
 const PAGE_SIZE = 5;
 
-type TabValue = 'PENDING_CONFIRMATION' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED' | 'all';
+type TabValue =
+  | 'PENDING_CONFIRMATION'
+  | 'PENDING_PAYMENT'
+  | 'CONFIRMED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'all';
 
+// Every BookingStatus needs an entry here — a row for a status missing from
+// this map used to crash the drawer outright (see activityFor below), because
+// PENDING_PAYMENT and EXPIRED bookings only ever surfaced under "All" and
+// nothing had been tested against them.
 const STATUS_TONE: Record<string, 'warning' | 'success' | 'danger' | 'neutral'> = {
+  PENDING_PAYMENT: 'neutral',
   PENDING_CONFIRMATION: 'warning',
   CONFIRMED: 'success',
   REJECTED: 'danger',
   CANCELLED: 'neutral',
+  EXPIRED: 'neutral',
 };
 
 const STATUS_LABEL: Record<string, string> = {
+  PENDING_PAYMENT: 'Awaiting payment',
   PENDING_CONFIRMATION: 'Pending',
   CONFIRMED: 'Confirmed',
   REJECTED: 'Rejected',
   CANCELLED: 'Cancelled',
+  EXPIRED: 'Payment expired',
 };
 
 function dateRangeLabel(from: string, to: string) {
@@ -76,8 +90,13 @@ function activityFor(booking: Booking) {
     { label: 'Confirmation email sent to guest', time: booking.createdAt, active: false },
   ];
   if (booking.status !== 'PENDING_CONFIRMATION') {
+    // Falls back to the raw status string rather than crashing when a status
+    // (PENDING_PAYMENT, EXPIRED) is missing from STATUS_LABEL — this is exactly
+    // what happened before: clicking a payment-pending row here threw
+    // "Cannot read properties of undefined (reading 'toLowerCase')".
+    const label = STATUS_LABEL[booking.status] ?? booking.status;
     rows.push({
-      label: `Booking ${STATUS_LABEL[booking.status].toLowerCase()}`,
+      label: `Booking ${label.toLowerCase()}`,
       time: booking.updatedAt,
       active: false,
     });
@@ -154,6 +173,7 @@ export default function AdminBookingsPage() {
   const rangeStart = meta && meta.total > 0 ? (meta.page - 1) * PAGE_SIZE + 1 : 0;
   const rangeEnd = meta ? Math.min(meta.page * PAGE_SIZE, meta.total) : 0;
   const pendingCount = dashboard.data?.pendingBookings;
+  const pendingPaymentCount = dashboard.data?.pendingPayments;
 
   return (
     <>
@@ -190,6 +210,10 @@ export default function AdminBookingsPage() {
             onChange={reset(setTab)}
             options={[
               { value: 'PENDING_CONFIRMATION', label: 'Pending', count: pendingCount },
+              // Previously only reachable through "All" — where clicking one
+              // crashed the drawer — so a stalled payment hold went unnoticed
+              // until an admin stumbled into it.
+              { value: 'PENDING_PAYMENT', label: 'Awaiting payment', count: pendingPaymentCount },
               { value: 'CONFIRMED', label: 'Confirmed' },
               { value: 'REJECTED', label: 'Rejected' },
               { value: 'CANCELLED', label: 'Cancelled' },
@@ -334,6 +358,13 @@ export default function AdminBookingsPage() {
                     </span>{' '}
                     Guest was told they&apos;d hear back within 24h —{' '}
                     {Math.max(0, 24 - hoursSince(selected.createdAt))} hours left.
+                  </p>
+                ) : selected.status === 'PENDING_PAYMENT' ? (
+                  <p className={styles.pendingBanner}>
+                    <span className={styles.pendingBannerStrong}>Awaiting payment.</span>{' '}
+                    {selected.holdExpiresAt
+                      ? `The room hold releases automatically at ${submittedAt(selected.holdExpiresAt)} if payment does not complete.`
+                      : 'There is nothing for you to confirm yet — this becomes actionable once the guest pays.'}
                   </p>
                 ) : null}
 

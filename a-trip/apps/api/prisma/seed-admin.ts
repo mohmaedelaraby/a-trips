@@ -178,12 +178,14 @@ async function seedNavLinks() {
         })
       ).id;
 
-    // Upserted even for links that already exist: the row may predate this
-    // Arabic, and the label is useless to an Arabic reader without it.
+    // Filled in for links that lack it — including rows that predate this
+    // Arabic — but never overwritten: `update` is empty on purpose, so an
+    // admin's own wording survives a re-seed rather than being reset to the
+    // shipped default every time someone runs the seed profile.
     await prisma.translation.upsert({
       where: { key_locale: { key: `nav.${id}`, locale: 'AR' } },
       create: { key: `nav.${id}`, locale: 'AR', value: ar },
-      update: { value: ar },
+      update: {},
     });
   }
   console.log(`✔ ${NAV_LINKS.length} navigation links (English + Arabic)`);

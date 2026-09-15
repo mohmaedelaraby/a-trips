@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as Popover from '@radix-ui/react-popover';
-import { DayPicker, type DateRange } from 'react-day-picker';
+import { DayPicker, type DateRange, type Matcher } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { CalendarDays } from 'lucide-react';
 import { addDaysIso, cn, formatDate, nightsBetween, todayIso } from '../lib/utils';
@@ -14,8 +14,17 @@ export interface DateRangeValue {
   checkOut: string | null;
 }
 
+/**
+ * Local midnight, not UTC midnight: react-day-picker compares days in the
+ * browser's own timezone, so a UTC-built date lands on the previous day for
+ * anyone west of Greenwich and shifts both the highlight and the disabled
+ * ranges by one. `toIso` reads the same local fields back, so the two are
+ * exact inverses.
+ */
 function toDate(iso: string | null): Date | undefined {
-  return iso ? new Date(`${iso}T00:00:00Z`) : undefined;
+  if (!iso) return undefined;
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function toIso(date: Date | undefined): string | null {
@@ -36,6 +45,9 @@ function normalize(range: DateRange | undefined): DateRangeValue {
   if (checkIn && checkOut && checkIn === checkOut) checkOut = addDaysIso(checkIn, 1);
   return { checkIn, checkOut };
 }
+
+/** How far ahead to look for the sold-out night that caps a stay. */
+const MAX_STAY_LOOKAHEAD_DAYS = 365;
 
 export function DateRangePicker({
   value,
@@ -85,6 +97,38 @@ export function DateRangePicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // Half-picked: a check-in is down and the calendar is waiting for check-out.
+  const pendingCheckIn = draft?.from && !draft.to ? toIso(draft.from) : null;
+
+  /**
+   * The first sold-out night on or after the pending check-in. A stay covers
+   * the nights `checkIn … checkOut - 1`, so that night is the ceiling: checking
+   * out *on* it is fine, checking out after it would book a night the hotel
+   * cannot sell. Capping the calendar here is what keeps "pick a range, get
+   * told it is unavailable" from happening at all.
+   */
+  const stayLimit = React.useMemo(() => {
+    if (!pendingCheckIn || soldOutSet.size === 0) return null;
+    let cursor = pendingCheckIn;
+    for (let i = 0; i < MAX_STAY_LOOKAHEAD_DAYS; i += 1) {
+      cursor = addDaysIso(cursor, 1);
+      if (soldOutSet.has(cursor)) return cursor;
+    }
+    return null;
+  }, [pendingCheckIn, soldOutSet]);
+
+  const disabled = React.useMemo(() => {
+    const matchers: Matcher[] = [{ before: toDate(today) as Date }, isSoldOut];
+    // Past dates and sold-out nights are always unpickable. Once a check-in is
+    // down, anything before it or beyond the first sold-out night joins them,
+    // so every date still clickable makes a bookable stay.
+    if (pendingCheckIn) {
+      matchers.push({ before: toDate(pendingCheckIn) as Date });
+      if (stayLimit) matchers.push({ after: toDate(stayLimit) as Date });
+    }
+    return matchers;
+  }, [today, isSoldOut, pendingCheckIn, stayLimit]);
+
   const commit = (range: DateRange | undefined) => {
     const next = normalize(range);
     if (next.checkIn !== value.checkIn || next.checkOut !== value.checkOut) onChange(next);
@@ -114,6 +158,11 @@ export function DateRangePicker({
   // While open, the trigger previews the draft so the user sees their first click.
   const shownIn = open ? draftIn : value.checkIn;
   const shownOut = open ? (draftOut && draftOut !== draftIn ? draftOut : null) : value.checkOut;
+  const draftNights = draftIn && draftOut && draftOut !== draftIn ? nightsBetween(draftIn, draftOut) : 0;
+
+  // Which half of the pick the calendar is on, spelled out rather than left for
+  // the guest to infer from which days happen to be highlighted.
+  const step: 'checkIn' | 'checkOut' = pendingCheckIn ? 'checkOut' : 'checkIn';
 
   return (
     <Popover.Root open={open} onOpenChange={handleOpenChange}>
@@ -124,14 +173,18 @@ export function DateRangePicker({
         >
           {split ? (
             <>
-              <span className={styles.textWrap}>
+              <span className={cn(styles.textWrap, open && step === 'checkIn' && styles.textWrapActive)}>
                 <span className={styles.eyebrow}>{t('ui.dates.checkIn')}</span>
-                <span className={styles.value}>{shownIn ? formatDate(shownIn) : t('ui.dates.addDate')}</span>
+                <span className={cn(styles.value, !shownIn && styles.valueEmpty)}>
+                  {shownIn ? formatDate(shownIn) : t('ui.dates.addDate')}
+                </span>
               </span>
               <span className={styles.divider} aria-hidden />
-              <span className={styles.textWrap}>
+              <span className={cn(styles.textWrap, open && step === 'checkOut' && styles.textWrapActive)}>
                 <span className={styles.eyebrow}>{t('ui.dates.checkOut')}</span>
-                <span className={styles.value}>{shownOut ? formatDate(shownOut) : t('ui.dates.addDate')}</span>
+                <span className={cn(styles.value, !shownOut && styles.valueEmpty)}>
+                  {shownOut ? formatDate(shownOut) : t('ui.dates.addDate')}
+                </span>
               </span>
             </>
           ) : (
@@ -139,7 +192,7 @@ export function DateRangePicker({
               <CalendarDays className={styles.icon} aria-hidden />
               <span className={styles.textWrap}>
                 <span className={styles.eyebrow}>{label ?? t('ui.common.label.dates')}</span>
-                <span className={styles.value}>
+                <span className={cn(styles.value, !shownIn && styles.valueEmpty)}>
                   {shownIn && shownOut
                     ? `${formatDate(shownIn)} — ${formatDate(shownOut)}${
                         open ? '' : ` · ${tn('ui.common.nights', nights)}`
@@ -156,6 +209,22 @@ export function DateRangePicker({
 
       <Popover.Portal>
         <Popover.Content align="start" sideOffset={8} className={styles.popover}>
+          {/* Says which of the two dates is being picked, and — once a check-in
+              is down — how far the stay may run. */}
+          <div className={styles.head}>
+            <p className={styles.step}>
+              <span className={styles.stepIndex}>{step === 'checkIn' ? '1' : '2'}</span>
+              {step === 'checkIn' ? t('ui.dates.stepCheckIn') : t('ui.dates.stepCheckOut')}
+            </p>
+            {step === 'checkOut' && stayLimit ? (
+              <p className={styles.stepHint}>
+                {t('ui.dates.limitHint', { date: formatDate(stayLimit) })}
+              </p>
+            ) : (
+              <p className={styles.stepHint}>{t('ui.dates.availableOnlyHint')}</p>
+            )}
+          </div>
+
           <DayPicker
             mode="range"
             numberOfMonths={2}
@@ -165,41 +234,59 @@ export function DateRangePicker({
             // selected extends that range instead of starting a fresh one — so
             // the very first click would look like a finished selection.
             resetOnSelect
-            // Past dates and sold-out nights are both unpickable; the modifier
-            // below is what makes the second kind look deliberate rather than
-            // simply out of range.
-            disabled={[{ before: new Date(`${today}T00:00:00Z`) }, isSoldOut]}
+            disabled={disabled}
             modifiers={{ soldOut: isSoldOut }}
             modifiersClassNames={{ soldOut: styles.daySoldOut }}
             defaultMonth={toDate(value.checkIn) ?? new Date()}
+            className={styles.calendar}
           />
-          {soldOutSet.size > 0 ? (
-            <p className={styles.legend}>
-              <span className={styles.legendSwatch} aria-hidden />
-              {t('ui.dates.soldOutLegend')}
-            </p>
-          ) : null}
+
+          <div className={styles.legend}>
+            <span className={styles.legendItem}>
+              <span className={styles.legendAvailable} aria-hidden />
+              {t('ui.dates.legendAvailable')}
+            </span>
+            <span className={styles.legendItem}>
+              <span className={styles.legendSelected} aria-hidden />
+              {t('ui.dates.legendSelected')}
+            </span>
+            {soldOutSet.size > 0 ? (
+              <span className={styles.legendItem}>
+                <span className={styles.legendSoldOut} aria-hidden />
+                {t('ui.dates.legendSoldOut')}
+              </span>
+            ) : null}
+          </div>
+
           <div className={styles.footer}>
-            <button
-              type="button"
-              className={styles.clearBtn}
-              onClick={() => {
-                setDraft(undefined);
-                if (value.checkIn || value.checkOut) onChange({ checkIn: null, checkOut: null });
-              }}
-            >
-              {t('ui.common.clear')}
-            </button>
-            <button
-              type="button"
-              className={styles.doneBtn}
-              onClick={() => {
-                if (draft?.from && draft.to) commit(draft);
-                setOpen(false);
-              }}
-            >
-              {t('ui.common.done')}
-            </button>
+            <p className={styles.summary}>
+              {draftNights > 0
+                ? tn('ui.common.nights', draftNights)
+                : t('ui.dates.noNightsYet')}
+            </p>
+            <div className={styles.footerActions}>
+              <button
+                type="button"
+                className={styles.clearBtn}
+                onClick={() => {
+                  setDraft(undefined);
+                  if (value.checkIn || value.checkOut) onChange({ checkIn: null, checkOut: null });
+                }}
+              >
+                {t('ui.common.clear')}
+              </button>
+              <button
+                type="button"
+                className={styles.doneBtn}
+                disabled={!draft?.from || !draft.to}
+                onClick={() => {
+                  if (draft?.from && draft.to) commit(draft);
+                  setOpen(false);
+                }}
+              >
+                {t('ui.common.done')}
+              </button>
+            </div>
           </div>
         </Popover.Content>
       </Popover.Portal>

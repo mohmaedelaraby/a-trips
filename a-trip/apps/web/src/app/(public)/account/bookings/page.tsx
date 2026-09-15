@@ -30,12 +30,17 @@ export default function MyBookingsPage() {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   const items = query.data?.items ?? [];
-  const filtered =
-    tab === 'ALL'
-      ? items
-      : tab === 'CANCELLED'
-        ? items.filter((b) => b.status === 'CANCELLED' || b.status === 'REJECTED')
-        : items.filter((b) => b.status === tab);
+  const matchesTab = React.useCallback(
+    (booking: (typeof items)[number], value: Tab) =>
+      value === 'ALL'
+        ? true
+        : value === 'CANCELLED'
+          ? booking.status === 'CANCELLED' || booking.status === 'REJECTED'
+          : booking.status === value,
+    [],
+  );
+  const filtered = items.filter((booking) => matchesTab(booking, tab));
+  const countFor = (value: Tab) => items.filter((booking) => matchesTab(booking, value)).length;
 
   const selected = filtered.find((b) => b.id === selectedId) ?? filtered[0] ?? null;
 
@@ -47,17 +52,25 @@ export default function MyBookingsPage() {
           <p className={styles.subtitle}>{pluralizeCount(items.length)}</p>
         </div>
 
-        <div className={styles.tabs}>
-          {TABS.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => setTab(t.value)}
-              className={cn(styles.tab, tab === t.value && styles.tabActive)}
-            >
-              {t.label}
-            </button>
-          ))}
+        {/* A tablist rather than a row of buttons: the active tab is announced
+            as selected, not merely coloured differently. */}
+        <div className={`${styles.tabs} no-scrollbar`} role="tablist" aria-label="Filter bookings">
+          {TABS.map((item) => {
+            const active = tab === item.value;
+            return (
+              <button
+                key={item.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(item.value)}
+                className={cn(styles.tab, active ? styles.tabActive : styles.tabInactive)}
+              >
+                {item.label}
+                <span className={styles.tabCount}>{countFor(item.value)}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

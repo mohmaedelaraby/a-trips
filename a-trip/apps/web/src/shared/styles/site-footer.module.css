@@ -2,89 +2,132 @@
   margin-top: 4rem;
   background-color: var(--color-shell);
   color: #ffffff;
+  /* A hairline of brand green above the dark block, so the footer reads as the
+     end of the page rather than as an unstyled dark area. */
+  border-top: 3px solid var(--color-primary);
 }
 
 .grid {
   display: grid;
   gap: 2.5rem;
-  padding-block: 3rem;
+  padding-block: 3.5rem 3rem;
   grid-template-columns: 1fr;
 }
 
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
+  /* The brand column carries the logo, the tagline and the socials, so it gets
+     the extra width rather than splitting four ways evenly. */
   .grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+    column-gap: 3rem;
   }
 }
 
-.brandName {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
+.brandColumn {
+  min-width: 0;
 }
 
-.dot {
-  color: var(--color-accent);
+/* Qualified with the tag so it outranks the logo's own size rules regardless of
+   stylesheet order — the footer wants the mark a step smaller than the header. */
+a.brandLogo {
+  font-size: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  a.brandLogo {
+    font-size: 2rem;
+  }
 }
 
 .tagline {
-  margin-top: 0.75rem;
-  max-width: 22ch;
+  margin-top: 0.875rem;
+  max-width: 34ch;
   font-size: 0.875rem;
+  line-height: 1.6;
   color: var(--color-shell-fg-muted);
 }
 
 .socials {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
-.socialBadge {
-  display: flex;
-  height: 2rem;
-  width: 2rem;
+.socialLink,
+.socialLinkMuted {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
   border: 1px solid var(--color-shell-line);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-shell-fg-muted);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.socialLink:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* No URL configured yet: the mark still shows what channels exist, but it is
+   visibly not a link. */
+.socialLinkMuted {
+  color: rgba(255, 255, 255, 0.4);
+  background-color: transparent;
+}
+
+.socialIcon {
+  height: 1.125rem;
+  width: 1.125rem;
+}
+
+.column {
+  min-width: 0;
 }
 
 .columnHeading {
+  display: inline-block;
+  padding-bottom: 0.5rem;
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-shell-fg-muted);
+  color: #ffffff;
+  border-bottom: 2px solid var(--color-accent);
 }
 
 .linkList {
-  margin-top: 1rem;
+  margin-top: 1.125rem;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.75rem;
   font-size: 0.875rem;
   list-style: none;
   padding: 0;
 }
 
 .link {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.78);
   text-decoration: none;
+  transition: color 0.15s ease, padding-inline-start 0.15s ease;
 }
 
 .link:hover {
   color: #ffffff;
+  padding-inline-start: 0.25rem;
 }
 
 /* Not-yet-built destinations: quieter than a live link, but still clickable —
@@ -93,7 +136,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4375rem;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.5);
   text-decoration: none;
   transition: color 0.15s ease;
 }
@@ -115,19 +158,49 @@
 }
 
 .contactList {
-  margin-top: 1rem;
+  margin-top: 1.125rem;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.875rem;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.9);
   list-style: none;
   padding: 0;
 }
 
-.contactPhone {
-  font-weight: 600;
+.contactRow,
+.contactRowStrong {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.contactRowStrong {
+  font-weight: 700;
   color: #ffffff;
+}
+
+.contactIcon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--color-accent);
+}
+
+.contactLink {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.contactLink:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .bottomBar {
@@ -138,7 +211,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  padding-block: 1rem;
+  padding-block: 1.25rem;
   font-size: 0.75rem;
   color: var(--color-shell-fg-muted);
 }

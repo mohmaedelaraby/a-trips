@@ -6,7 +6,10 @@ import { AmenitiesService } from './amenities.service';
 import { InviteAdminUserDto, UpdateAdminUserDto } from './dto/admin-user.dto';
 import { AmenityDto } from './dto/amenity.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../generated/prisma/enums';
+import { UsersService } from '../users/users.service';
+import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 
 @ApiTags('admin')
 @ApiBearerAuth()
@@ -17,7 +20,19 @@ export class AdminController {
     private readonly admin: AdminService,
     private readonly adminUsers: AdminUsersService,
     private readonly amenities: AmenitiesService,
+    private readonly users: UsersService,
   ) {}
+
+  /**
+   * The admin portal's own "who am I", read separately from the guest-facing
+   * /users/me. Living under /admin is what makes this request carry the
+   * admin-scoped session cookie instead of the guest one — see
+   * session-cookie.ts for why the two must never be read interchangeably.
+   */
+  @Get('me')
+  me(@CurrentUser() user: AuthenticatedUser) {
+    return this.users.getProfile(user.id);
+  }
 
   @Get('dashboard')
   dashboard() {

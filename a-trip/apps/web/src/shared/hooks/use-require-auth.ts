@@ -8,7 +8,9 @@ import { useSession } from '../../modules/auth/hooks/use-auth';
 export function useRequireAuth({ adminOnly = false }: { adminOnly?: boolean } = {}) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, hydrated, isAdmin } = useSession();
+  // The admin portal reads its own session, independent of the public site's
+  // — see session.store.ts for why they can't share one.
+  const { user, hydrated, isAdmin } = useSession(adminOnly ? 'admin' : 'user');
 
   React.useEffect(() => {
     if (!hydrated) return;

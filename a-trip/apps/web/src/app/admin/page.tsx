@@ -72,7 +72,7 @@ export default function AdminDashboardPage() {
   const query = useAdminDashboard();
   const confirm = useConfirmBooking();
   const reject = useRejectBooking();
-  const { user } = useSession();
+  const { user } = useSession('admin');
   const [search, setSearch] = React.useState('');
   const stats = query.data;
 
@@ -113,6 +113,15 @@ export default function AdminDashboardPage() {
         ) : (
           <>
             <div className={styles.stats}>
+              {/* Lifetime totals: how many bookings this business has taken,
+                  and how much money that adds up to. Everything else on this
+                  page is scoped to a window (this week, next 30 days). */}
+              <StatCard label="Total bookings" value={stats.totalBookings} hint="All time" />
+              <StatCard
+                label="Total revenue"
+                value={formatPrice(stats.totalRevenue, true)}
+                hint="Confirmed + awaiting confirmation"
+              />
               <StatCard
                 label="Published hotels"
                 value={stats.publishedHotels}
@@ -128,6 +137,15 @@ export default function AdminDashboardPage() {
                 }
                 hintTone={stats.pendingOlderThan12h > 0 ? 'danger' : 'muted'}
                 highlight={stats.pendingBookings > 0}
+              />
+              {/* Held rooms waiting on a guest's payment — nothing for admin
+                  to do yet, so this stays a plain count rather than the
+                  "needs action" highlight above. Previously only visible by
+                  opening "All" in the bookings table. */}
+              <StatCard
+                label="Awaiting payment"
+                value={stats.pendingPayments}
+                hint="Guest hasn't paid yet"
               />
               <StatCard
                 label="Bookings this week"

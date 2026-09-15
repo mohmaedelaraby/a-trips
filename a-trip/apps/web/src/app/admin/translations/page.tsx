@@ -33,13 +33,30 @@ function isLongForm(key: string) {
   return /\.(description|heroSubtitle|tagline)$/.test(key);
 }
 
+/**
+ * A readable stand-in for a raw key like "ui.account.dateOfBirth" — content
+ * editors translating copy have no reason to read dotted code identifiers, so
+ * this is what shows by default. The key itself only appears when "Show
+ * technical keys" is on, for whoever is cross-referencing the source.
+ */
+function humanizeKey(key: string): string {
+  const last = key.split('.').pop() ?? key;
+  const spaced = last.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+  const words = spaced.toLowerCase().split(' ').filter(Boolean);
+  if (words.length === 0) return key;
+  words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+  return words.join(' ');
+}
+
 function TranslationRow({
   row,
   draft,
+  showKeys,
   onChange,
 }: {
   row: AdminTranslation;
   draft: Partial<Record<Locale, string>>;
+  showKeys: boolean;
   onChange: (locale: Locale, value: string) => void;
 }) {
   const shipped = MESSAGES.EN[row.key];
@@ -47,8 +64,12 @@ function TranslationRow({
   return (
     <div className={styles.row}>
       <div className={styles.keyCol}>
-        <code className={styles.key}>{row.key}</code>
-        {row.context ? <p className={styles.context}>{row.context}</p> : null}
+        {showKeys ? (
+          <code className={styles.key}>{row.key}</code>
+        ) : (
+          <p className={styles.keyLabel}>{row.context ?? humanizeKey(row.key)}</p>
+        )}
+        {showKeys && row.context ? <p className={styles.context}>{row.context}</p> : null}
         {shipped ? <p className={styles.shipped}>Ships as: “{shipped}”</p> : null}
       </div>
 
@@ -106,6 +127,9 @@ export default function AdminTranslationsPage() {
   const [search, setSearch] = React.useState('');
   const [drafts, setDrafts] = React.useState<Record<string, Partial<Record<Locale, string>>>>({});
   const [onlyMissing, setOnlyMissing] = React.useState(false);
+  // Off by default: a raw key like "ui.account.dateOfBirth" is a code
+  // identifier, not something a translator needs to read.
+  const [showKeys, setShowKeys] = React.useState(false);
 
   const rows = query.data ?? [];
 
@@ -187,6 +211,14 @@ export default function AdminTranslationsPage() {
             />
             Only missing Arabic ({missingCount})
           </label>
+          <label className={styles.missingToggle}>
+            <input
+              type="checkbox"
+              checked={showKeys}
+              onChange={(e) => setShowKeys(e.target.checked)}
+            />
+            Show technical keys
+          </label>
         </div>
 
         {tab !== 'all' && NAMESPACE_HINT[tab] ? (
@@ -205,6 +237,7 @@ export default function AdminTranslationsPage() {
                   key={row.key}
                   row={row}
                   draft={drafts[row.key] ?? {}}
+                  showKeys={showKeys}
                   onChange={(locale, value) =>
                     setDrafts((d) => ({ ...d, [row.key]: { ...d[row.key], [locale]: value } }))
                   }

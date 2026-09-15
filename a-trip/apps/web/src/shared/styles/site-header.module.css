@@ -129,10 +129,25 @@
   color: #ffffff;
 }
 
+/* The current section: full-strength white over an accent underline, so the
+   active tab is legible at a glance rather than a shade apart. */
 .navLinkActive {
   color: #ffffff;
+  font-weight: 800;
   border-bottom: 3px solid var(--color-accent);
   padding-bottom: 0.5rem;
+}
+
+/* Stated rather than implied by the absence of .navLinkActive. */
+.navLinkInactive {
+  color: rgba(255, 255, 255, 0.72);
+  border-bottom: 3px solid transparent;
+  padding-bottom: 0.5rem;
+}
+
+.navLinkInactive:hover {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Reachable, but visibly a roadmap item rather than a live section. Declared
@@ -355,8 +370,17 @@
 
 .mobileLinkActive {
   background-color: rgba(255, 255, 255, 0.14);
-  font-weight: 700;
+  font-weight: 800;
   color: #ffffff;
+  /* Survives the panel being read at a glance in a way a background tint alone
+     does not. */
+  border-inline-start: 3px solid var(--color-accent);
+  padding-inline-start: 0.5rem;
+}
+
+.mobileLinkInactive {
+  border-inline-start: 3px solid transparent;
+  padding-inline-start: 0.5rem;
 }
 
 .mobileSoonTag {

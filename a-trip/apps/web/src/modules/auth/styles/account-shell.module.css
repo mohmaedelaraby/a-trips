@@ -118,6 +118,10 @@
 .navItemActive {
   background-color: var(--color-primary-50);
   color: var(--color-primary);
+  font-weight: 700;
+  /* Reads as the selected tab even where the tint alone is subtle — a rail on
+     the phone layout, a rail on the sidebar. */
+  box-shadow: inset 2px 0 0 0 var(--color-primary);
 }
 
 .navItemInactive {

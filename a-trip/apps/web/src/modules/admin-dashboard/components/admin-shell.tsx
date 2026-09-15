@@ -121,8 +121,8 @@ function SidebarBody({
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { ready } = useRequireAuth({ adminOnly: true });
-  const { user } = useSession();
-  const logout = useLogout();
+  const { user } = useSession('admin');
+  const logout = useLogout('admin');
   const pathname = usePathname();
   const dashboard = useAdminDashboard();
   const pendingCount = dashboard.data?.pendingBookings;

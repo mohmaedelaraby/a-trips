@@ -1,10 +1,20 @@
 'use client';
 
+import type * as React from 'react';
 import Link from 'next/link';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  FacebookIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  type SocialIconProps,
+} from './social-icons';
 import { comingSoonHref } from '../lib/coming-soon';
 import { useNavLinks, useSetting } from '../hooks/use-site-content';
 import { useTranslation } from '../i18n/use-translation';
 import { NAV_GROUP_LABEL, type NavLink as NavLinkModel, type NavLinkGroup } from '../interfaces/site-content';
+import { Logo } from './logo';
 import styles from '../styles/site-footer.module.css';
 
 /** Column order is fixed by the design; their contents come from the portal. */
@@ -16,10 +26,18 @@ const COLUMN_HEADING_KEY: Record<string, string> = {
   FOOTER_SUPPORT: 'ui.footer.support',
 };
 
-const SOCIALS: Array<{ key: string; label: string; name: string }> = [
-  { key: 'social.facebook', label: 'fb', name: 'Facebook' },
-  { key: 'social.instagram', label: 'ig', name: 'Instagram' },
-  { key: 'social.linkedin', label: 'in', name: 'LinkedIn' },
+/**
+ * Brand marks rather than the two-letter text badges this footer shipped with:
+ * "fb" / "ig" / "in" only read as social links once you have decoded them.
+ */
+const SOCIALS: Array<{
+  key: string;
+  name: string;
+  icon: (props: SocialIconProps) => React.JSX.Element;
+}> = [
+  { key: 'social.facebook', name: 'Facebook', icon: FacebookIcon },
+  { key: 'social.instagram', name: 'Instagram', icon: InstagramIcon },
+  { key: 'social.linkedin', name: 'LinkedIn', icon: LinkedInIcon },
 ];
 
 function isExternal(href: string) {
@@ -70,7 +88,7 @@ function FooterColumn({ group }: { group: NavLinkGroup }) {
   const { t } = useTranslation();
 
   return (
-    <div>
+    <div className={styles.column}>
       <p className={styles.columnHeading}>
         {COLUMN_HEADING_KEY[group] ? t(COLUMN_HEADING_KEY[group]) : NAV_GROUP_LABEL[group]}
       </p>
@@ -117,32 +135,46 @@ export function SiteFooter() {
     'social.linkedin': linkedin,
   };
 
+  // The phone number and the email address are the two rows worth making
+  // actionable; the street address and the opening hours have nowhere to go.
+  const contactRows: Array<{ icon: LucideIcon; text: string; href?: string; strong?: boolean }> = [
+    { icon: Phone, text: phone, href: `tel:${phone.replace(/[^\d+]/g, '')}`, strong: true },
+    { icon: Mail, text: email, href: `mailto:${email}` },
+    { icon: MapPin, text: address },
+    { icon: Clock, text: hours },
+  ];
+
   return (
     <footer className={styles.footer}>
       <div className={`container-page ${styles.grid}`}>
-        <div>
-          <p className={styles.brandName}>
-            ATrips<span className={styles.dot}>.</span>
-          </p>
+        <div className={styles.brandColumn}>
+          <Logo inverted className={styles.brandLogo} />
           <p className={styles.tagline}>{tagline}</p>
           <div className={styles.socials}>
             {SOCIALS.map((social) => {
               const url = socialUrls[social.key];
-              // A badge with no URL configured stays a badge, not a dead link.
+              const Icon = social.icon;
+              // A mark with no URL configured stays a mark, not a dead link.
               return url ? (
                 <a
                   key={social.key}
                   href={url}
-                  className={styles.socialBadge}
+                  className={styles.socialLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.name}
+                  title={social.name}
                 >
-                  {social.label}
+                  <Icon className={styles.socialIcon} />
                 </a>
               ) : (
-                <span key={social.key} className={styles.socialBadge} aria-label={social.name}>
-                  {social.label}
+                <span
+                  key={social.key}
+                  className={styles.socialLinkMuted}
+                  aria-label={social.name}
+                  title={social.name}
+                >
+                  <Icon className={styles.socialIcon} />
                 </span>
               );
             })}
@@ -153,13 +185,32 @@ export function SiteFooter() {
           <FooterColumn key={group} group={group} />
         ))}
 
-        <div>
+        <div className={styles.column}>
           <p className={styles.columnHeading}>{t('ui.footer.getInTouch')}</p>
           <ul className={styles.contactList}>
-            <li className={styles.contactPhone}>{phone}</li>
-            <li>{email}</li>
-            <li>{address}</li>
-            <li>{hours}</li>
+            {contactRows.map((row) => {
+              const Icon = row.icon;
+              const body = (
+                <>
+                  <Icon className={styles.contactIcon} aria-hidden />
+                  <span>{row.text}</span>
+                </>
+              );
+              return (
+                <li
+                  key={row.text}
+                  className={row.strong ? styles.contactRowStrong : styles.contactRow}
+                >
+                  {row.href ? (
+                    <a href={row.href} className={styles.contactLink}>
+                      {body}
+                    </a>
+                  ) : (
+                    body
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

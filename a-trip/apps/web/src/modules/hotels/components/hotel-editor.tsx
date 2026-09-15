@@ -35,6 +35,23 @@ const CITIES = [
 ];
 const DESCRIPTION_LIMIT = 1200;
 
+/**
+ * Maps a validation error's key to the id of the field it belongs to, so a
+ * failed submit can scroll straight to it. `nextErrors` in handleSubmit below
+ * fills in name → city → address → each room → availability, in the same
+ * top-to-bottom order they appear on screen, so the first key in that object
+ * is always the first invalid field the guest would see scrolling down.
+ */
+function fieldElementId(key: string): string | null {
+  if (key === 'availability') return 'availability-from';
+  const room = /^room-(.+)-(name|price)$/.exec(key);
+  if (room) return `room-${room[2]}-${room[1]}`;
+  if (key === 'name' || key === 'slug' || key === 'city' || key === 'address') {
+    return `hotel-${key}`;
+  }
+  return null;
+}
+
 export interface HotelEditorValues {
   name: string;
   /** Arabic overrides for the translatable fields; blank means "use English". */
@@ -214,7 +231,21 @@ export function HotelEditor({
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    const errorKeys = Object.keys(nextErrors);
+    if (errorKeys.length > 0) {
+      // A toast alone doesn't say where the problem is, and the inline message
+      // can be scrolled out of view (this form runs long once rooms are
+      // added) — so this both announces the failure and moves the page to it.
+      toast.error(
+        errorKeys.length === 1 ? 'Check the highlighted field' : `Check ${errorKeys.length} highlighted fields`,
+        nextErrors[errorKeys[0]],
+      );
+      const targetId = fieldElementId(errorKeys[0]);
+      const target = targetId ? document.getElementById(targetId) : null;
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target?.focus({ preventScroll: true });
+      return;
+    }
 
     const latitude = values.latitude.trim() ? Number(values.latitude) : undefined;
     const longitude = values.longitude.trim() ? Number(values.longitude) : undefined;

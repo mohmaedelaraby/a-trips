@@ -1,0 +1,89 @@
+.wrap {
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+}
+
+.frame {
+  position: relative;
+  height: 15rem;
+  background-color: var(--color-canvas);
+}
+
+@media (min-width: 768px) {
+  .frame {
+    height: 20rem;
+  }
+}
+
+.iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+  display: block;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid var(--color-line);
+  padding: 0.875rem 1rem;
+}
+
+.address {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}
+
+.pinIcon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--color-primary);
+}
+
+.approxTag {
+  margin-inline-start: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-line);
+  padding: 0.0625rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-ink-muted);
+}
+
+.directions {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  padding: 0.4375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.directions:hover {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+}
+
+.directionsIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}

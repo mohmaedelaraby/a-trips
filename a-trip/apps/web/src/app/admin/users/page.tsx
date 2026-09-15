@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
   const invite = useInviteAdminUser();
   const update = useUpdateAdminUser();
   const resend = useResendInvite();
-  const { user: currentUser } = useSession();
+  const { user: currentUser } = useSession('admin');
 
   const [panelOpen, setPanelOpen] = React.useState(true);
   // Set while editing an existing account; null means the panel is inviting.

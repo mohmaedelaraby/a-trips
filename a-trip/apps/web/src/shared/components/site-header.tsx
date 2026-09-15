@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LogOut, Menu, User as UserIcon, X } from 'lucide-react';
 import { useSession, useLogout } from '../../modules/auth/hooks/use-auth';
-import { comingSoonHref } from '../lib/coming-soon';
+import { COMING_SOON_PATH, comingSoonHref } from '../lib/coming-soon';
 import { useNavLinks, useSetting } from '../hooks/use-site-content';
 import { useTranslation } from '../i18n/use-translation';
 import { LocaleSwitcher } from './locale-switcher';
@@ -24,8 +24,19 @@ function hrefFor(link: NavLinkModel) {
   return link.href ?? comingSoonHref(link.value);
 }
 
-function isActive(link: NavLinkModel, pathname: string) {
-  if (!link.href) return false;
+/**
+ * A built link is active by path, same as ever. A "coming soon" link (About,
+ * Contact, Tours, Flights — anything the portal hasn't shipped an href for
+ * yet) has no path of its own to match: they all land on the same
+ * /coming-soon route, distinguished only by `?feature=`. Comparing that query
+ * value against the link's own label is what lets those tabs pick up the same
+ * active underline as a real page once the visitor is actually looking at
+ * their placeholder, instead of never lighting up at all.
+ */
+function isActive(link: NavLinkModel, pathname: string, feature: string | null) {
+  if (!link.href) {
+    return pathname === COMING_SOON_PATH && feature === link.value;
+  }
   return link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
 }
 
@@ -33,10 +44,13 @@ export function SiteHeader() {
   const { user, isAuthenticated, isAdmin } = useSession();
   const logout = useLogout();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const feature = searchParams.get('feature');
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { t } = useTranslation();
   const { links: navLinks } = useNavLinks('HEADER');
   const currencyLabel = useSetting('site.currencyLabel', 'USD $');
+  const profileActive = pathname.startsWith('/account/profile');
 
   // A tap on a nav item navigates without unmounting the header, so the panel
   // has to be closed explicitly when the route changes.
@@ -77,19 +91,38 @@ export function SiteHeader() {
           <Logo inverted />
 
           <nav className={styles.nav}>
-            {navLinks.map((link) => (
+            {navLinks.map((link) => {
+              const active = isActive(link, pathname, feature);
+              return (
+                <Link
+                  key={link.id}
+                  href={hrefFor(link)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    styles.navLink,
+                    !link.href && styles.navLinkSoon,
+                    active ? styles.navLinkActive : styles.navLinkInactive,
+                  )}
+                >
+                  {link.value}
+                </Link>
+              );
+            })}
+            {/* A signed-in guest's own tab, styled and made active exactly
+                like the CMS-driven links above rather than living only inside
+                the avatar menu. */}
+            {isAuthenticated ? (
               <Link
-                key={link.id}
-                href={hrefFor(link)}
+                href="/account/profile"
+                aria-current={profileActive ? 'page' : undefined}
                 className={cn(
                   styles.navLink,
-                  !link.href && styles.navLinkSoon,
-                  isActive(link, pathname) && styles.navLinkActive,
+                  profileActive ? styles.navLinkActive : styles.navLinkInactive,
                 )}
               >
-                {link.value}
+                {t('ui.common.profile')}
               </Link>
-            ))}
+            ) : null}
           </nav>
         </div>
 
@@ -154,19 +187,23 @@ export function SiteHeader() {
             onClick={() => setMenuOpen(false)}
           />
           <nav id="site-mobile-menu" className={styles.mobileMenu}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.id}
-                href={hrefFor(link)}
-                className={cn(
-                  styles.mobileLink,
-                  isActive(link, pathname) && styles.mobileLinkActive,
-                )}
-              >
-                {link.value}
-                {!link.href ? <span className={styles.mobileSoonTag}>{t('ui.common.soon')}</span> : null}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const active = isActive(link, pathname, feature);
+              return (
+                <Link
+                  key={link.id}
+                  href={hrefFor(link)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    styles.mobileLink,
+                    active ? styles.mobileLinkActive : styles.mobileLinkInactive,
+                  )}
+                >
+                  {link.value}
+                  {!link.href ? <span className={styles.mobileSoonTag}>{t('ui.common.soon')}</span> : null}
+                </Link>
+              );
+            })}
 
             <div className={styles.mobileDivider} />
 
@@ -179,7 +216,14 @@ export function SiteHeader() {
                 <Link href="/account/bookings" className={styles.mobileLink}>
                   {t('ui.common.myBookings')}
                 </Link>
-                <Link href="/account/profile" className={styles.mobileLink}>
+                <Link
+                  href="/account/profile"
+                  aria-current={profileActive ? 'page' : undefined}
+                  className={cn(
+                    styles.mobileLink,
+                    profileActive && styles.mobileLinkActive,
+                  )}
+                >
                   {t('ui.common.profile')}
                 </Link>
                 {isAdmin ? (
