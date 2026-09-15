@@ -60,3 +60,29 @@ export function readSessionCookie(req: Request): string | null {
   const token = isAdminRoute ? cookies[SESSION_COOKIE.ADMIN] : cookies[SESSION_COOKIE.USER];
   return token || null;
 }
+
+/**
+ * The same scoped read for a raw cookie header — a WebSocket handshake never
+ * passes through Express, so there is no `req.cookies` or `req.path` to lean
+ * on. The caller states the scope instead; the admin live-chat gateway lives
+ * under /api/admin precisely so the browser sends it the admin cookie.
+ */
+export function readSessionCookieFromHeader(
+  cookieHeader: string | undefined,
+  scope: 'user' | 'admin',
+): string | null {
+  if (!cookieHeader) return null;
+  const wanted = scope === 'admin' ? SESSION_COOKIE.ADMIN : SESSION_COOKIE.USER;
+  for (const part of cookieHeader.split(';')) {
+    const index = part.indexOf('=');
+    if (index === -1) continue;
+    if (part.slice(0, index).trim() !== wanted) continue;
+    const raw = part.slice(index + 1).trim();
+    try {
+      return decodeURIComponent(raw) || null;
+    } catch {
+      return raw || null;
+    }
+  }
+  return null;
+}

@@ -61,7 +61,9 @@ export const ModelName = {
   RoomAvailability: 'RoomAvailability',
   Booking: 'Booking',
   Payment: 'Payment',
-  Translation: 'Translation'
+  Translation: 'Translation',
+  SupportConversation: 'SupportConversation',
+  SupportMessage: 'SupportMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -248,6 +250,32 @@ export const TranslationScalarFieldEnum = {
 } as const
 
 export type TranslationScalarFieldEnum = (typeof TranslationScalarFieldEnum)[keyof typeof TranslationScalarFieldEnum]
+
+
+export const SupportConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  adminUnread: 'adminUnread',
+  userUnread: 'userUnread',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportConversationScalarFieldEnum = (typeof SupportConversationScalarFieldEnum)[keyof typeof SupportConversationScalarFieldEnum]
+
+
+export const SupportMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  senderRole: 'senderRole',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportMessageScalarFieldEnum = (typeof SupportMessageScalarFieldEnum)[keyof typeof SupportMessageScalarFieldEnum]
 
 
 export const SortOrder = {

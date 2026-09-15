@@ -14,6 +14,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
+  /**
+   * HTTP only. Nest applies APP_GUARD to WebSocket gateways too, where there is
+   * no request for passport to read and every event would be rejected. The
+   * live-chat gateways authenticate once, at connection time, from the same
+   * session cookie — see live-chat/live-chat-auth.ts.
+   */
+  canActivate(context: ExecutionContext) {
+    if (context.getType() !== 'http') return true;
+    return super.canActivate(context);
+  }
+
   handleRequest<TUser>(err: unknown, user: TUser, _info: unknown, context: ExecutionContext) {
     if (this.isPublic(context)) {
       return (user || undefined) as TUser;

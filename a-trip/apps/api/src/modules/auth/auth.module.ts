@@ -22,6 +22,8 @@ import { UsersModule } from '../users/users.module';
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  // JwtModule too: the live-chat gateways verify the session token at
+  // connection time, outside the HTTP guard pipeline.
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

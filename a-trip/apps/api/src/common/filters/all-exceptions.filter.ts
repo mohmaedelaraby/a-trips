@@ -18,6 +18,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
+    // Also registered for WebSocket gateways, which have no response object to
+    // call .status() on. Report the failure on the socket instead of crashing.
+    if (host.getType() === 'ws') {
+      const client = host.switchToWs().getClient<{ emit: (event: string, data: unknown) => void }>();
+      const message =
+        exception instanceof HttpException
+          ? exception.message
+          : 'Something went wrong';
+      if (!(exception instanceof HttpException)) {
+        this.logger.error(exception instanceof Error ? exception.message : String(exception));
+      }
+      client.emit('exception', { message });
+      return;
+    }
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

@@ -11,21 +11,31 @@ import { useRequireAuth } from '../../../shared/hooks/use-require-auth';
 import { useAdminDashboard } from '../hooks/use-dashboard';
 import { ADMIN_ROLE_LABEL } from '../interfaces/admin-users';
 import { Skeleton } from '../../../shared/components/skeleton';
+import {
+  AdminLiveChatProvider,
+  useAdminLiveChat,
+} from '../../live-chat/components/admin-live-chat-provider';
 import styles from '../styles/admin-shell.module.css';
+
+/** Which live count a nav item shows next to its label. */
+type BadgeSource = 'bookings' | 'liveChat';
 
 interface NavItem {
   href: string;
   label: string;
   exact?: boolean;
-  badge?: boolean;
+  badge?: BadgeSource;
 }
+
+type Badges = Partial<Record<BadgeSource, number>>;
 
 const MANAGE: NavItem[] = [
   { href: '/admin', label: 'Dashboard', exact: true },
   { href: '/admin/hotels', label: 'Hotels' },
   { href: '/admin/room-types', label: 'Room types' },
   { href: '/admin/availability', label: 'Availability' },
-  { href: '/admin/bookings', label: 'Bookings', badge: true },
+  { href: '/admin/bookings', label: 'Bookings', badge: 'bookings' },
+  { href: '/admin/live-chat', label: 'Live chat', badge: 'liveChat' },
 ];
 
 const SETTINGS: NavItem[] = [
@@ -40,15 +50,8 @@ function isActive(item: NavItem, pathname: string) {
   return item.exact ? pathname === item.href : pathname.startsWith(item.href);
 }
 
-function NavLink({
-  item,
-  pathname,
-  pendingCount,
-}: {
-  item: NavItem;
-  pathname: string;
-  pendingCount?: number;
-}) {
+function NavLink({ item, pathname, badges }: { item: NavItem; pathname: string; badges?: Badges }) {
+  const count = item.badge ? badges?.[item.badge] : undefined;
   const active = isActive(item, pathname);
   return (
     <Link
@@ -60,7 +63,7 @@ function NavLink({
         <span className={cn(styles.navDot, active && styles.navDotActive)} aria-hidden />
         {item.label}
       </span>
-      {item.badge && pendingCount ? <span className={styles.navBadge}>{pendingCount}</span> : null}
+      {count ? <span className={styles.navBadge}>{count}</span> : null}
     </Link>
   );
 }
@@ -71,13 +74,13 @@ function NavLink({
  */
 function SidebarBody({
   pathname,
-  pendingCount,
+  badges,
   userName,
   userRole,
   onSignOut,
 }: {
   pathname: string;
-  pendingCount?: number;
+  badges?: Badges;
   userName?: string;
   userRole: string;
   onSignOut: () => void;
@@ -94,7 +97,7 @@ function SidebarBody({
       <nav className={styles.nav}>
         <p className={styles.navSection}>Manage</p>
         {MANAGE.map((item) => (
-          <NavLink key={item.href} item={item} pathname={pathname} pendingCount={pendingCount} />
+          <NavLink key={item.href} item={item} pathname={pathname} badges={badges} />
         ))}
 
         <p className={cn(styles.navSection, styles.navSectionSpaced)}>Settings</p>
@@ -121,11 +124,32 @@ function SidebarBody({
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { ready } = useRequireAuth({ adminOnly: true });
+
+  if (!ready) {
+    return (
+      <div className={styles.loading}>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  // Only once the admin session is confirmed: the live-chat socket
+  // authenticates with that session's cookie, and would just be refused
+  // before it exists.
+  return (
+    <AdminLiveChatProvider>
+      <AdminShellFrame>{children}</AdminShellFrame>
+    </AdminLiveChatProvider>
+  );
+}
+
+function AdminShellFrame({ children }: { children: ReactNode }) {
   const { user } = useSession('admin');
   const logout = useLogout('admin');
   const pathname = usePathname();
   const dashboard = useAdminDashboard();
   const pendingCount = dashboard.data?.pendingBookings;
+  const { totalUnread } = useAdminLiveChat();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   // Navigating from inside the drawer does not unmount the shell, so the panel
@@ -148,18 +172,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
     };
   }, [drawerOpen]);
 
-  if (!ready) {
-    return (
-      <div className={styles.loading}>
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
-
   const sidebar = (
     <SidebarBody
       pathname={pathname}
-      pendingCount={pendingCount}
+      badges={{ bookings: pendingCount, liveChat: totalUnread }}
       userName={user?.name}
       userRole={user?.adminRole ? ADMIN_ROLE_LABEL[user.adminRole] : 'Admin'}
       onSignOut={() => logout('/admin/login')}
@@ -181,7 +197,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             onClick={() => setDrawerOpen(true)}
           >
             <Menu className="h-5 w-5" />
-            {pendingCount ? <span className={styles.triggerBadge} aria-hidden /> : null}
+            {pendingCount || totalUnread ? <span className={styles.triggerBadge} aria-hidden /> : null}
           </button>
 
           <Link href="/admin" className={styles.brand}>

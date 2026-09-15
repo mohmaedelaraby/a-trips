@@ -9,6 +9,8 @@ export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    // Gateways check the role themselves on connect; see JwtAuthGuard.
+    if (context.getType() !== 'http') return true;
     const required = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),

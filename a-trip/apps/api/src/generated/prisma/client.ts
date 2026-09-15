@@ -113,3 +113,21 @@ export type Payment = Prisma.PaymentModel
  * hotel.<id>.*    a hotel's name, description, city or address
  */
 export type Translation = Prisma.TranslationModel
+/**
+ * Model SupportConversation
+ * A live-chat thread between one signed-in guest and the staff team.
+ * 
+ * One OPEN thread per guest at a time: a returning guest picks up where they
+ * left off, and staff see a single row per person rather than a new ticket
+ * for every visit. Closing it archives the thread; the next message opens a
+ * fresh one.
+ * 
+ * Unread counts are stored rather than counted, because the admin inbox
+ * renders them for every row on every update.
+ */
+export type SupportConversation = Prisma.SupportConversationModel
+/**
+ * Model SupportMessage
+ * 
+ */
+export type SupportMessage = Prisma.SupportMessageModel

@@ -89,3 +89,11 @@ export const Locale = {
 } as const
 
 export type Locale = (typeof Locale)[keyof typeof Locale]
+
+
+export const SupportConversationStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED'
+} as const
+
+export type SupportConversationStatus = (typeof SupportConversationStatus)[keyof typeof SupportConversationStatus]

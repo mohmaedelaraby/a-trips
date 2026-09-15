@@ -247,6 +247,8 @@ export type UserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   bookings?: Prisma.BookingListRelationFilter
+  supportConversations?: Prisma.SupportConversationListRelationFilter
+  supportMessages?: Prisma.SupportMessageListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -264,6 +266,8 @@ export type UserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   bookings?: Prisma.BookingOrderByRelationAggregateInput
+  supportConversations?: Prisma.SupportConversationOrderByRelationAggregateInput
+  supportMessages?: Prisma.SupportMessageOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -284,6 +288,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   bookings?: Prisma.BookingListRelationFilter
+  supportConversations?: Prisma.SupportConversationListRelationFilter
+  supportMessages?: Prisma.SupportMessageListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -339,6 +345,8 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  supportConversations?: Prisma.SupportConversationCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -356,6 +364,8 @@ export type UserUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  supportConversations?: Prisma.SupportConversationUncheckedCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserUpdateInput = {
@@ -373,6 +383,8 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  supportConversations?: Prisma.SupportConversationUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -390,6 +402,8 @@ export type UserUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  supportConversations?: Prisma.SupportConversationUncheckedUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -535,6 +549,34 @@ export type UserUpdateOneRequiredWithoutBookingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBookingsInput, Prisma.UserUpdateWithoutBookingsInput>, Prisma.UserUncheckedUpdateWithoutBookingsInput>
 }
 
+export type UserCreateNestedOneWithoutSupportConversationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportConversationsInput, Prisma.UserUncheckedCreateWithoutSupportConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSupportConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportConversationsInput, Prisma.UserUncheckedCreateWithoutSupportConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportConversationsInput
+  upsert?: Prisma.UserUpsertWithoutSupportConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportConversationsInput, Prisma.UserUpdateWithoutSupportConversationsInput>, Prisma.UserUncheckedUpdateWithoutSupportConversationsInput>
+}
+
+export type UserCreateNestedOneWithoutSupportMessagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportMessagesInput, Prisma.UserUncheckedCreateWithoutSupportMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSupportMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportMessagesInput, Prisma.UserUncheckedCreateWithoutSupportMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportMessagesInput
+  upsert?: Prisma.UserUpsertWithoutSupportMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportMessagesInput, Prisma.UserUpdateWithoutSupportMessagesInput>, Prisma.UserUncheckedUpdateWithoutSupportMessagesInput>
+}
+
 export type UserCreateWithoutBookingsInput = {
   id?: string
   name: string
@@ -549,6 +591,8 @@ export type UserCreateWithoutBookingsInput = {
   lastActiveAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  supportConversations?: Prisma.SupportConversationCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutBookingsInput = {
@@ -565,6 +609,8 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   lastActiveAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  supportConversations?: Prisma.SupportConversationUncheckedCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutBookingsInput = {
@@ -597,6 +643,8 @@ export type UserUpdateWithoutBookingsInput = {
   lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  supportConversations?: Prisma.SupportConversationUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBookingsInput = {
@@ -613,6 +661,184 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  supportConversations?: Prisma.SupportConversationUncheckedUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutSupportConversationsInput = {
+  id?: string
+  name: string
+  email: string
+  passwordHash: string
+  phone?: string | null
+  dateOfBirth?: Date | string | null
+  role?: $Enums.Role
+  adminRole?: $Enums.AdminRole | null
+  status?: $Enums.UserStatus
+  invitedAt?: Date | string | null
+  lastActiveAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageCreateNestedManyWithoutSenderInput
+}
+
+export type UserUncheckedCreateWithoutSupportConversationsInput = {
+  id?: string
+  name: string
+  email: string
+  passwordHash: string
+  phone?: string | null
+  dateOfBirth?: Date | string | null
+  role?: $Enums.Role
+  adminRole?: $Enums.AdminRole | null
+  status?: $Enums.UserStatus
+  invitedAt?: Date | string | null
+  lastActiveAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  supportMessages?: Prisma.SupportMessageUncheckedCreateNestedManyWithoutSenderInput
+}
+
+export type UserCreateOrConnectWithoutSupportConversationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportConversationsInput, Prisma.UserUncheckedCreateWithoutSupportConversationsInput>
+}
+
+export type UserUpsertWithoutSupportConversationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportConversationsInput, Prisma.UserUncheckedUpdateWithoutSupportConversationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportConversationsInput, Prisma.UserUncheckedCreateWithoutSupportConversationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportConversationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportConversationsInput, Prisma.UserUncheckedUpdateWithoutSupportConversationsInput>
+}
+
+export type UserUpdateWithoutSupportConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  adminRole?: Prisma.NullableEnumAdminRoleFieldUpdateOperationsInput | $Enums.AdminRole | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUpdateManyWithoutSenderNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  adminRole?: Prisma.NullableEnumAdminRoleFieldUpdateOperationsInput | $Enums.AdminRole | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  supportMessages?: Prisma.SupportMessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutSupportMessagesInput = {
+  id?: string
+  name: string
+  email: string
+  passwordHash: string
+  phone?: string | null
+  dateOfBirth?: Date | string | null
+  role?: $Enums.Role
+  adminRole?: $Enums.AdminRole | null
+  status?: $Enums.UserStatus
+  invitedAt?: Date | string | null
+  lastActiveAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  supportConversations?: Prisma.SupportConversationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSupportMessagesInput = {
+  id?: string
+  name: string
+  email: string
+  passwordHash: string
+  phone?: string | null
+  dateOfBirth?: Date | string | null
+  role?: $Enums.Role
+  adminRole?: $Enums.AdminRole | null
+  status?: $Enums.UserStatus
+  invitedAt?: Date | string | null
+  lastActiveAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  supportConversations?: Prisma.SupportConversationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSupportMessagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportMessagesInput, Prisma.UserUncheckedCreateWithoutSupportMessagesInput>
+}
+
+export type UserUpsertWithoutSupportMessagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportMessagesInput, Prisma.UserUncheckedUpdateWithoutSupportMessagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportMessagesInput, Prisma.UserUncheckedCreateWithoutSupportMessagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportMessagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportMessagesInput, Prisma.UserUncheckedUpdateWithoutSupportMessagesInput>
+}
+
+export type UserUpdateWithoutSupportMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  adminRole?: Prisma.NullableEnumAdminRoleFieldUpdateOperationsInput | $Enums.AdminRole | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  supportConversations?: Prisma.SupportConversationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dateOfBirth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  adminRole?: Prisma.NullableEnumAdminRoleFieldUpdateOperationsInput | $Enums.AdminRole | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  invitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  supportConversations?: Prisma.SupportConversationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -622,10 +848,14 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
 
 export type UserCountOutputType = {
   bookings: number
+  supportConversations: number
+  supportMessages: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bookings?: boolean | UserCountOutputTypeCountBookingsArgs
+  supportConversations?: boolean | UserCountOutputTypeCountSupportConversationsArgs
+  supportMessages?: boolean | UserCountOutputTypeCountSupportMessagesArgs
 }
 
 /**
@@ -645,6 +875,20 @@ export type UserCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.BookingWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportConversationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportMessageWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -661,6 +905,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
+  supportConversations?: boolean | Prisma.User$supportConversationsArgs<ExtArgs>
+  supportMessages?: boolean | Prisma.User$supportMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -715,6 +961,8 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "passwordHash" | "phone" | "dateOfBirth" | "role" | "adminRole" | "status" | "invitedAt" | "lastActiveAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
+  supportConversations?: boolean | Prisma.User$supportConversationsArgs<ExtArgs>
+  supportMessages?: boolean | Prisma.User$supportMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -724,6 +972,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     bookings: Prisma.$BookingPayload<ExtArgs>[]
+    /**
+     * The guest's own support thread(s) with staff.
+     */
+    supportConversations: Prisma.$SupportConversationPayload<ExtArgs>[]
+    /**
+     * Every live-chat message this person sent, as guest or as staff.
+     */
+    supportMessages: Prisma.$SupportMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1134,6 +1390,8 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   bookings<T extends Prisma.User$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportConversations<T extends Prisma.User$supportConversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportMessages<T extends Prisma.User$supportMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1590,6 +1848,54 @@ export type User$bookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
+}
+
+/**
+ * User.supportConversations
+ */
+export type User$supportConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportConversation
+   */
+  select?: Prisma.SupportConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportConversation
+   */
+  omit?: Prisma.SupportConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportConversationInclude<ExtArgs> | null
+  where?: Prisma.SupportConversationWhereInput
+  orderBy?: Prisma.SupportConversationOrderByWithRelationInput | Prisma.SupportConversationOrderByWithRelationInput[]
+  cursor?: Prisma.SupportConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportConversationScalarFieldEnum | Prisma.SupportConversationScalarFieldEnum[]
+}
+
+/**
+ * User.supportMessages
+ */
+export type User$supportMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportMessage
+   */
+  select?: Prisma.SupportMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportMessage
+   */
+  omit?: Prisma.SupportMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportMessageInclude<ExtArgs> | null
+  where?: Prisma.SupportMessageWhereInput
+  orderBy?: Prisma.SupportMessageOrderByWithRelationInput | Prisma.SupportMessageOrderByWithRelationInput[]
+  cursor?: Prisma.SupportMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportMessageScalarFieldEnum | Prisma.SupportMessageScalarFieldEnum[]
 }
 
 /**

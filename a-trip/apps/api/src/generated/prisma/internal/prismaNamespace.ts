@@ -407,7 +407,9 @@ export const ModelName = {
   RoomAvailability: 'RoomAvailability',
   Booking: 'Booking',
   Payment: 'Payment',
-  Translation: 'Translation'
+  Translation: 'Translation',
+  SupportConversation: 'SupportConversation',
+  SupportMessage: 'SupportMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -423,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "amenity" | "navLink" | "hotel" | "siteSetting" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment" | "translation"
+    modelProps: "user" | "amenity" | "navLink" | "hotel" | "siteSetting" | "hotelImage" | "roomType" | "roomAvailability" | "booking" | "payment" | "translation" | "supportConversation" | "supportMessage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1241,6 +1243,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SupportConversation: {
+      payload: Prisma.$SupportConversationPayload<ExtArgs>
+      fields: Prisma.SupportConversationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportConversationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportConversationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        findFirst: {
+          args: Prisma.SupportConversationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportConversationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        findMany: {
+          args: Prisma.SupportConversationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
+        }
+        create: {
+          args: Prisma.SupportConversationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        createMany: {
+          args: Prisma.SupportConversationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportConversationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
+        }
+        delete: {
+          args: Prisma.SupportConversationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        update: {
+          args: Prisma.SupportConversationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportConversationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportConversationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportConversationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportConversationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportConversationPayload>
+        }
+        aggregate: {
+          args: Prisma.SupportConversationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportConversation>
+        }
+        groupBy: {
+          args: Prisma.SupportConversationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportConversationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportConversationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportConversationCountAggregateOutputType> | number
+        }
+      }
+    }
+    SupportMessage: {
+      payload: Prisma.$SupportMessagePayload<ExtArgs>
+      fields: Prisma.SupportMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SupportMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SupportMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.SupportMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SupportMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        findMany: {
+          args: Prisma.SupportMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
+        }
+        create: {
+          args: Prisma.SupportMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        createMany: {
+          args: Prisma.SupportMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SupportMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.SupportMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        update: {
+          args: Prisma.SupportMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.SupportMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SupportMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SupportMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.SupportMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SupportMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.SupportMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSupportMessage>
+        }
+        groupBy: {
+          args: Prisma.SupportMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SupportMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SupportMessageCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1448,6 +1598,32 @@ export const TranslationScalarFieldEnum = {
 } as const
 
 export type TranslationScalarFieldEnum = (typeof TranslationScalarFieldEnum)[keyof typeof TranslationScalarFieldEnum]
+
+
+export const SupportConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  adminUnread: 'adminUnread',
+  userUnread: 'userUnread',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SupportConversationScalarFieldEnum = (typeof SupportConversationScalarFieldEnum)[keyof typeof SupportConversationScalarFieldEnum]
+
+
+export const SupportMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  senderRole: 'senderRole',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportMessageScalarFieldEnum = (typeof SupportMessageScalarFieldEnum)[keyof typeof SupportMessageScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1713,6 +1889,20 @@ export type EnumLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 export type ListEnumLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Locale[]'>
     
 
+
+/**
+ * Reference to a field of type 'SupportConversationStatus'
+ */
+export type EnumSupportConversationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportConversationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SupportConversationStatus[]'
+ */
+export type ListEnumSupportConversationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportConversationStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -1875,6 +2065,8 @@ export type GlobalOmitConfig = {
   booking?: Prisma.BookingOmit
   payment?: Prisma.PaymentOmit
   translation?: Prisma.TranslationOmit
+  supportConversation?: Prisma.SupportConversationOmit
+  supportMessage?: Prisma.SupportMessageOmit
 }
 
 /* Types for Logging */

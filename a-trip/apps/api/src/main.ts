@@ -3,6 +3,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
@@ -16,6 +17,9 @@ async function bootstrap(): Promise<void> {
   // Session cookies are httpOnly, so the browser attaches them itself — this
   // is what makes req.cookies readable in the auth guard below.
   app.use(cookieParser());
+  // Live chat runs Socket.IO on the same HTTP server and port as the REST API,
+  // so no extra port has to be opened or proxied.
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -22,6 +22,10 @@ model User {
   invitedAt    DateTime?
   lastActiveAt DateTime?
   bookings     Booking[]
+  /// The guest's own support thread(s) with staff.
+  supportConversations SupportConversation[]
+  /// Every live-chat message this person sent, as guest or as staff.
+  supportMessages      SupportMessage[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -292,4 +296,51 @@ model Translation {
   @@id([key, locale])
   @@index([locale])
   @@index([key])
+}
+
+/// A live-chat thread between one signed-in guest and the staff team.
+///
+/// One OPEN thread per guest at a time: a returning guest picks up where they
+/// left off, and staff see a single row per person rather than a new ticket
+/// for every visit. Closing it archives the thread; the next message opens a
+/// fresh one.
+///
+/// Unread counts are stored rather than counted, because the admin inbox
+/// renders them for every row on every update.
+model SupportConversation {
+  id            String                    @id @default(uuid())
+  userId        String
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        SupportConversationStatus @default(OPEN)
+  /// Guest messages staff have not opened yet.
+  adminUnread   Int                       @default(0)
+  /// Staff replies the guest has not seen yet.
+  userUnread    Int                       @default(0)
+  lastMessageAt DateTime                  @default(now())
+  messages      SupportMessage[]
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@index([userId, status])
+  @@index([status, lastMessageAt])
+}
+
+enum SupportConversationStatus {
+  OPEN
+  CLOSED
+}
+
+model SupportMessage {
+  id             String              @id @default(uuid())
+  conversationId String
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User                @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  /// Which side of the thread wrote it — kept on the row so history still
+  /// reads correctly if the sender's role later changes.
+  senderRole     Role
+  body           String
+  createdAt      DateTime            @default(now())
+
+  @@index([conversationId, createdAt])
 }

@@ -1,0 +1,391 @@
+/* Inbox and thread side by side, sized to the viewport so the message list
+   scrolls on its own and the composer stays in view. */
+.layout {
+  display: grid;
+  gap: 1rem;
+  height: calc(100vh - 9.5rem);
+  min-height: 28rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 22rem minmax(0, 1fr);
+  }
+}
+
+/* Below the two-column breakpoint only one pane shows at a time. */
+@media (max-width: 1023px) {
+  .layout .thread {
+    display: none;
+  }
+
+  .layoutThreadOpen .inbox {
+    display: none;
+  }
+
+  .layoutThreadOpen .thread {
+    display: flex;
+  }
+}
+
+/* ---- inbox ---- */
+
+.inbox {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+}
+
+.inboxTools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.75rem;
+}
+
+.inboxTools input {
+  width: 100%;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.listEmpty {
+  padding: 2rem 1.25rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.625rem;
+  border: none;
+  border-bottom: 1px solid var(--color-line);
+  border-inline-start: 3px solid transparent;
+  background: transparent;
+  padding: 0.75rem 0.875rem 0.75rem 0.75rem;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.row:hover {
+  background-color: var(--color-canvas);
+}
+
+.rowSelected {
+  border-inline-start-color: var(--color-primary);
+  background-color: var(--color-primary-50);
+}
+
+.rowSelected:hover {
+  background-color: var(--color-primary-50);
+}
+
+.avatar {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--color-primary-100);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+}
+
+.rowBody {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.rowTop,
+.rowBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rowName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.rowNameUnread {
+  font-weight: 800;
+}
+
+.rowTime {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+}
+
+.rowPreview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.rowTyping {
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.unread {
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  border-radius: 9999px;
+  background-color: var(--color-primary);
+  padding: 0.0625rem 0.375rem;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.closedTag {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-muted);
+}
+
+/* ---- thread ---- */
+
+.thread {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+}
+
+.threadEmpty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.threadEmptyIcon {
+  height: 2rem;
+  width: 2rem;
+  color: var(--color-line);
+}
+
+.threadEmptyTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.threadEmptyText {
+  max-width: 22rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.threadHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.625rem;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.75rem 1rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  background-color: var(--color-canvas);
+}
+
+@media (min-width: 1024px) {
+  .backBtn {
+    display: none;
+  }
+}
+
+.threadWho {
+  min-width: 0;
+  flex: 1;
+}
+
+.threadName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.threadEmail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}
+
+.threadEmail:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.banner {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  background-color: var(--color-warning-bg);
+  padding: 0.4375rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-warning-fg);
+}
+
+.messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.625rem;
+  overflow-y: auto;
+  background-color: var(--color-canvas);
+  padding: 1.25rem;
+}
+
+/* Guest on the left, staff on the right — from staff's own point of view. */
+.message {
+  display: flex;
+  max-width: 75%;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
+  gap: 0.1875rem;
+}
+
+.messageStaff {
+  align-items: flex-end;
+  align-self: flex-end;
+}
+
+.bubble {
+  border-radius: 0.875rem;
+  padding: 0.625rem 0.8125rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubbleGuest {
+  border: 1px solid var(--color-line);
+  border-start-start-radius: 0.25rem;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.bubbleStaff {
+  border-end-end-radius: 0.25rem;
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.meta {
+  padding-inline: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+}
+
+.typingHint {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--color-primary);
+}
+
+.threadHint {
+  align-self: center;
+  max-width: 28rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 0.3125rem 0.875rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+
+.error {
+  flex-shrink: 0;
+  background-color: var(--color-danger-bg);
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-danger-fg);
+}
+
+.composer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 0.625rem;
+  border-top: 1px solid var(--color-line);
+  padding: 0.75rem;
+}
+
+.composerInput {
+  flex: 1;
+  min-height: 2.75rem;
+  max-height: 8rem;
+  resize: vertical;
+}

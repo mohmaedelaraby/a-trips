@@ -340,3 +340,253 @@
   line-height: 1.4;
   color: var(--color-ink-muted);
 }
+
+/* ---- panel visibility ----
+   Closed and inactive panels stay mounted (their transcripts live in them), so
+   `hidden` has to win over the flex display these classes set. */
+.panel[hidden],
+.panelBody[hidden] {
+  display: none;
+}
+
+.panelBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---- launcher badge ---- */
+
+.launcher {
+  position: relative;
+}
+
+.launcherBadge {
+  position: absolute;
+  inset-block-start: -0.125rem;
+  inset-inline-end: -0.125rem;
+  display: inline-flex;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background-color: var(--color-danger);
+  padding-inline: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* ---- tabs ---- */
+
+.tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 0.375rem 0.5rem 0;
+}
+
+.tab {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0.5rem 0.25rem 0.5625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--color-ink);
+}
+
+.tabActive {
+  border-bottom-color: var(--color-primary);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.tabGlyph {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.tabBadge {
+  border-radius: 9999px;
+  background-color: var(--color-danger);
+  padding: 0.0625rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* ---- toolbar (assistant: new chat) ---- */
+
+.toolbar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  border-top: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  padding: 0.25rem;
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.toolbarBtn:hover {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.toolbarGlyph {
+  height: 0.75rem;
+  width: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ---- live chat ---- */
+
+.presence {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4375rem;
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.presenceDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background-color: var(--color-line);
+}
+
+.presenceDotOnline {
+  background-color: var(--color-success);
+  box-shadow: 0 0 0 3px var(--color-success-bg);
+}
+
+.connectionBanner {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  background-color: var(--color-warning-bg);
+  padding: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-warning-fg);
+}
+
+.messageRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1875rem;
+}
+
+.messageRowMine {
+  align-items: flex-end;
+}
+
+/* The bubble inside a row sizes to its text; the row handles alignment. */
+.messageRow .bubble {
+  align-self: auto;
+}
+
+.messageMeta {
+  padding-inline: 0.25rem;
+  font-size: 0.625rem;
+  color: var(--color-ink-muted);
+}
+
+.listHint {
+  align-self: center;
+  border-radius: 9999px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  padding: 0.25rem 0.625rem;
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+}
+
+.composer textarea:disabled {
+  background-color: var(--color-canvas);
+  cursor: not-allowed;
+}
+
+/* Signed-out and expired-session states. */
+.notice {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-canvas);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.noticeTitle {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.noticeText {
+  max-width: 17rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.noticeAction {
+  margin-top: 0.25rem;
+  border-radius: 0.625rem;
+  background-color: var(--color-primary);
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.noticeAction:hover {
+  background-color: var(--color-primary-600);
+}
